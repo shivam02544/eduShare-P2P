@@ -1,101 +1,130 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+const features = [
+  { icon: "🎥", title: "Teaching Videos", desc: "Upload lessons and earn 5 credits per view.", accent: "bg-amber-50 border-amber-200 text-amber-800" },
+  { icon: "📄", title: "Study Notes", desc: "Share PDFs and earn 3 credits per download.", accent: "bg-teal-50 border-teal-200 text-teal-800" },
+  { icon: "📡", title: "Live Sessions", desc: "Host live teaching and earn 10 credits per attendee.", accent: "bg-rose-50 border-rose-200 text-rose-800" },
+  { icon: "🏆", title: "Credit Rewards", desc: "The more you teach, the more you earn.", accent: "bg-violet-50 border-violet-200 text-violet-800" },
+];
+
+const stats = [
+  { value: "10K+", label: "Students" },
+  { value: "5K+", label: "Resources" },
+  { value: "500+", label: "Sessions" },
+  { value: "50K+", label: "Credits" },
+];
+
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="space-y-20">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero */}
+      <section className="relative pt-16 pb-8 text-center overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full opacity-20 -z-10"
+          style={{ background: "radial-gradient(circle, #f59e0b, transparent 70%)", filter: "blur(40px)" }} />
+        <div className="absolute top-8 right-1/4 w-64 h-64 rounded-full opacity-15 -z-10"
+          style={{ background: "radial-gradient(circle, #7c6af7, transparent 70%)", filter: "blur(40px)" }} />
+
+        <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-stone-200 text-zinc-600 text-xs font-medium px-3 py-1.5 rounded-full mb-6 shadow-sm">
+          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+          Student-driven knowledge exchange
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <h1 className="text-5xl sm:text-6xl font-black text-zinc-900 leading-[1.1] tracking-tight mb-5 max-w-3xl mx-auto">
+          Learn from peers,<br />
+          <span className="relative inline-block">
+            <span className="relative z-10">teach the world</span>
+            <span className="absolute bottom-1 left-0 right-0 h-3 bg-amber-200/60 -z-0 rounded" />
+          </span>
+        </h1>
+
+        <p className="text-lg text-zinc-500 max-w-xl mx-auto mb-8 leading-relaxed">
+          Upload videos, share notes, host live sessions — all powered by a credit reward system. No money, just knowledge.
+        </p>
+
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <Link href="/register" className="btn-primary px-7 py-3 text-base">
+            Start for free →
+          </Link>
+          <Link href="/explore"
+            className="btn-secondary px-7 py-3 text-base">
+            Browse content
+          </Link>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map((s) => (
+          <div key={s.label} className="card p-5 text-center">
+            <p className="text-3xl font-black text-zinc-900">{s.value}</p>
+            <p className="text-xs text-zinc-400 mt-1 font-medium uppercase tracking-wide">{s.label}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* Features */}
+      <section>
+        <div className="text-center mb-10">
+          <p className="section-label mb-2">Platform features</p>
+          <h2 className="text-3xl font-bold text-zinc-900">Everything in one place</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {features.map((f) => (
+            <div key={f.title}
+              className={`card-tinted p-6 border ${f.accent} hover:-translate-y-1 transition-transform duration-200`}>
+              <div className="text-3xl mb-4">{f.icon}</div>
+              <h3 className="font-bold text-zinc-900 mb-2">{f.title}</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="card p-8 sm:p-12">
+        <div className="text-center mb-10">
+          <p className="section-label mb-2">How it works</p>
+          <h2 className="text-3xl font-bold text-zinc-900">Simple as 1, 2, 3</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          {[
+            { step: "01", title: "Create account", desc: "Sign up free with email or Google in seconds." },
+            { step: "02", title: "Share knowledge", desc: "Upload videos, notes, or host a live session." },
+            { step: "03", title: "Earn credits", desc: "Get rewarded every time someone learns from you." },
+          ].map((s) => (
+            <div key={s.step} className="text-center">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-sm font-black mx-auto mb-4 shadow-md">
+                {s.step}
+              </div>
+              <h3 className="font-bold text-zinc-900 mb-2">{s.title}</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative overflow-hidden rounded-3xl p-10 sm:p-14 text-center"
+        style={{ background: "linear-gradient(135deg, #18181b 0%, #27272a 50%, #3f3f46 100%)" }}>
+        {/* Decorative */}
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #f59e0b, transparent 70%)", filter: "blur(30px)" }} />
+        <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #7c6af7, transparent 70%)", filter: "blur(30px)" }} />
+
+        <p className="section-label text-zinc-500 mb-3">Join EduShare</p>
+        <h2 className="text-3xl font-bold text-white mb-3">Ready to start teaching?</h2>
+        <p className="text-zinc-400 mb-8 max-w-md mx-auto">
+          Join thousands of students sharing knowledge and earning credits.
+        </p>
+        <Link href="/register"
+          className="inline-block bg-white text-zinc-900 px-8 py-3 rounded-xl font-bold hover:bg-stone-100 transition-colors shadow-lg">
+          Create free account
+        </Link>
+      </section>
+
     </div>
   );
 }
