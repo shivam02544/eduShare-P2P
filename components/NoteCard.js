@@ -7,29 +7,32 @@ export default function NoteCard({ note, onDownload }) {
   const [downloading, setDownloading] = useState(false);
   const { withLoading } = useLoading();
 
-  const handleClick = async () => {
+  const handleClick = async (e) => {
+    e.preventDefault();
     setDownloading(true);
     await withLoading(() => onDownload(note));
     setDownloading(false);
   };
 
   return (
-    <div className="card p-4 flex flex-col gap-3 animate-fade-in">
+    <div className="card p-4 flex flex-col gap-3 animate-fade-up">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #fff1f2, #ffe4e6)" }}>
-          <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" style={{ color: "var(--text-2)" }}>
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/>
           </svg>
         </div>
         <div className="flex items-center gap-1.5">
           {note.isPremium && (
-            <span className="badge bg-amber-100 text-amber-800 border border-amber-200 text-[11px]">
+            <span className="badge text-[11px]"
+              style={{ background: "rgba(245,158,11,0.1)", color: "#d97706", border: "1px solid rgba(245,158,11,0.2)" }}>
               🔒 {note.premiumCost}cr
             </span>
           )}
-          <span className="badge bg-rose-50 text-rose-600 border border-rose-100 text-[11px]">
+          <span className="badge text-[11px]"
+            style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}>
             {note.subject}
           </span>
         </div>
@@ -37,33 +40,39 @@ export default function NoteCard({ note, onDownload }) {
 
       {/* Title + uploader */}
       <div className="flex-1">
-        <h3 className="font-semibold text-zinc-900 text-sm leading-snug line-clamp-2">{note.title}</h3>
-        <Link href={`/profile/${note.uploader?.firebaseUid}`} onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 mt-1.5 group/author">
+        <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 mb-1.5"
+          style={{ color: "var(--text-1)" }}>
+          {note.title}
+        </h3>
+        <Link href={`/profile/${note.uploader?.firebaseUid}`}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1.5">
           {note.uploader?.image ? (
             <img src={note.uploader.image} alt="" className="w-4 h-4 rounded-full object-cover" />
           ) : (
-            <div className="w-4 h-4 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-[9px] font-bold">
+            <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+              style={{ background: "var(--accent-2)", color: "var(--accent)" }}>
               {note.uploader?.name?.[0]?.toUpperCase()}
             </div>
           )}
-          <span className="text-xs text-zinc-400 group-hover/author:text-zinc-700 transition-colors">
-            {note.uploader?.name}
+          <span className="text-[12px]" style={{ color: "var(--text-3)" }}>
+            {note.uploader?.name} · {note.downloads} downloads
           </span>
-          <span className="text-[11px] text-zinc-300">· {note.downloads} downloads</span>
         </Link>
       </div>
 
       {/* Actions */}
       <div className="flex gap-2 mt-auto">
         <Link href={`/notes/${note._id}`}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-stone-100 text-zinc-700 text-xs font-medium
-                     py-2 rounded-lg hover:bg-stone-200 transition-colors border border-stone-200">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-medium transition-colors duration-150"
+          style={{ background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--border)" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--border)"; e.currentTarget.style.color = "var(--text-1)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--text-2)"; }}>
           Preview
         </Link>
         <button onClick={handleClick} disabled={downloading}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-zinc-900 text-white text-xs font-medium
-                     py-2 rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-60">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-medium transition-all duration-150"
+          style={{ background: "var(--text-1)", color: "var(--bg)" }}>
           {downloading ? (
             <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>

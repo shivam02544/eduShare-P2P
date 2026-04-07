@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { connectDB } from "@/lib/mongodb";
 import Notification from "@/models/Notification";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/notifications — get latest 30 notifications
+// GET /api/notifications
 export async function GET(req) {
+  // 60 polls per hour per IP — polled every 30s = 120/hr max, we allow 60 (generous)
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "notifications"), limit: 60, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

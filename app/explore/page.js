@@ -151,11 +151,11 @@ export default function ExplorePage() {
           <p className="text-sm mt-1">Try a different subject or be the first to upload</p>
         </div>
       ) : tab === "videos" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-grid">
           {videos.map((v) => <VideoCard key={v._id} video={v} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger-grid">
           {notes.map((n) => <NoteCard key={n._id} note={n} onDownload={handleDownload} />)}
         </div>
       )}

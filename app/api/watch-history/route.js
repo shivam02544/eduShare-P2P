@@ -2,11 +2,17 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { connectDB } from "@/lib/mongodb";
 import WatchHistory from "@/models/WatchHistory";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/watch-history — get continue watching list (last 20, not completed)
+// GET /api/watch-history
 export async function GET(req) {
+  // 60 reads per minute per IP — dashboard + history page
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "watch-history-get"), limit: 60, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -33,6 +39,11 @@ export async function GET(req) {
 
 // POST /api/watch-history — save progress
 export async function POST(req) {
+  // 120 saves per hour per IP — fires every 10s while watching, so 120/hr = 2 videos watched continuously
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "watch-history-post"), limit: 120, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

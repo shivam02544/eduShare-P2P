@@ -6,11 +6,12 @@ import Note from "@/models/Note";
 import User from "@/models/User";
 import Transaction from "@/models/Transaction";
 import mongoose from "mongoose";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-const BOOST_COST = 20;       // credits per boost
-const BOOST_HOURS = 24;      // hours of boost
+const BOOST_COST = 20;
+const BOOST_HOURS = 24;
 
 /**
  * POST /api/boost
@@ -18,6 +19,11 @@ const BOOST_HOURS = 24;      // hours of boost
  * Body: { type: "video"|"note", id: string }
  */
 export async function POST(req) {
+  // 5 boosts per hour per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "boost"), limit: 5, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

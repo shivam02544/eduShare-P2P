@@ -8,6 +8,7 @@ import Video from "@/models/Video";
 import User from "@/models/User";
 import { awardCredits } from "@/lib/credits";
 import { createNotification } from "@/lib/notify";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,9 @@ export const dynamic = "force-dynamic";
  * Body: { answers: [0, 2, 1, 3, ...] }  — one index per question
  */
 export async function POST(req, { params }) {
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "quiz-attempt"), limit: 10, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

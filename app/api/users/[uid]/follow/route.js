@@ -3,10 +3,16 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { createNotification } from "@/lib/notify";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req, { params }) {
+  // 30 follow/unfollow per 10 minutes per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "follow"), limit: 30, windowMs: 10 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { connectDB } from "@/lib/mongodb";
 import Report from "@/models/Report";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,11 @@ const MAX_REPORTS_PER_DAY = 10;
  * POST /api/reports — submit a content report
  */
 export async function POST(req) {
+  // 5 reports per 10 minutes per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "reports"), limit: 5, windowMs: 10 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

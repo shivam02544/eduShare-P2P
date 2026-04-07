@@ -71,7 +71,7 @@ export default function LeaderboardPage() {
       )}
 
       {loading ? <LeaderboardSkeleton /> : (
-        <div className="space-y-2">
+        <div className="space-y-2 stagger-list">
           {users.map((u, i) => {
             const isMe = u.firebaseUid === user?.uid;
             return (

@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import Note from "@/models/Note";
 import { transferCredits } from "@/lib/credits";
 import { createNotification } from "@/lib/notify";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,11 @@ export const dynamic = "force-dynamic";
  * Returns the fileUrl on success.
  */
 export async function POST(req, { params }) {
+  // 20 unlocks per hour per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "note-unlock"), limit: 20, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

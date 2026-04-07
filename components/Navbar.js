@@ -10,32 +10,42 @@ import SearchBar from "@/components/SearchBar";
 import NotificationBell from "@/components/NotificationBell";
 import { useTheme } from "@/context/ThemeContext";
 
-const navLinks = [
+const NAV = [
   { href: "/explore", label: "Explore" },
   { href: "/collections", label: "Collections" },
   { href: "/live", label: "Live" },
   { href: "/leaderboard", label: "Leaderboard" },
 ];
 
-const authLinks = [{ href: "/feed", label: "Feed" }];
+const AUTH_NAV = [{ href: "/feed", label: "Feed" }];
+
+const DROPDOWN = [
+  { href: "/dashboard",    icon: "▦", label: "Dashboard" },
+  { href: "/profile",      icon: "◉", label: "My Profile", dynamic: true },
+  { href: "/profile/edit", icon: "✎", label: "Edit Profile" },
+  { href: "/history",      icon: "📺", label: "Watch History" },
+  { href: "/bookmarks",    icon: "◈", label: "Saved" },
+  { href: "/credits",      icon: "◆", label: "Credits" },
+  { href: "/certificates", icon: "🏅", label: "Certificates" },
+];
 
 export default function Navbar() {
   const { user, loading } = useAuth();
   const { toggle, isDark } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropOpen, setDropOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const dropdownRef = useRef(null);
+  const dropRef = useRef(null);
 
   useEffect(() => {
-    const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false); };
+    const h = (e) => { if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  useEffect(() => { setDropdownOpen(false); setMobileOpen(false); }, [pathname]);
+  useEffect(() => { setDropOpen(false); setMobileOpen(false); }, [pathname]);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -45,171 +55,194 @@ export default function Navbar() {
     router.push("/");
   };
 
-  const isActive = (href) => pathname === href;
+  const isActive = (href) => pathname === href || pathname.startsWith(href + "/");
   const initials = (user?.displayName || user?.email || "?")[0].toUpperCase();
 
   return (
-    <header className="sticky top-0 z-50 border-b"
-      style={{ borderColor: "var(--border)", background: "color-mix(in srgb, var(--bg) 85%, transparent)", backdropFilter: "blur(12px)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-15 py-3">
+    <header className="sticky top-0 z-50"
+      style={{
+        background: "color-mix(in srgb, var(--bg) 80%, transparent)",
+        backdropFilter: "blur(16px) saturate(180%)",
+        borderBottom: "1px solid var(--border)",
+      }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center
-                            bg-zinc-900 group-hover:bg-zinc-700 transition-colors shadow-sm">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center transition-opacity group-hover:opacity-80"
+            style={{ background: "var(--text-1)" }}>
+            <svg className="w-3.5 h-3.5" fill="white" viewBox="0 0 20 20">
+              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+            </svg>
+          </div>
+          <span className="font-semibold text-sm tracking-tight" style={{ color: "var(--text-1)" }}>
+            EduShare
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-0.5 ml-2">
+          {[...NAV, ...(user ? AUTH_NAV : [])].map((l) => (
+            <Link key={l.href} href={l.href}
+              className="px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150"
+              style={{
+                color: isActive(l.href) ? "var(--text-1)" : "var(--text-2)",
+                background: isActive(l.href) ? "var(--surface-2)" : "transparent",
+              }}
+              onMouseEnter={(e) => { if (!isActive(l.href)) e.currentTarget.style.color = "var(--text-1)"; }}
+              onMouseLeave={(e) => { if (!isActive(l.href)) e.currentTarget.style.color = "var(--text-2)"; }}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Search */}
+        {user && <div className="hidden md:block w-52"><SearchBar /></div>}
+
+        {/* Right side */}
+        <div className="hidden md:flex items-center gap-1">
+          {/* Theme toggle */}
+          <button onClick={toggle}
+            className="btn-ghost w-8 h-8 p-0 flex items-center justify-center rounded-lg"
+            title={isDark ? "Light mode" : "Dark mode"}>
+            {isDark ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
+                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"/>
               </svg>
-            </div>
-            <span className="font-bold text-zinc-900 text-[15px] tracking-tight">EduShare</span>
-          </Link>
+            ) : (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+              </svg>
+            )}
+          </button>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5 mx-4">
-            {[...navLinks, ...(user ? authLinks : [])].map((l) => (
-              <Link key={l.href} href={l.href}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  isActive(l.href)
-                    ? "bg-zinc-900 text-white shadow-sm"
-                    : "text-zinc-600 hover:text-zinc-900 hover:bg-stone-100"
-                }`}>
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Search */}
-          {user && <div className="hidden md:block flex-1 max-w-xs mx-2"><SearchBar /></div>}
-
-          {/* Auth */}
-          <div className="hidden md:flex items-center gap-1.5">
-            {loading ? (
-              <div className="skeleton h-8 w-8 rounded-full" />
-            ) : user ? (
-              <div className="flex items-center gap-1" ref={dropdownRef}>
-                <NotificationBell />
-                {/* Dark mode toggle */}
-                <button onClick={toggle}
-                  className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
-                  title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
-                  {isDark ? (
-                    <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"/>
-                    </svg>
+          {loading ? (
+            <div className="skeleton w-7 h-7 rounded-full" />
+          ) : user ? (
+            <>
+              <NotificationBell />
+              {/* Avatar dropdown */}
+              <div className="relative" ref={dropRef}>
+                <button onClick={() => setDropOpen(!dropOpen)}
+                  className="flex items-center gap-2 px-2 py-1 rounded-lg transition-all duration-150 ml-1"
+                  style={{ background: dropOpen ? "var(--surface-2)" : "transparent" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-2)"}
+                  onMouseLeave={(e) => { if (!dropOpen) e.currentTarget.style.background = "transparent"; }}>
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full object-cover" />
                   ) : (
-                    <svg className="w-5 h-5 text-zinc-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-                    </svg>
-                  )}
-                </button>
-                <div className="relative">
-                  <button onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl
-                               hover:bg-stone-100 border border-transparent hover:border-stone-200
-                               transition-all duration-150">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full object-cover ring-1 ring-stone-200" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 text-xs font-bold">
-                        {initials}
-                      </div>
-                    )}
-                    <span className="text-sm font-medium text-zinc-700 max-w-[100px] truncate">
-                      {user.displayName?.split(" ")[0] || user.email}
-                    </span>
-                    <svg className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                    </svg>
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border py-1.5 animate-slide-down overflow-hidden"
-                      style={{ background: "var(--surface)", borderColor: "var(--border)",
-                               boxShadow: "0 4px 24px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.08)" }}>
-                      <div className="px-4 py-3 border-b border-stone-100">
-                        <p className="text-sm font-semibold text-zinc-900 truncate">{user.displayName || "User"}</p>
-                        <p className="text-xs text-zinc-400 truncate mt-0.5">{user.email}</p>
-                      </div>
-                      <div className="py-1">
-                        {[
-                          { href: "/dashboard", icon: "▦", label: "Dashboard" },
-                          { href: `/profile/${user.uid}`, icon: "◉", label: "My Profile" },
-                          { href: "/profile/edit", icon: "✎", label: "Edit Profile" },
-                          { href: "/history", icon: "📺", label: "Watch History" },
-                          { href: "/bookmarks", icon: "◈", label: "Saved Videos" },
-                          { href: "/credits", icon: "◆", label: "Credit History" },
-                          { href: "/certificates", icon: "🏅", label: "My Certificates" },
-                          { href: "/upload-video", icon: "▶", label: "Upload Video" },
-                          { href: "/upload-notes", icon: "◻", label: "Upload Notes" },
-                        ].map((item) => (
-                          <Link key={item.href} href={item.href}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-700 hover:bg-stone-50 transition-colors">
-                            <span className="text-zinc-400 text-xs w-4">{item.icon}</span>
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                      <div className="border-t border-stone-100 pt-1">
-                        <button onClick={handleSignOut} disabled={signingOut}
-                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
-                          <span className="text-xs w-4">⏻</span>
-                          {signingOut ? "Signing out..." : "Sign out"}
-                        </button>
-                      </div>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold"
+                      style={{ background: "var(--accent-2)", color: "var(--accent)" }}>
+                      {initials}
                     </div>
                   )}
-                </div>
-              </div>
-            ) : (
-              <>
-                <Link href="/login" className="btn-ghost text-sm">Login</Link>
-                <Link href="/register" className="btn-primary text-sm">Get started</Link>
-              </>
-            )}
-          </div>
+                  <span className="text-[13px] font-medium max-w-[90px] truncate" style={{ color: "var(--text-1)" }}>
+                    {user.displayName?.split(" ")[0] || user.email}
+                  </span>
+                  <svg className={`w-3 h-3 transition-transform duration-200 ${dropOpen ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--text-3)" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
 
-          {/* Mobile toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors">
-            <svg className="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d={mobileOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-            </svg>
-          </button>
+                {dropOpen && (
+                  <div className="absolute right-0 mt-1.5 w-52 rounded-xl py-1 animate-pop-in"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                    }}>
+                    {/* User info */}
+                    <div className="px-3 py-2.5 border-b" style={{ borderColor: "var(--border)" }}>
+                      <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-1)" }}>
+                        {user.displayName || "User"}
+                      </p>
+                      <p className="text-[11px] truncate mt-0.5" style={{ color: "var(--text-3)" }}>
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className="py-1">
+                      {DROPDOWN.map((item) => (
+                        <Link key={item.href}
+                          href={item.dynamic ? `/profile/${user.uid}` : item.href}
+                          className="flex items-center gap-2.5 px-3 py-2 text-[13px] transition-colors duration-100"
+                          style={{ color: "var(--text-2)" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--text-1)"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-2)"; }}>
+                          <span className="text-[11px] w-4 opacity-60">{item.icon}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="border-t py-1" style={{ borderColor: "var(--border)" }}>
+                      <button onClick={handleSignOut} disabled={signingOut}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] transition-colors duration-100 text-left"
+                        style={{ color: "#ef4444" }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-2)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                        <span className="text-[11px] w-4 opacity-60">⏻</span>
+                        {signingOut ? "Signing out…" : "Sign out"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login" className="btn-ghost text-[13px] px-3 py-1.5">Login</Link>
+              <Link href="/register" className="btn-primary text-[13px] px-3 py-1.5">Get started</Link>
+            </div>
+          )}
         </div>
+
+        {/* Mobile toggle */}
+        <button onClick={() => setMobileOpen(!mobileOpen)}
+          className="md:hidden btn-ghost w-8 h-8 p-0 flex items-center justify-center">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            style={{ color: "var(--text-2)" }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d={mobileOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+          </svg>
+        </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t animate-slide-down"
-          style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
-          <div className="px-4 py-3 space-y-1">
-            {[...navLinks, ...(user ? authLinks : [])].map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)}
-                className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive(l.href) ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-stone-100"
-                }`}>
+        <div className="md:hidden border-t animate-pop-in"
+          style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="px-4 py-3 space-y-0.5">
+            {[...NAV, ...(user ? AUTH_NAV : [])].map((l) => (
+              <Link key={l.href} href={l.href}
+                className="block px-3 py-2 rounded-lg text-[13px] font-medium transition-colors"
+                style={{
+                  color: isActive(l.href) ? "var(--text-1)" : "var(--text-2)",
+                  background: isActive(l.href) ? "var(--surface-2)" : "transparent",
+                }}>
                 {l.label}
               </Link>
             ))}
             {user && (
               <>
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-zinc-600 hover:bg-stone-100">Dashboard</Link>
-                <Link href={`/profile/${user.uid}`} onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-zinc-600 hover:bg-stone-100">My Profile</Link>
+                <div className="h-px my-2" style={{ background: "var(--border)" }} />
+                <Link href="/dashboard" className="block px-3 py-2 rounded-lg text-[13px]" style={{ color: "var(--text-2)" }}>Dashboard</Link>
+                <Link href={`/profile/${user.uid}`} className="block px-3 py-2 rounded-lg text-[13px]" style={{ color: "var(--text-2)" }}>My Profile</Link>
+                <button onClick={handleSignOut} className="block w-full text-left px-3 py-2 rounded-lg text-[13px] text-red-500">
+                  Sign out
+                </button>
               </>
             )}
-            <div className="pt-2 border-t border-stone-200 mt-2">
-              {user ? (
-                <button onClick={handleSignOut} className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg">Sign out</button>
-              ) : (
-                <div className="flex gap-2">
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 btn-secondary text-center text-sm">Login</Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 btn-primary text-center text-sm">Register</Link>
-                </div>
-              )}
-            </div>
+            {!user && (
+              <div className="flex gap-2 pt-2">
+                <Link href="/login" className="flex-1 btn-secondary text-center text-[13px]">Login</Link>
+                <Link href="/register" className="flex-1 btn-primary text-center text-[13px]">Register</Link>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -24,12 +24,14 @@ export default function LikeBookmarkBar({ item, type = "video" }) {
   const handleLike = async () => {
     if (!requireAuth()) return;
     setLikeLoading(true);
+    // Trigger heart beat animation
+    const btn = document.querySelector(`[data-like-id="${item._id}"]`);
+    if (btn) { btn.classList.remove("heart-beat"); void btn.offsetWidth; btn.classList.add("heart-beat"); }
     await withLoading(async () => {
       const res = await authFetch(`/api/${type}s/${item._id}/like`, { method: "POST" });
       const data = await res.json();
       setLikes(data.likes);
       setLiked(data.liked);
-      // Invalidate explore cache so state is fresh on next visit
       invalidateCache(`${type}s:All:recent`);
       invalidateCache(`${type}s:All:popular`);
     }, liked ? "Removing like..." : "Liking...");
@@ -55,6 +57,7 @@ export default function LikeBookmarkBar({ item, type = "video" }) {
       <button
         onClick={handleLike}
         disabled={likeLoading}
+        data-like-id={item._id}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all
           ${liked
             ? "bg-violet-100 text-violet-700 border border-violet-200"

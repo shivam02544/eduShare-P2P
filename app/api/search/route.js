@@ -3,11 +3,16 @@ import { connectDB } from "@/lib/mongodb";
 import Video from "@/models/Video";
 import Note from "@/models/Note";
 import User from "@/models/User";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/search?q=query
 export async function GET(req) {
+  // 20 searches per minute per IP — search is expensive (regex on DB)
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "search"), limit: 20, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim();
 

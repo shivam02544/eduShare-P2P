@@ -3,86 +3,85 @@ import Link from "next/link";
 
 export default function VideoCard({ video }) {
   return (
-    <div className="card overflow-hidden group animate-fade-in">
+    <Link href={`/videos/${video._id}`} className="card block group animate-fade-up overflow-hidden">
       {/* Thumbnail */}
-      <div className="relative h-44 overflow-hidden bg-stone-100">
+      <div className="relative overflow-hidden" style={{ aspectRatio: "16/9", background: "var(--surface-2)" }}>
         {video.thumbnailUrl ? (
-          <>
-            <img src={video.thumbnailUrl} alt={video.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-200 flex items-center justify-center">
-              <div className="w-11 h-11 rounded-full bg-white/0 group-hover:bg-white/90 flex items-center justify-center
-                              opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg">
-                <svg className="w-5 h-5 text-zinc-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </div>
-            </div>
-          </>
+          <img src={video.thumbnailUrl} alt={video.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #f5f3ef 0%, #e8e4dc 100%)" }}>
-            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center
-                            group-hover:scale-110 transition-transform duration-200">
-              <svg className="w-5 h-5 text-zinc-600 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-            </div>
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-8 h-8 opacity-20" fill="currentColor" viewBox="0 0 24 24" style={{ color: "var(--text-1)" }}>
+              <path d="M8 5v14l11-7z"/>
+            </svg>
           </div>
         )}
 
-        {/* Subject badge */}
-        <div className="absolute top-2.5 left-2.5 flex items-center gap-1">
-          <span className="badge bg-white/90 text-zinc-700 shadow-sm border border-white/50 backdrop-blur-sm text-[11px]">
+        {/* Play overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{ background: "rgba(0,0,0,0.3)" }}>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.9)" }}>
+            <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24" style={{ color: "#111" }}>
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+          <span className="badge text-[11px] font-medium"
+            style={{ background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.9)", backdropFilter: "blur(4px)" }}>
             {video.subject}
           </span>
           {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
-            <span className="badge bg-amber-400/90 text-amber-900 text-[11px] backdrop-blur-sm">
+            <span className="badge text-[11px]"
+              style={{ background: "rgba(245,158,11,0.85)", color: "#fff", backdropFilter: "blur(4px)" }}>
               ⚡
             </span>
           )}
         </div>
 
         {/* Stats */}
-        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
           {video.likes?.length > 0 && (
-            <span className="flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-[11px] px-2 py-0.5 rounded-full">
+            <span className="badge text-[11px]"
+              style={{ background: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)" }}>
               ♥ {video.likes.length}
             </span>
           )}
-          <span className="flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-[11px] px-2 py-0.5 rounded-full">
-            ◉ {video.views}
+          <span className="badge text-[11px]"
+            style={{ background: "rgba(0,0,0,0.55)", color: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)" }}>
+            {video.views} views
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-zinc-900 text-sm leading-snug line-clamp-2 mb-2">
+      <div className="p-3.5">
+        <h3 className="text-[13px] font-semibold leading-snug line-clamp-2 mb-2"
+          style={{ color: "var(--text-1)" }}>
           {video.title}
         </h3>
-
-        {/* Uploader */}
-        <Link href={`/profile/${video.uploader?.firebaseUid}`} onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1.5 mb-3 group/author">
+        <Link href={`/profile/${video.uploader?.firebaseUid}`}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1.5 group/author">
           {video.uploader?.image ? (
-            <img src={video.uploader.image} alt="" className="w-5 h-5 rounded-full object-cover" />
+            <img src={video.uploader.image} alt="" className="w-4 h-4 rounded-full object-cover" />
           ) : (
-            <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 text-[10px] font-bold">
+            <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+              style={{ background: "var(--accent-2)", color: "var(--accent)" }}>
               {video.uploader?.name?.[0]?.toUpperCase()}
             </div>
           )}
-          <span className="text-xs text-zinc-400 group-hover/author:text-zinc-700 transition-colors">
+          <span className="text-[12px] transition-colors duration-150"
+            style={{ color: "var(--text-3)" }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-1)"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-3)"}>
             {video.uploader?.name}
           </span>
         </Link>
-
-        <Link href={`/videos/${video._id}`}
-          className="block w-full text-center bg-zinc-900 text-white text-xs font-medium py-2 rounded-lg
-                     hover:bg-zinc-700 transition-colors duration-150">
-          Watch
-        </Link>
       </div>
-    </div>
+    </Link>
   );
 }

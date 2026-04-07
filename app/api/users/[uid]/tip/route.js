@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { transferCredits } from "@/lib/credits";
 import { createNotification } from "@/lib/notify";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,11 @@ const VALID_AMOUNTS = [5, 10, 25, 50, 100];
  * Send credits to another user. Atomic transfer.
  */
 export async function POST(req, { params }) {
+  // 10 tips per hour per IP — prevents credit drain attacks
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "tip"), limit: 10, windowMs: 60 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -3,10 +3,16 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { connectDB } from "@/lib/mongodb";
 import Video from "@/models/Video";
 import { createNotification } from "@/lib/notify";
+import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req, { params }) {
+  // 60 likes per 10 minutes per IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: buildKey(ip, "like"), limit: 60, windowMs: 10 * 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.resetIn);
+
   const auth = await verifyAuth(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
