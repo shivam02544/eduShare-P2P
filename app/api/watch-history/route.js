@@ -1,27 +1,28 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import WatchHistory from "@/models/WatchHistory";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
+const querySchema = z.object({
+  type: z.string().optional(), // "continue" | "all"
+});
+
 // GET /api/watch-history
-export async function GET(req) {
+export const GET = apiHandler(async (ctx) => {
+  const { req, user: me } = ctx;
+
   // 60 reads per minute per IP — dashboard + history page
   const ip = getClientIp(req);
   const rl = rateLimit({ key: buildKey(ip, "watch-history-get"), limit: 60, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { searchParams } = new URL(req.url);
-  const type = searchParams.get("type"); // "continue" | "all"
+  const { type } = querySchema.parse(Object.fromEntries(searchParams));
 
-  await connectDB();
-
-  const query = { user: auth.mongoUser._id };
+  const query = { user: me._id };
   if (type === "continue") query.completed = false;
 
   const history = await WatchHistory.find(query)
@@ -35,31 +36,30 @@ export async function GET(req) {
 
   // Filter out deleted videos
   return NextResponse.json(history.filter((h) => h.video));
-}
+}, { isProtected: true });
+
+const watchHistorySchema = z.object({
+  videoId: z.string().min(1, "videoId is required"),
+  progressSeconds: z.number().min(0),
+  durationSeconds: z.number().min(0).optional(),
+});
 
 // POST /api/watch-history — save progress
-export async function POST(req) {
+export const POST = apiHandler(async (ctx) => {
+  const { req, user: me, body } = ctx;
+  const { videoId, progressSeconds, durationSeconds } = body;
+
   // 120 saves per hour per IP — fires every 10s while watching, so 120/hr = 2 videos watched continuously
   const ip = getClientIp(req);
   const rl = rateLimit({ key: buildKey(ip, "watch-history-post"), limit: 120, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { videoId, progressSeconds, durationSeconds } = await req.json();
-
-  if (!videoId || typeof progressSeconds !== "number")
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-
-  const progress = Math.max(0, Math.floor(progressSeconds));
-  const duration = Math.max(0, Math.floor(durationSeconds || 0));
+  const progress = Math.floor(progressSeconds);
+  const duration = Math.floor(durationSeconds || 0);
   const completed = duration > 0 && progress / duration >= 0.9;
 
-  await connectDB();
-
   await WatchHistory.findOneAndUpdate(
-    { user: auth.mongoUser._id, video: videoId },
+    { user: me._id, video: videoId },
     {
       progressSeconds: progress,
       durationSeconds: duration,
@@ -71,14 +71,10 @@ export async function POST(req) {
   );
 
   return NextResponse.json({ saved: true });
-}
+}, { isProtected: true, schema: watchHistorySchema });
 
 // DELETE /api/watch-history — clear all history
-export async function DELETE(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  await connectDB();
-  await WatchHistory.deleteMany({ user: auth.mongoUser._id });
+export const DELETE = apiHandler(async (ctx) => {
+  await WatchHistory.deleteMany({ user: ctx.user._id });
   return NextResponse.json({ message: "History cleared" });
-}
+}, { isProtected: true });

@@ -1,34 +1,34 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import User from "@/models/User";
 import Video from "@/models/Video";
 import Note from "@/models/Note";
 import LiveSession from "@/models/LiveSession";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
+const paramsSchema = z.object({
+  uid: z.string().min(1, "User ID is required"),
+});
+
 // GET /api/profile/[uid] — public profile by firebaseUid
-export async function GET(req, { params }) {
-  await connectDB();
+export const GET = apiHandler(async (ctx) => {
+  // Validate URL parameter
+  const { uid } = paramsSchema.parse(ctx.params);
 
-  // Check if requester is logged in (to show follow state)
+  // apiHandler already injects ctx.user if valid token provided, but GET is public.
+  // It handles checking the token if isProtected: false and still providing ctx.user if valid!
   let requesterId = null;
-  try {
-    const { getAdminApp } = await import("@/lib/firebaseAdmin");
-    const { getAuth } = await import("firebase-admin/auth");
-    const authHeader = req.headers.get("authorization") || "";
-    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    if (token) {
-      const app = getAdminApp();
-      const decoded = await getAuth(app).verifyIdToken(token);
-      const requester = await User.findOne({ firebaseUid: decoded.uid }).select("_id following");
-      requesterId = requester;
-    }
-  } catch { /* public request, no auth */ }
+  if (ctx.user) {
+    const requester = await User.findById(ctx.user._id).select("following");
+    requesterId = requester;
+  }
 
-  const user = await User.findOne({ firebaseUid: params.uid })
+  const user = await User.findOne({ firebaseUid: uid })
     .select("-__v")
     .lean();
+  
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const [videos, notes, sessions] = await Promise.all([
@@ -56,4 +56,4 @@ export async function GET(req, { params }) {
     notes,
     sessions,
   });
-}
+}, { isProtected: false });

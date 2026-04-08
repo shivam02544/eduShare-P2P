@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Video from "@/models/Video";
-import { uploadFile } from "@/lib/s3";
+import { z } from "zod";
+import { triggerHlsConversion } from "@/lib/mediaconvert";
+import { logger } from "@/lib/logger";
+import { invalidateCache } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req) {
-  await connectDB();
-
-  // Try to get current user for like/bookmark state
-  let mongoUserId = null;
-  try {
-    const { verifyAuth } = await import("@/lib/verifyAuth");
-    const auth = await verifyAuth(req);
-    if (auth) mongoUserId = auth.mongoUser._id.toString();
-  } catch {}
-
+export const GET = apiHandler(async (ctx) => {
+  const { req, user } = ctx;
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get("subject");
   const sort = searchParams.get("sort");
@@ -28,7 +21,8 @@ export async function GET(req) {
     .sort(sortOption)
     .populate("uploader", "name image firebaseUid");
 
-  // Attach isLiked / isBookmarked for current user
+  const mongoUserId = user ? user._id.toString() : null;
+
   const result = videos.map((v) => {
     const obj = v.toObject();
     obj.isLiked = mongoUserId ? obj.likes?.map(String).includes(mongoUserId) : false;
@@ -37,50 +31,51 @@ export async function GET(req) {
   });
 
   return NextResponse.json(result);
-}
+}, { isProtected: false });
 
-export async function POST(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+const videoPostSchema = z.object({
+  title: z.string().min(1, "Title is required").max(120),
+  description: z.string().optional(),
+  subject: z.string().min(1, "Subject is required"),
+  videoUrl: z.string().url("Must be a valid URL"),
+  thumbnailUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+});
 
-  try {
-    const formData = await req.formData();
-    const title = formData.get("title");
-    const description = formData.get("description");
-    const subject = formData.get("subject");
-    const file = formData.get("file");
-    const thumbnailFile = formData.get("thumbnail"); // optional
+export const POST = apiHandler(async (ctx) => {
+  const { title, description, subject, videoUrl, thumbnailUrl } = ctx.body;
 
-    if (!title || !subject || !file)
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  // Create the video record — default status is "ready" (fallback MP4 is always available)
+  const video = await Video.create({
+    title,
+    description: description || "",
+    subject,
+    videoUrl,
+    thumbnailUrl: thumbnailUrl || "",
+    uploader: ctx.user._id,
+    status: "processing", // Optimistically set processing until MediaConvert finishes
+  });
 
-    const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
-    if (!allowedTypes.includes(file.type))
-      return NextResponse.json({ error: "Only video files allowed" }, { status: 400 });
+  logger.info({ videoId: video._id, title }, "Video record created, dispatching HLS transcoding job");
 
-    if (file.size > 500 * 1024 * 1024)
-      return NextResponse.json({ error: "File too large (max 500MB)" }, { status: 400 });
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const videoUrl = await uploadFile(buffer, file.name, file.type, "videos");
-
-    // Upload thumbnail if provided
-    let thumbnailUrl = "";
-    if (thumbnailFile && thumbnailFile.size > 0) {
-      const thumbBuffer = Buffer.from(await thumbnailFile.arrayBuffer());
-      thumbnailUrl = await uploadFile(thumbBuffer, thumbnailFile.name, thumbnailFile.type, "thumbnails");
-    }
-
-    await connectDB();
-    const video = await Video.create({
-      title, description, subject,
-      videoUrl,
-      thumbnailUrl,
-      uploader: auth.mongoUser._id,
+  // Fire-and-forget: trigger MediaConvert asynchronously — do NOT await in the request cycle
+  triggerHlsConversion(videoUrl, video._id)
+    .then(async (jobId) => {
+      if (jobId) {
+        await Video.findByIdAndUpdate(video._id, { mcJobId: jobId });
+        logger.info({ videoId: video._id, jobId }, "MediaConvert job ID stored");
+      } else {
+        // No MediaConvert configured or failed to start — fall back to raw MP4 immediately
+        await Video.findByIdAndUpdate(video._id, { status: "ready" });
+        logger.warn({ videoId: video._id }, "MediaConvert unavailable — video marked ready with MP4 fallback");
+      }
+    })
+    .catch(async (err) => {
+      logger.error({ videoId: video._id, err: err.message }, "MediaConvert trigger failed — marking ready with MP4 fallback");
+      await Video.findByIdAndUpdate(video._id, { status: "ready" });
     });
 
-    return NextResponse.json(video, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+  // Invalidate dashboard cache so new upload appears immediately
+  await invalidateCache(`dashboard:${ctx.user._id}`);
+
+  return NextResponse.json(video, { status: 201 });
+}, { isProtected: true, schema: videoPostSchema });

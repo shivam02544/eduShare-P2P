@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Collection from "@/models/Collection";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
+const querySchema = z.object({
+  creatorUid: z.string().optional(),
+});
+
 // GET /api/collections?creatorUid=xxx — list public collections (optionally by creator)
-export async function GET(req) {
-  await connectDB();
+export const GET = apiHandler(async (ctx) => {
+  const { req } = ctx;
   const { searchParams } = new URL(req.url);
-  const creatorUid = searchParams.get("creatorUid");
+  
+  // Safe type ingestion
+  const { creatorUid } = querySchema.parse(Object.fromEntries(searchParams));
 
   let query = { isPublic: true };
 
@@ -44,34 +50,32 @@ export async function GET(req) {
   );
 
   return NextResponse.json(result);
-}
+}, { isProtected: false });
+
+const collectionPostSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100, "Title too long").trim(),
+  description: z.string().optional(),
+  isPublic: z.boolean().default(true),
+  subject: z.string().optional(),
+});
 
 // POST /api/collections — create a new collection
-export async function POST(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { title, description, isPublic = true, subject } = await req.json();
-
-  if (!title?.trim())
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  if (title.length > 100)
-    return NextResponse.json({ error: "Title too long" }, { status: 400 });
-
-  await connectDB();
+export const POST = apiHandler(async (ctx) => {
+  const { user: me, body } = ctx;
+  const { title, description, isPublic, subject } = body;
 
   // Limit: max 50 collections per user
-  const count = await Collection.countDocuments({ creator: auth.mongoUser._id });
+  const count = await Collection.countDocuments({ creator: me._id });
   if (count >= 50)
     return NextResponse.json({ error: "Maximum 50 collections allowed" }, { status: 400 });
 
   const collection = await Collection.create({
-    title: title.trim(),
+    title,
     description: description?.trim() || "",
-    creator: auth.mongoUser._id,
+    creator: me._id,
     isPublic,
     subject: subject?.trim() || "",
   });
 
   return NextResponse.json(collection, { status: 201 });
-}
+}, { isProtected: true, schema: collectionPostSchema });

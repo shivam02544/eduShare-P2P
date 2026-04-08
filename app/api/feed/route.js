@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import User from "@/models/User";
 import Video from "@/models/Video";
 import Note from "@/models/Note";
@@ -8,13 +7,10 @@ import Note from "@/models/Note";
 export const dynamic = "force-dynamic";
 
 // GET /api/feed — activity from people you follow
-export async function GET(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = apiHandler(async (ctx) => {
+  const { user: mongoUser } = ctx;
 
-  await connectDB();
-
-  const me = await User.findById(auth.mongoUser._id).select("following");
+  const me = await User.findById(mongoUser._id).select("following");
   const followingIds = me.following;
 
   if (followingIds.length === 0)
@@ -38,4 +34,4 @@ export async function GET(req) {
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 30);
 
   return NextResponse.json({ items, empty: false });
-}
+}, { isProtected: true });

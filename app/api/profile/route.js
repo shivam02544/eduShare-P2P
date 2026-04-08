@@ -1,30 +1,28 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import User from "@/models/User";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/profile — get current user's full profile
-export async function GET(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  await connectDB();
-  const user = await User.findById(auth.mongoUser._id).select("-__v");
+export const GET = apiHandler(async (ctx) => {
+  const user = await User.findById(ctx.user._id).select("-__v");
   return NextResponse.json(user);
-}
+}, { isProtected: true });
+
+const profileSchema = z.object({
+  name: z.string().min(1, "Name cannot be empty").optional(),
+  bio: z.string().max(300, "Bio max 300 characters").optional(),
+  skills: z.array(z.string()).max(15, "Max 15 skills allowed").optional(),
+});
 
 // PATCH /api/profile — update name, bio, skills
-export async function PATCH(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const PATCH = apiHandler(async (ctx) => {
+  const { name, bio, skills } = ctx.body;
 
-  const { name, bio, skills } = await req.json();
-
-  await connectDB();
   const updated = await User.findByIdAndUpdate(
-    auth.mongoUser._id,
+    ctx.user._id,
     {
       ...(name && { name }),
       ...(bio !== undefined && { bio }),
@@ -34,4 +32,4 @@ export async function PATCH(req) {
   ).select("-__v");
 
   return NextResponse.json(updated);
-}
+}, { isProtected: true, schema: profileSchema });

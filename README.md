@@ -61,10 +61,12 @@ A student-driven learning platform where users upload teaching videos, share stu
 | Layer | Technology |
 |---|---|
 | Frontend | Next.js 14 (App Router), JavaScript, Tailwind CSS |
-| Backend | Next.js API Routes |
+| Backend | Next.js API Routes (Zod + apiHandler wrapper) |
 | Database | MongoDB (Mongoose) |
 | Authentication | Firebase Auth (Google OAuth + Email/Password) |
-| File Storage | AWS S3 |
+| Authorization | Hierarchical RBAC (User, Moderator, Admin) |
+| Storage | Client-Side Direct AWS S3 (Presigned URLs) |
+| Monitoring | Sentry & Pino |
 | Email | Nodemailer (Gmail SMTP) |
 | Deployment | AWS EC2 + Nginx + PM2 |
 
@@ -121,8 +123,8 @@ edushare/
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/edushare.git
-cd edushare
+git clone https://github.com/shivam02544/eduShare-P2P.git
+cd eduShare-P2P
 npm install
 ```
 
@@ -506,6 +508,10 @@ All high-risk endpoints are rate limited using a sliding window algorithm:
 | Comments | 20 req | 10 min |
 | Email verification | 5 req | 10 min |
 
+### Authorization & Validation
+- **Role-Based Access Control (RBAC)**: All user privileges evaluate natively through the MongoDB `User` layer via `apiHandler({ allowedRoles })`.
+- **Input Sanitization**: 100% of application endpoints enforce deterministic payload validations using strict `Zod` schemas.
+
 ### Authentication
 - Firebase ID tokens verified server-side on every API request
 - Unverified email users blocked at API level (not just client)
@@ -515,12 +521,13 @@ All high-risk endpoints are rate limited using a sliding window algorithm:
 - Credit transfers use MongoDB sessions (atomic — both deduct and award succeed or both fail)
 - Quiz attempts enforced by unique compound index at DB level
 - Certificate IDs are cryptographically unique
+- Global `apiHandler` catches all internal unhandled rejections securely into Sentry before crashing.
 
-### File Uploads
+### File Uploads (Zero Server Buffering)
 - Video: MP4/WebM/OGG/MOV only, max 500MB
 - Notes: PDF only, max 50MB
 - Thumbnails: Images only, max 5MB
-- All validated server-side before S3 upload
+- Employs **Presigned S3 URLs**: Clients upload binaries directly into AWS S3 seamlessly, explicitly bypassing Node backend memory limits.
 
 ---
 

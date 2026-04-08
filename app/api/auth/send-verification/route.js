@@ -1,29 +1,32 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import EmailVerification from "@/models/EmailVerification";
 import User from "@/models/User";
 import { sendVerificationEmail } from "@/lib/mailer";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 import crypto from "crypto";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+
+const verificationSchema = z.object({
+  email: z.string().email("Valid email required"),
+  name: z.string().optional(),
+});
 
 /**
  * POST /api/auth/send-verification
  * Called right after Firebase creates the account.
  * Generates a secure token, stores it, sends branded email.
- * Body: { email, name }
  */
-export async function POST(req) {
+export const POST = apiHandler(async (ctx) => {
+  const { req, body } = ctx;
+  const { email, name } = body;
+
   // 5 emails per 10 minutes per IP
   const ip = getClientIp(req);
   const rl = rateLimit({ key: buildKey(ip, "send-verification"), limit: 5, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
-
-  const { email, name } = await req.json();
-  if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
-
-  await connectDB();
 
   // Delete any existing unused tokens for this email
   await EmailVerification.deleteMany({ email, used: false });
@@ -43,4 +46,4 @@ export async function POST(req) {
   }
 
   return NextResponse.json({ message: "Verification email sent" });
-}
+}, { isProtected: false, schema: verificationSchema });

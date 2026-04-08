@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema(
     firebaseUid: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    role: { type: String, enum: ["user", "moderator", "admin"], default: "user" },
     isVerified: { type: Boolean, default: false }, // email verified via our system
     bio: { type: String, default: "" },
     credits: { type: Number, default: 0 },

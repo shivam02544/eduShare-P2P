@@ -1,41 +1,36 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import LiveSession from "@/models/LiveSession";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  await connectDB();
+export const GET = apiHandler(async () => {
   const sessions = await LiveSession.find({ date: { $gte: new Date() } })
     .sort({ date: 1 })
     .populate("teacher", "name image")
     .populate("attendees", "name image");
   return NextResponse.json(sessions);
-}
+}, { isProtected: false });
 
-export async function POST(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+const liveSessionSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100, "Title too long"),
+  subject: z.string().min(1, "Subject is required"),
+  date: z.string().refine((val) => !isNaN(new Date(val).getTime()) && new Date(val) > new Date(), {
+    message: "Session date must be in the future",
+  }),
+});
 
-  try {
-    const { title, subject, date } = await req.json();
-    if (!title || !subject || !date)
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+export const POST = apiHandler(async (ctx) => {
+  const { user: me, body } = ctx;
+  const { title, subject, date } = body;
 
-    const sessionDate = new Date(date);
-    if (isNaN(sessionDate.getTime()) || sessionDate <= new Date())
-      return NextResponse.json({ error: "Session date must be in the future" }, { status: 400 });
+  const session = await LiveSession.create({
+    title, 
+    subject,
+    date: new Date(date),
+    teacher: me._id,
+  });
 
-    await connectDB();
-    const session = await LiveSession.create({
-      title, subject,
-      date: new Date(date),
-      teacher: auth.mongoUser._id,
-    });
-
-    return NextResponse.json(session, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+  return NextResponse.json(session, { status: 201 });
+}, { isProtected: true, schema: liveSessionSchema });

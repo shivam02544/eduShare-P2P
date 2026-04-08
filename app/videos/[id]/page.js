@@ -13,6 +13,7 @@ import ChapterList from "@/components/ChapterList";
 import ChapterEditor from "@/components/ChapterEditor";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import ReportButton from "@/components/ReportButton";
+import { getCdnUrl } from "@/lib/cdn";
 
 function VideoSkeleton() {
   return (
@@ -94,11 +95,11 @@ export default function VideoPage() {
       <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-xl" style={{ aspectRatio: "16/9" }}>
         <video
           ref={videoRef}
-          src={video.videoUrl}
+          src={getCdnUrl(video.videoUrl)}
           controls
           className="w-full h-full"
           preload="metadata"
-          poster={video.thumbnailUrl || ""}
+          poster={getCdnUrl(video.thumbnailUrl || "")}
           onLoadedMetadata={(e) => {
             setDuration(e.target.duration);
             // Resume from saved progress if available

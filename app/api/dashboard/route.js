@@ -1,18 +1,23 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Video from "@/models/Video";
 import Note from "@/models/Note";
 import LiveSession from "@/models/LiveSession";
+import { getCache, setCache } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = apiHandler(async (ctx) => {
+  const { user: me } = ctx;
+  const userId = me._id.toString();
 
-  await connectDB();
-  const userId = auth.mongoUser._id;
+  const CACHE_KEY = `dashboard:${userId}`;
+  const cachedData = await getCache(CACHE_KEY);
+  
+  if (cachedData) {
+    // Inject the real-time user object (for current credits) into the cached heavy computational layout
+    return NextResponse.json({ ...cachedData, user: me, stats: { ...cachedData.stats, credits: me.credits } });
+  }
 
   const [videos, notes, sessions] = await Promise.all([
     Video.find({ uploader: userId }),
@@ -24,10 +29,8 @@ export async function GET(req) {
   const totalDownloads = notes.reduce((sum, n) => sum + n.downloads, 0);
   const totalAttendees = sessions.reduce((sum, s) => sum + s.attendees.length, 0);
 
-  return NextResponse.json({
-    user: auth.mongoUser,
+  const payload = {
     stats: {
-      credits: auth.mongoUser.credits,
       totalVideos: videos.length,
       totalNotes: notes.length,
       totalSessions: sessions.length,
@@ -37,5 +40,16 @@ export async function GET(req) {
     },
     recentVideos: videos.slice(-3).reverse(),
     recentNotes: notes.slice(-3).reverse(),
+  };
+
+  // Cache computational stats and slices for 5 minutes
+  await setCache(CACHE_KEY, payload, 300);
+
+  // Return exactly identical block format with live user credit state
+  return NextResponse.json({
+    user: me,
+    stats: { ...payload.stats, credits: me.credits },
+    recentVideos: payload.recentVideos,
+    recentNotes: payload.recentNotes,
   });
-}
+}, { isProtected: true });

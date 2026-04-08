@@ -25,3 +25,11 @@ Thumbs.db
 
 # PM2
 .pm2/
+
+# .gemini/
+# .gsd/
+# adapters/
+# docs/
+# scripts/
+# GSD-STYLE.md
+

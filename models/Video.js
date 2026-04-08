@@ -6,6 +6,9 @@ const VideoSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     subject: { type: String, required: true },
     videoUrl: { type: String, required: true }, // S3 URL
+    hlsUrl: { type: String, default: "" }, // CloudFront .m3u8 streaming link
+    status: { type: String, enum: ["uploading", "processing", "ready", "failed"], default: "ready" },
+    mcJobId: { type: String, default: "" }, // AWS MediaConvert Job Tracker
     thumbnailUrl: { type: String, default: "" }, // S3 URL
     uploader: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     views: { type: Number, default: 0 },

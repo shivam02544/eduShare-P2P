@@ -1,21 +1,23 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import EmailVerification from "@/models/EmailVerification";
 import User from "@/models/User";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
+
+const verifyQuerySchema = z.object({
+  token: z.string().min(1, "Token required"),
+});
 
 /**
  * GET /api/auth/verify-email?token=xxx
  * Validates the token, marks user as verified in MongoDB.
  */
-export async function GET(req) {
+export const GET = apiHandler(async (ctx) => {
+  const { req } = ctx;
   const { searchParams } = new URL(req.url);
-  const token = searchParams.get("token");
-
-  if (!token) return NextResponse.json({ error: "Token required" }, { status: 400 });
-
-  await connectDB();
+  const { token } = verifyQuerySchema.parse(Object.fromEntries(searchParams));
 
   console.log("[verify-email] Looking for token:", token.substring(0, 16) + "...");
   const record = await EmailVerification.findOne({ token });
@@ -38,4 +40,4 @@ export async function GET(req) {
   }
 
   return NextResponse.json({ verified: true, email: record.email });
-}
+}, { isProtected: false });

@@ -84,32 +84,72 @@ export default function UploadVideoPage() {
     setThumbSource("manual");
   };
 
+  const uploadDirectToS3 = async (uploadFile, folder) => {
+    const res = await authFetch("/api/upload/presigned-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: uploadFile.name,
+        contentType: uploadFile.type,
+        folder,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to get upload URL");
+
+    const s3Res = await fetch(data.presignedUrl, {
+      method: "PUT",
+      body: uploadFile,
+      headers: { "Content-Type": uploadFile.type },
+    });
+    if (!s3Res.ok) throw new Error("Failed to upload file to S3 directly");
+
+    return data.fileUrl; // the public url
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return setError("Please select a video file");
     setUploading(true);
     setError("");
 
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("description", form.description);
-    formData.append("subject", form.subject);
-    formData.append("file", file);
-    if (thumbnail) {
-      const thumbFile = thumbnail instanceof Blob && !(thumbnail instanceof File)
-        ? new File([thumbnail], "thumbnail.jpg", { type: "image/jpeg" })
-        : thumbnail;
-      formData.append("thumbnail", thumbFile);
+    try {
+      setUploadStep("Uploading video to S3 directly...");
+      const videoUrl = await uploadDirectToS3(file, "videos");
+
+      let thumbnailUrl = "";
+      if (thumbnail) {
+        setUploadStep("Uploading thumbnail to S3 directly...");
+        const thumbFile = thumbnail instanceof Blob && !(thumbnail instanceof File)
+          ? new File([thumbnail], "thumbnail.jpg", { type: "image/jpeg" })
+          : thumbnail;
+        thumbnailUrl = await uploadDirectToS3(thumbFile, "thumbnails");
+      }
+
+      setUploadStep("Saving video data...");
+      const res = await authFetch("/api/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          subject: form.subject,
+          videoUrl,
+          thumbnailUrl,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save video data");
+
+      setUploading(false);
+      router.push("/dashboard");
+
+    } catch (err) {
+      setUploading(false);
+      setError(err.message);
+      setUploadStep("");
     }
-
-    setUploadStep("Uploading video to S3...");
-    const res = await authFetch("/api/videos", { method: "POST", body: formData });
-    const data = await res.json();
-    setUploading(false);
-    setUploadStep("");
-
-    if (!res.ok) setError(data.error);
-    else router.push("/dashboard");
   };
 
   return (

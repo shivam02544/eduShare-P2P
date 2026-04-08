@@ -1,25 +1,20 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Report from "@/models/Report";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase());
-
-function isAdmin(email) {
-  return ADMIN_EMAILS.includes(email?.toLowerCase());
-}
+const getQuerySchema = z.object({
+  status: z.string().optional().default("pending"),
+});
 
 // GET /api/admin/reports — list pending reports
-export async function GET(req) {
-  const auth = await verifyAuth(req);
-  if (!auth || !isAdmin(auth.email))
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+export const GET = apiHandler(async (ctx) => {
+  const { req } = ctx;
 
-  await connectDB();
   const { searchParams } = new URL(req.url);
-  const status = searchParams.get("status") || "pending";
+  const { status } = getQuerySchema.parse(Object.fromEntries(searchParams));
 
   const reports = await Report.find({ status })
     .sort({ createdAt: -1 })
@@ -47,22 +42,22 @@ export async function GET(req) {
   );
 
   return NextResponse.json(enriched);
-}
+}, { isProtected: true, allowedRoles: ["admin", "moderator"] });
+
+const patchSchema = z.object({
+  reportId: z.string().min(1, "reportId required"),
+  status: z.enum(["reviewed", "dismissed", "actioned"]),
+  unflag: z.boolean().optional(),
+});
 
 // PATCH /api/admin/reports — update report status
-export async function PATCH(req) {
-  const auth = await verifyAuth(req);
-  if (!auth || !isAdmin(auth.email))
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+export const PATCH = apiHandler(async (ctx) => {
+  const { user: me, body } = ctx;
+  const { reportId, status, unflag } = body;
 
-  const { reportId, status, unflag } = await req.json();
-  if (!["reviewed", "dismissed", "actioned"].includes(status))
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-
-  await connectDB();
   const report = await Report.findByIdAndUpdate(
     reportId,
-    { status, reviewedBy: auth.mongoUser._id, reviewedAt: new Date() },
+    { status, reviewedBy: me._id, reviewedAt: new Date() },
     { new: true }
   );
 
@@ -79,4 +74,4 @@ export async function PATCH(req) {
   }
 
   return NextResponse.json({ message: "Updated" });
-}
+}, { isProtected: true, allowedRoles: ["admin", "moderator"], schema: patchSchema });

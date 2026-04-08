@@ -1,28 +1,22 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Note from "@/models/Note";
-import { uploadFile } from "@/lib/s3";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req) {
-  await connectDB();
-
-  let mongoUserId = null;
-  try {
-    const { verifyAuth } = await import("@/lib/verifyAuth");
-    const auth = await verifyAuth(req);
-    if (auth) mongoUserId = auth.mongoUser._id.toString();
-  } catch {}
-
+export const GET = apiHandler(async (ctx) => {
+  const { req, user } = ctx;
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get("subject");
+
   const query = subject ? { subject } : {};
 
   const notes = await Note.find(query)
     .sort({ createdAt: -1 })
     .populate("uploader", "name image firebaseUid");
+
+  const mongoUserId = user ? user._id.toString() : null;
 
   const result = notes.map((n) => {
     const obj = n.toObject();
@@ -31,43 +25,29 @@ export async function GET(req) {
   });
 
   return NextResponse.json(result);
-}
+}, { isProtected: false });
 
-export async function POST(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+const notePostSchema = z.object({
+  title: z.string().min(1, "Title is required").max(120),
+  subject: z.string().min(1, "Subject is required"),
+  fileUrl: z.string().url("Must be a valid URL"),
+  isPremium: z.boolean().default(false),
+  premiumCost: z.number().min(0).max(100).default(0),
+});
 
-  try {
-    const formData = await req.formData();
-    const title = formData.get("title");
-    const subject = formData.get("subject");
-    const file = formData.get("file");
+export const POST = apiHandler(async (ctx) => {
+  const { title, subject, fileUrl, isPremium, premiumCost } = ctx.body;
 
-    if (!title || !subject || !file)
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const isActuallyPremium = isPremium && premiumCost > 0;
 
-    if (file.type !== "application/pdf")
-      return NextResponse.json({ error: "Only PDF files allowed" }, { status: 400 });
+  const note = await Note.create({
+    title,
+    subject,
+    fileUrl,
+    uploader: ctx.user._id,
+    isPremium: isActuallyPremium,
+    premiumCost: isActuallyPremium ? premiumCost : 0,
+  });
 
-    if (file.size > 50 * 1024 * 1024)
-      return NextResponse.json({ error: "File too large (max 50MB)" }, { status: 400 });
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileUrl = await uploadFile(buffer, file.name, file.type, "notes");
-
-    const isPremium = formData.get("isPremium") === "true";
-    const premiumCost = Math.min(100, Math.max(0, parseInt(formData.get("premiumCost") || "0")));
-
-    await connectDB();
-    const note = await Note.create({
-      title, subject, fileUrl,
-      uploader: auth.mongoUser._id,
-      isPremium: isPremium && premiumCost > 0,
-      premiumCost: isPremium ? premiumCost : 0,
-    });
-
-    return NextResponse.json(note, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+  return NextResponse.json(note, { status: 201 });
+}, { isProtected: true, schema: notePostSchema });

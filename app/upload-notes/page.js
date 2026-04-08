@@ -21,23 +21,58 @@ export default function UploadNotesPage() {
     if (!authLoading && !user) router.push("/login");
   }, [user, authLoading]);
 
+  const uploadDirectToS3 = async (uploadFile, folder) => {
+    const res = await authFetch("/api/upload/presigned-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: uploadFile.name,
+        contentType: uploadFile.type,
+        folder,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to get upload URL");
+
+    const s3Res = await fetch(data.presignedUrl, {
+      method: "PUT",
+      body: uploadFile,
+      headers: { "Content-Type": uploadFile.type },
+    });
+    if (!s3Res.ok) throw new Error("Failed to upload file to S3 directly");
+
+    return data.fileUrl; // the public url
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return setError("Please select a PDF file");
     setError("");
 
     await withLoading(async () => {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("subject", form.subject);
-      formData.append("file", file);
-      formData.append("isPremium", isPremium.toString());
-      formData.append("premiumCost", premiumCost.toString());
-      const res = await authFetch("/api/notes", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) setError(data.error);
-      else router.push("/dashboard");
-    }, "Uploading to S3...");
+      try {
+        const fileUrl = await uploadDirectToS3(file, "notes");
+
+        const res = await authFetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: form.title,
+            subject: form.subject,
+            fileUrl,
+            isPremium,
+            premiumCost,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to save note data");
+
+        router.push("/dashboard");
+      } catch (err) {
+        setError(err.message);
+      }
+    }, "Uploading Note and Saving...");
   };
 
   return (

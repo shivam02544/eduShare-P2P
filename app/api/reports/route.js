@@ -1,50 +1,47 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
+import { apiHandler } from "@/lib/apiHandler";
 import Report from "@/models/Report";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 const AUTO_FLAG_THRESHOLD = 3;
 const MAX_REPORTS_PER_DAY = 10;
 
+const reportSchema = z.object({
+  contentType: z.enum(["video", "note", "comment"]),
+  contentId: z.string().min(1, "contentId required"),
+  reason: z.enum(["spam", "inappropriate", "copyright", "misinformation", "harassment", "other"]),
+  description: z.string().optional(),
+});
+
 /**
  * POST /api/reports — submit a content report
  */
-export async function POST(req) {
+export const POST = apiHandler(async (ctx) => {
+  const { req, user: me, body } = ctx;
+  const { contentType, contentId, reason, description } = body;
+
   // 5 reports per 10 minutes per IP
   const ip = getClientIp(req);
   const rl = rateLimit({ key: buildKey(ip, "reports"), limit: 5, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { contentType, contentId, reason, description } = await req.json();
-
-  if (!["video", "note", "comment"].includes(contentType))
-    return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
-  if (!contentId)
-    return NextResponse.json({ error: "contentId required" }, { status: 400 });
-  if (!["spam", "inappropriate", "copyright", "misinformation", "harassment", "other"].includes(reason))
-    return NextResponse.json({ error: "Invalid reason" }, { status: 400 });
-
-  await connectDB();
-
   // Rate limit: max 10 reports per day
   const dayAgo = new Date(Date.now() - 86_400_000);
   const todayCount = await Report.countDocuments({
-    reporter: auth.mongoUser._id,
+    reporter: me._id,
     createdAt: { $gte: dayAgo },
   });
+  
   if (todayCount >= MAX_REPORTS_PER_DAY)
     return NextResponse.json({ error: "Report limit reached for today" }, { status: 429 });
 
   // Create report (unique index prevents duplicate)
   try {
     await Report.create({
-      reporter: auth.mongoUser._id,
+      reporter: me._id,
       contentType,
       contentId,
       reason,
@@ -68,4 +65,4 @@ export async function POST(req) {
   }
 
   return NextResponse.json({ message: "Report submitted. Thank you for keeping EduShare safe." });
-}
+}, { isProtected: true, schema: reportSchema });
