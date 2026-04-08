@@ -105,15 +105,22 @@ export async function POST(req, { params }) {
   }
 
   // ── Record attempt (unique index prevents duplicates) ──
-  await QuizAttempt.create({
-    quiz: quiz._id,
-    video: params.id,
-    user: auth.mongoUser._id,
-    answers,
-    score,
-    passed,
-    creditsAwarded: viewerCredits,
-  });
+  try {
+    await QuizAttempt.create({
+      quiz: quiz._id,
+      video: params.id,
+      user: auth.mongoUser._id,
+      answers,
+      score,
+      passed,
+      creditsAwarded: viewerCredits,
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return NextResponse.json({ error: "Already attempted", score, passed, creditsAwarded: viewerCredits }, { status: 409 });
+    }
+    throw err;
+  }
 
   // ── Issue certificate if passed ──
   let certificate = null;

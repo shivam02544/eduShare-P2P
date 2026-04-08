@@ -13,6 +13,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Note: we do NOT block unverified users here in AuthContext.
+        // Unverified email/password users are blocked at the API level (verifyAuth).
+        // Blocking here causes the register page to lose state mid-flow.
         const idToken = await getIdToken(firebaseUser);
         setUser(firebaseUser);
         setToken(idToken);

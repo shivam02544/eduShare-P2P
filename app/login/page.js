@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -28,15 +28,31 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [gLoading, setGLoading] = useState(false);
+  // Unverified state
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const handleEmail = async (e) => {
     e.preventDefault();
-    setLoading(true); setError("");
+    setLoading(true); setError(""); setUnverified(false);
     try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
+      const { user } = await signInWithEmailAndPassword(auth, form.email, form.password);
+
+      // Block unverified email/password accounts
+      if (!user.emailVerified) {
+        await signOut(auth);
+        setUnverified(true);
+        setLoading(false);
+        return;
+      }
+
       router.push("/dashboard");
-    } catch (err) { setError(errorMap[err.code] || "Something went wrong."); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(errorMap[err.code] || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogle = async () => {
@@ -44,15 +60,34 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, googleProvider);
       router.push("/dashboard");
-    } catch (err) { setError(errorMap[err.code] || "Something went wrong."); }
-    finally { setGLoading(false); }
+    } catch (err) {
+      setError(errorMap[err.code] || "Something went wrong.");
+    } finally {
+      setGLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true); setResent(false);
+    try {
+      // Use our nodemailer API — no Firebase sendEmailVerification
+      const res = await fetch("/api/auth/send-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, name: "" }),
+      });
+      if (res.ok) setResent(true);
+    } catch {
+      // silent
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="w-full max-w-[360px] animate-fade-up">
 
-        {/* Logo mark */}
         <div className="text-center mb-8">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-4"
             style={{ background: "var(--text-1)" }}>
@@ -88,6 +123,34 @@ export default function LoginPage() {
             <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
           </div>
 
+          {/* Unverified email banner */}
+          {unverified && (
+            <div className="rounded-xl p-4 space-y-3"
+              style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}>
+              <div className="flex items-start gap-2.5">
+                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"
+                  style={{ color: "#d97706" }}>
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                </svg>
+                <div>
+                  <p className="text-[13px] font-semibold" style={{ color: "#92400e" }}>Email not verified</p>
+                  <p className="text-[12px] mt-0.5" style={{ color: "#b45309" }}>
+                    Check your inbox and click the verification link before signing in.
+                  </p>
+                </div>
+              </div>
+              <button onClick={handleResend} disabled={resending || resent}
+                className="w-full py-2 rounded-lg text-[12px] font-medium transition-all"
+                style={{
+                  background: resent ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.15)",
+                  color: resent ? "#16a34a" : "#92400e",
+                  border: `1px solid ${resent ? "rgba(34,197,94,0.3)" : "rgba(245,158,11,0.3)"}`,
+                }}>
+                {resending ? "Sending…" : resent ? "✓ Verification email sent" : "Resend verification email"}
+              </button>
+            </div>
+          )}
+
           {error && (
             <div className="text-[13px] px-3 py-2.5 rounded-lg"
               style={{ background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>
@@ -110,9 +173,7 @@ export default function LoginPage() {
 
         <p className="text-center text-[13px] mt-4" style={{ color: "var(--text-2)" }}>
           No account?{" "}
-          <Link href="/register" className="font-medium" style={{ color: "var(--text-1)" }}>
-            Create one
-          </Link>
+          <Link href="/register" className="font-medium" style={{ color: "var(--text-1)" }}>Create one</Link>
         </p>
       </div>
     </div>

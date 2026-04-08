@@ -43,6 +43,12 @@ export default function DashboardPage() {
     if (authLoading) return;
     if (!user) { router.push("/login"); return; }
 
+    // Redirect unverified email/password users
+    if (user.providerData?.[0]?.providerId === "password" && !user.emailVerified) {
+      router.push("/verify-email");
+      return;
+    }
+
     const cached = getCache("dashboard");
     if (cached) {
       setData(cached); setLoading(false);

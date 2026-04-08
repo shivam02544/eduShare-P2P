@@ -23,6 +23,10 @@ export async function POST(req) {
     if (!title || !subject || !date)
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 
+    const sessionDate = new Date(date);
+    if (isNaN(sessionDate.getTime()) || sessionDate <= new Date())
+      return NextResponse.json({ error: "Session date must be in the future" }, { status: 400 });
+
     await connectDB();
     const session = await LiveSession.create({
       title, subject,
