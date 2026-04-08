@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
+import { connectDB } from "@/lib/mongodb";
 import Video from "@/models/Video";
 import { logger } from "@/lib/logger";
 import { getCdnUrl } from "@/lib/cdn";
