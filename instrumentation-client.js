@@ -7,3 +7,6 @@ Sentry.init({
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
 });
+
+// Required: instruments App Router navigations for Sentry tracing
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
