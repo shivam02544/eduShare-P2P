@@ -5,7 +5,6 @@ import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { usePathname, useRouter } from "next/navigation";
-import { invalidateAll } from "@/lib/cache";
 import SearchBar from "@/components/SearchBar";
 import NotificationBell from "@/components/NotificationBell";
 import { useTheme } from "@/context/ThemeContext";
@@ -49,7 +48,6 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     setSigningOut(true);
-    invalidateAll();
     await signOut(auth);
     setSigningOut(false);
     router.push("/");

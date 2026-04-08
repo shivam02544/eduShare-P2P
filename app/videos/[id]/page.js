@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import Comments from "@/components/Comments";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
 import QuizTaker from "@/components/QuizTaker";
@@ -15,9 +14,6 @@ import ChapterEditor from "@/components/ChapterEditor";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import ReportButton from "@/components/ReportButton";
 import { getCdnUrl } from "@/lib/cdn";
-
-// Dynamically import ReactPlayer to avoid SSR issues
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
 function VideoSkeleton() {
   return (
@@ -95,60 +91,23 @@ export default function VideoPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
 
-      {/* Video lifecycle status banners */}
-      {video.status === "processing" && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-200 px-5 py-4 flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <div>
-            <p className="text-sm font-semibold text-amber-800">Video processing in progress</p>
-            <p className="text-xs text-amber-600">Your video is being optimized for streaming. You can watch the original below while you wait.</p>
-          </div>
-        </div>
-      )}
-      {video.status === "failed" && (
-        <div className="rounded-2xl bg-red-50 border border-red-200 px-5 py-4 flex items-center gap-3">
-          <span className="text-xl">⚠️</span>
-          <div>
-            <p className="text-sm font-semibold text-red-800">Stream optimization failed</p>
-            <p className="text-xs text-red-600">Playing original video file. Quality may vary by device.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Video player — HLS via ReactPlayer with MP4 fallback */}
+      {/* Video player — direct MP4 via S3/CloudFront */}
       <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-xl" style={{ aspectRatio: "16/9" }}>
-        {video.hlsUrl && video.status === "ready" ? (
-          <ReactPlayer
-            url={getCdnUrl(video.hlsUrl)}
-            controls
-            width="100%"
-            height="100%"
-            light={getCdnUrl(video.thumbnailUrl) || false}
-            config={{
-              file: {
-                forceHLS: true,
-                attributes: { controlsList: "nodownload" },
-              },
-            }}
-            onDuration={(d) => setDuration(d)}
-          />
-        ) : (
-          // Fallback: native <video> for MP4 while processing or if HLS unavailable
-          <video
-            ref={videoRef}
-            src={getCdnUrl(video.videoUrl)}
-            controls
-            className="w-full h-full"
-            preload="metadata"
-            poster={getCdnUrl(video.thumbnailUrl || "")}
-            onLoadedMetadata={(e) => {
-              setDuration(e.target.duration);
-              if (video?.watchProgress?.progressSeconds > 10) {
-                e.target.currentTime = video.watchProgress.progressSeconds;
-              }
-            }}
-          />
-        )}
+        <video
+          ref={videoRef}
+          src={getCdnUrl(video.videoUrl)}
+          controls
+          className="w-full h-full"
+          preload="metadata"
+          poster={getCdnUrl(video.thumbnailUrl || "")}
+          onLoadedMetadata={(e) => {
+            setDuration(e.target.duration);
+            // Resume from saved progress if available
+            if (video?.watchProgress?.progressSeconds > 10) {
+              e.target.currentTime = video.watchProgress.progressSeconds;
+            }
+          }}
+        />
       </div>
 
       {/* Info */}
