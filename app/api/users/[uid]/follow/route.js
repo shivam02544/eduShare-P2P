@@ -29,11 +29,15 @@ export const POST = apiHandler(async (ctx) => {
   const isFollowing = me.following.map(String).includes(target._id.toString());
 
   if (isFollowing) {
-    await User.findByIdAndUpdate(me._id, { $pull: { following: target._id } });
-    await User.findByIdAndUpdate(target._id, { $pull: { followers: me._id } });
+    await Promise.all([
+      User.findByIdAndUpdate(me._id, { $pull: { following: target._id } }),
+      User.findByIdAndUpdate(target._id, { $pull: { followers: me._id } }),
+    ]);
   } else {
-    await User.findByIdAndUpdate(me._id, { $addToSet: { following: target._id } });
-    await User.findByIdAndUpdate(target._id, { $addToSet: { followers: me._id } });
+    await Promise.all([
+      User.findByIdAndUpdate(me._id, { $addToSet: { following: target._id } }),
+      User.findByIdAndUpdate(target._id, { $addToSet: { followers: me._id } }),
+    ]);
     // Notify target
     await createNotification({
       recipient: target._id,
@@ -43,8 +47,12 @@ export const POST = apiHandler(async (ctx) => {
     });
   }
 
+  // Re-fetch updated target to get accurate follower count from DB
+  const updated = await User.findById(target._id).select("followers").lean();
+  const followersCount = updated?.followers?.length ?? 0;
+
   return NextResponse.json({
     following: !isFollowing,
-    followersCount: target.followers.length + (isFollowing ? -1 : 1),
+    followersCount,
   });
 }, { isProtected: true });

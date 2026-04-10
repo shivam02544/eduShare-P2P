@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     role: { type: String, enum: ["user", "moderator", "admin"], default: "user" },
     isVerified: { type: Boolean, default: false }, // email verified via our system
+    isSuspended: { type: Boolean, default: false }, // blocked by admin
+    suspensionReason: { type: String, default: "" },
     bio: { type: String, default: "" },
     credits: { type: Number, default: 0 },
     skills: [{ type: String }],

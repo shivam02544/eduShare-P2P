@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getCache, setCache } from "@/lib/cache";
 
+// Simple in-memory client cache (avoids importing server-only Redis lib)
+const memCache = {};
+function getMemCache(key) { const e = memCache[key]; return e && e.exp > Date.now() ? e.data : null; }
+function setMemCache(key, data, ttlMs = 60_000) { memCache[key] = { data, exp: Date.now() + ttlMs }; }
+
 const medals = ["🥇", "🥈", "🥉"];
 
 function LeaderboardSkeleton() {
@@ -37,12 +42,13 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    const cached = getCache("leaderboard");
+    const cached = getMemCache("leaderboard");
     if (cached) { setUsers(cached); setLoading(false); return; }
 
     fetch("/api/leaderboard")
       .then((r) => r.json())
-      .then((d) => { setCache("leaderboard", d, 60_000); setUsers(d); setLoading(false); });
+      .then((d) => { const list = Array.isArray(d) ? d : []; setMemCache("leaderboard", list, 60_000); setUsers(list); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [user]);
 
   const myRank = users.findIndex((u) => u.firebaseUid === user?.uid) + 1;

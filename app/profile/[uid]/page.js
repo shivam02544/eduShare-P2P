@@ -44,20 +44,32 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     if (!uid || !user) return;
-    authFetch(`/api/profile/${uid}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setNotFound(true);
-        else setProfile(d);
-        setLoading(false);
-      });
+
+    const fetchProfile = () => {
+      authFetch(`/api/profile/${uid}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error) setNotFound(true);
+          else setProfile(d);
+          setLoading(false);
+        });
+    };
+
+    fetchProfile();
+
+    // Refetch when tab regains focus (e.g. after another user follows)
+    window.addEventListener("focus", fetchProfile);
+
     fetch(`/api/collections?creatorUid=${uid}`)
       .then((r) => r.json())
       .then((d) => setMyCollections(Array.isArray(d) ? d : []));
+
     // Fetch certificates (public — no auth needed)
     fetch(`/api/certificates?uid=${uid}`)
       .then((r) => r.json())
       .then((d) => setMyCerts(Array.isArray(d) ? d : []));
+
+    return () => window.removeEventListener("focus", fetchProfile);
   }, [uid, user]);
 
   const isOwnProfile = user?.uid === uid;
@@ -101,7 +113,14 @@ export default function PublicProfilePage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <h1 className="text-xl font-bold text-zinc-900">{profileUser.name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-zinc-900">{profileUser.name}</h1>
+                  {profileUser.isSuspended && (
+                    <span className="badge bg-red-50 text-red-600 border-red-100 text-[10px] uppercase font-bold tracking-wider">
+                      Suspended
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-zinc-400 mt-0.5">{profileUser.email}</p>
               </div>
               {isOwnProfile ? (
@@ -111,7 +130,7 @@ export default function PublicProfilePage() {
                     </svg>
                     Edit Profile
                   </Link>
-                ) : (
+                ) : !profileUser.isSuspended && (
                   <div className="flex items-center gap-2">
                     <FollowButton
                       targetUid={uid}
@@ -123,7 +142,20 @@ export default function PublicProfilePage() {
                 )}
             </div>
 
-            {profileUser.bio && (
+            {profileUser.isSuspended && (
+              <div className="mt-4 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <p className="text-sm font-bold text-red-900">Restricted Account</p>
+                  <p className="text-xs text-red-700 mt-0.5">
+                    This account has been suspended for violating community guidelines.
+                    {profileUser.suspensionReason && ` Reason: ${profileUser.suspensionReason}`}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {profileUser.bio && !profileUser.isSuspended && (
               <p className="text-sm text-zinc-600 mt-3 leading-relaxed">{profileUser.bio}</p>
             )}
 

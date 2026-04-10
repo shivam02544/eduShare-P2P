@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
 import { useLoading } from "@/context/LoadingContext";
@@ -26,12 +27,19 @@ export default function NoteDetailPage() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
-  const [creditMsg, setCreditMsg] = useState("");
   const [previewMode, setPreviewMode] = useState("embed"); // "embed" | "iframe"
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [user, authLoading]);
+
+  // SEO: Update page title
+  useEffect(() => {
+    if (note?.title) {
+      document.title = `${note.title} — EduShare`;
+    }
+    return () => { document.title = "EduShare – Peer Knowledge Exchange"; };
+  }, [note]);
 
   useEffect(() => {
     if (!user) return;
@@ -49,7 +57,7 @@ export default function NoteDetailPage() {
     const res = await authFetch(`/api/notes/${id}/download`, { method: "POST" });
     const data = await res.json();
     setDownloading(false);
-    if (data.message) setCreditMsg(data.message);
+    if (data.message) toast.success(data.message);
     if (data.fileUrl) window.open(data.fileUrl, "_blank");
   };
 
@@ -58,8 +66,11 @@ export default function NoteDetailPage() {
     const res = await authFetch(`/api/notes/${id}/unlock`, { method: "POST" });
     const data = await res.json();
     setUnlocking(false);
-    if (data.error) { setCreditMsg(`Error: ${data.error}`); return; }
-    setCreditMsg(data.message);
+    if (data.error) { 
+      toast.error(`Error: ${data.error}`); 
+      return; 
+    }
+    toast.success(data.message);
     if (data.fileUrl) window.open(data.fileUrl, "_blank");
     fetch(`/api/notes/${id}`).then(r => r.json()).then(setNote);
   };
@@ -84,17 +95,11 @@ export default function NoteDetailPage() {
                 {note.subject}
               </span>
               {note.isPremium && (
-                <span className="badge bg-amber-100 text-amber-800 border border-amber-200">
-                  🔒 Premium · {note.premiumCost} credits
-                </span>
-              )}
-              {creditMsg && (
-                <span className={`badge animate-fade-in ${
-                  creditMsg.startsWith("Error")
-                    ? "bg-red-50 text-red-600 border border-red-100"
-                    : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                }`}>
-                  {creditMsg.startsWith("Error") ? "⚠ " : "✓ "}{creditMsg.replace("Error: ", "")}
+                <span className="badge bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                  Premium · {note.premiumCost} credits
                 </span>
               )}
             </div>
@@ -112,7 +117,11 @@ export default function NoteDetailPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                   </svg>
-                ) : "🔓"}
+                ) : (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+                  </svg>
+                )}
                 {unlocking ? "Unlocking..." : `Unlock for ${note.premiumCost} credits`}
               </button>
               <p className="text-xs text-zinc-400">One-time unlock · PDF opens immediately</p>
@@ -218,7 +227,11 @@ export default function NoteDetailPage() {
 
           {/* Fallback message — shown if PDF doesn't render */}
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-50 -z-10">
-            <div className="text-5xl mb-3">📄</div>
+            <div className="w-16 h-16 bg-zinc-100 rounded-2xl flex items-center justify-center mb-4 text-zinc-400">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
             <p className="text-zinc-600 font-medium">PDF preview not available</p>
             <p className="text-zinc-400 text-sm mt-1 mb-4">Your browser may not support inline PDF viewing</p>
             <button onClick={handleDownload} className="btn-primary">

@@ -13,7 +13,7 @@ export const GET = apiHandler(async (ctx) => {
   const subject = searchParams.get("subject");
   const sort = searchParams.get("sort");
 
-  const query = subject ? { subject } : {};
+  const query = subject ? { subject, flagged: { $ne: true } } : { flagged: { $ne: true } };
   const sortOption = sort === "popular" ? { views: -1 } : { createdAt: -1 };
 
   const videos = await Video.find(query)

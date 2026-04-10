@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Comments from "@/components/Comments";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
@@ -37,12 +38,19 @@ export default function VideoPage() {
   const [video, setVideo] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [creditMsg, setCreditMsg] = useState("");
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [user, authLoading]);
+
+  // SEO: Update page title
+  useEffect(() => {
+    if (video?.title) {
+      document.title = `${video.title} — EduShare`;
+    }
+    return () => { document.title = "EduShare – Peer Knowledge Exchange"; };
+  }, [video]);
 
   useEffect(() => {
     if (!user) return;
@@ -75,7 +83,15 @@ export default function VideoPage() {
       authFetch(`/api/videos/${id}/view`, { method: "POST" })
         .then((r) => r.json())
         .then((d) => {
-          if (d.message?.includes("credits")) setCreditMsg(d.message);
+          if (d.message?.includes("credits")) {
+             toast(d.message, {
+               icon: (
+                 <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                   <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
+                 </svg>
+               )
+             });
+          }
         });
     }
   }, [video, user]);
@@ -119,13 +135,11 @@ export default function VideoPage() {
                 {video.subject}
               </span>
               {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
-                <span className="badge bg-amber-100 text-amber-800 border border-amber-200">
-                  ⚡ Boosted
-                </span>
-              )}
-              {creditMsg && (
-                <span className="badge bg-emerald-50 text-emerald-700 border border-emerald-100 animate-fade-in">
-                  ✓ {creditMsg}
+                <span className="badge bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0111 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                  </svg>
+                  Boosted
                 </span>
               )}
             </div>
@@ -216,7 +230,11 @@ export default function VideoPage() {
       {video?.uploader?.firebaseUid === user?.uid && (
         <div className="card p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-lg">🎬</div>
+            <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </div>
             <div>
               <h2 className="font-semibold text-zinc-900">
                 {video.chapters?.length > 0 ? "Edit Chapters" : "Add Chapters"}
@@ -240,7 +258,11 @@ export default function VideoPage() {
       {quiz?.exists && (
         <div className="card p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-lg">📝</div>
+            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
             <div>
               <h2 className="font-semibold text-zinc-900">Knowledge Check</h2>
               <p className="text-xs text-zinc-400">
@@ -250,8 +272,11 @@ export default function VideoPage() {
               </p>
             </div>
             {quiz.attempted && quiz.attempt.creditsAwarded > 0 && (
-              <span className="ml-auto badge bg-amber-100 text-amber-800 border border-amber-200">
-                🏆 +{quiz.attempt.creditsAwarded} earned
+              <span className="ml-auto badge bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                +{quiz.attempt.creditsAwarded} earned
               </span>
             )}
           </div>
@@ -286,7 +311,12 @@ export default function VideoPage() {
       {video?.uploader?.firebaseUid === user?.uid && (
         <div className="card p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-lg">⚙️</div>
+            <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
             <div>
               <h2 className="font-semibold text-zinc-900">
                 {quiz?.exists ? "Edit Quiz" : "Add Quiz"}

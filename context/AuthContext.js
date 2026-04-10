@@ -7,20 +7,36 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);       // Firebase user object
+  const [profile, setProfile] = useState(null); // MongoDB profile object
   const [token, setToken] = useState(null);     // ID token for API calls
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async (firebaseUser) => {
+    try {
+      const idToken = await getIdToken(firebaseUser, true);
+      const res = await fetch("/api/auth/profile", {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error("[AuthContext] Failed to fetch profile:", err);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
-        // Note: we do NOT block unverified users here in AuthContext.
-        // Unverified email/password users are blocked at the API level (verifyAuth).
-        // Blocking here causes the register page to lose state mid-flow.
         const idToken = await getIdToken(firebaseUser);
         setUser(firebaseUser);
         setToken(idToken);
+        await fetchProfile(firebaseUser);
       } else {
         setUser(null);
+        setProfile(null);
         setToken(null);
       }
       setLoading(false);
@@ -28,6 +44,15 @@ export function AuthProvider({ children }) {
 
     return () => unsubscribe();
   }, []);
+
+  /**
+   * Helper: manually refresh the MongoDB profile (e.g. after credit updates)
+   */
+  const refreshProfile = async () => {
+    if (auth.currentUser) {
+      await fetchProfile(auth.currentUser);
+    }
+  };
 
   /**
    * Helper: make authenticated fetch to our API routes.
@@ -54,7 +79,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, authFetch }}>
+    <AuthContext.Provider value={{ user, profile, token, loading, authFetch, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -10,7 +10,7 @@ export const GET = apiHandler(async (ctx) => {
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get("subject");
 
-  const query = subject ? { subject } : {};
+  const query = subject ? { subject, flagged: { $ne: true } } : { flagged: { $ne: true } };
 
   const notes = await Note.find(query)
     .sort({ createdAt: -1 })
