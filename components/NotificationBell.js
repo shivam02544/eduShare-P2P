@@ -1,48 +1,41 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Bell, 
+  User, 
+  Heart, 
+  MessageSquare, 
+  Zap, 
+  Activity, 
+  ShieldCheck, 
+  ChevronRight,
+  MoreVertical,
+  CheckCircle2,
+  Inbox,
+  Radio
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
-  if (s < 60) return "just now";
+  if (s < 60) return "Just Sync'd";
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
 }
 
-const icons = {
-  follow: (
-    <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-    </svg>
-  ),
-  like_video: (
-    <svg className="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-    </svg>
-  ),
-  like_note: (
-    <svg className="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-    </svg>
-  ),
-  comment: (
-    <svg className="w-4 h-4 text-violet-500" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zm-4 0H9v2h2V9z" clipRule="evenodd" />
-    </svg>
-  ),
-  credit: (
-    <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
-    </svg>
-  ),
-  system: (
-    <svg className="w-4 h-4 text-zinc-500" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-    </svg>
-  ),
+const N_ICONS = {
+  follow: <User className="w-3.5 h-3.5 text-indigo-500" />,
+  like_video: <Heart className="w-3.5 h-3.5 text-rose-500 fill-current" />,
+  like_note: <Heart className="w-3.5 h-3.5 text-rose-500 fill-current" />,
+  comment: <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />,
+  credit: <Zap className="w-3.5 h-3.5 text-amber-500 fill-current" />,
+  system: <Activity className="w-3.5 h-3.5 text-slate-500" />,
 };
 
 export default function NotificationBell() {
@@ -65,35 +58,38 @@ export default function NotificationBell() {
         
         if (!d.error) {
           setUnread(d.unreadCount);
-          
-          // Detect new notifications for Toast
           if (d.notifications?.length > 0) {
             const latest = d.notifications[0];
-            
-            // If we have a new ID that isn't the one we saw last
             if (lastSeenIdRef.current && latest._id !== lastSeenIdRef.current && !latest.read) {
-              if (latest.type === "credit") {
-                toast(latest.message, { icon: "🏆" });
-              } else {
-                toast(latest.message);
-              }
+              toast(latest.message, { 
+                icon: latest.type === "credit" ? "⚡" : "🛰️",
+                style: {
+                  borderRadius: '24px',
+                  background: '#0f172a',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  fontSize: '11px',
+                  fontWeight: '900',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontStyle: 'italic'
+                }
+              });
             }
             lastSeenIdRef.current = latest._id;
           }
-          
           setNotifications(d.notifications || []);
         }
       } catch (err) {
-        console.error("Notification fetch failed", err);
+        console.error("Communication sync failure", err);
       }
     };
 
     fetchCount();
     const interval = setInterval(fetchCount, 15_000);
     return () => clearInterval(interval);
-  }, [user]); // Removed lastSeenId from dependencies
+  }, [user]);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -120,79 +116,113 @@ export default function NotificationBell() {
   return (
     <div ref={ref} className="relative">
       <button onClick={handleOpen}
-        className="relative p-2 rounded-xl hover:bg-zinc-100 transition-colors">
-        <svg className="w-5 h-5 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-        </svg>
+        className={`group relative p-2.5 rounded-[18px] transition-all duration-500 overflow-hidden ${open ? 'bg-indigo-500 text-white shadow-xl shadow-indigo-500/20' : 'bg-slate-50 dark:bg-white/5 border border-border hover:bg-white dark:hover:bg-white/10 hover:border-indigo-500/30'}`}
+      >
+        <Bell className={`w-5 h-5 transition-transform group-active:scale-90 ${unread > 0 ? 'animate-[pulse_2s_infinite]' : ''}`} />
+        
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold badge-new">
-            {unread > 9 ? "9+" : unread}
-          </span>
+          <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-indigo-500 group-hover:bg-white border-2 border-white dark:border-slate-900 rounded-full animate-ping" />
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden z-50 animate-slide-down">
-          <div className="px-4 py-3 border-b border-zinc-50 flex items-center justify-between">
-            <p className="font-semibold text-zinc-900 text-sm">Notifications</p>
-            {notifications.length > 0 && (
-              <button
-                onClick={() => {
-                  setNotifications([]);
-                  authFetch("/api/notifications", { method: "PATCH" });
-                }}
-                className="text-xs text-zinc-400 hover:text-zinc-600">
-                Mark all read
-              </button>
-            )}
-          </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            transition={springConfig}
+            className="absolute right-0 mt-5 w-[360px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl rounded-[40px] shadow-3xl border border-border overflow-hidden z-50 p-2"
+          >
+            {/* Hub Header */}
+            <div className="px-6 py-5 flex items-center justify-between border-b border-border/50">
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                     <Radio className="w-4 h-4" />
+                  </div>
+                  <div>
+                     <p className="text-[10px] font-bold text-text-1 uppercase tracking-widest italic">Intelligence Hub</p>
+                     <p className="text-[8px] font-bold text-text-3 uppercase tracking-widest italic opacity-50">Sync Active</p>
+                  </div>
+               </div>
+               {notifications.length > 0 && (
+                 <button
+                   onClick={() => {
+                     setNotifications([]);
+                     authFetch("/api/notifications", { method: "PATCH" });
+                   }}
+                   className="p-2 rounded-xl text-text-3 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+                   <CheckCircle2 className="w-4 h-4" />
+                 </button>
+               )}
+            </div>
 
-          <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="text-center py-10 text-zinc-400">
-                <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-300">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                  </svg>
+            {/* Sync Logs */}
+            <div className="max-h-[70vh] overflow-y-auto no-scrollbar py-2 px-1">
+              {notifications.length === 0 ? (
+                <div className="text-center py-16 px-8 space-y-4">
+                  <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-[24px] flex items-center justify-center mx-auto border border-border text-text-3 opacity-20">
+                     <Inbox className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                     <p className="text-[11px] font-bold text-text-1 uppercase tracking-widest italic">Zero Input Detected</p>
+                     <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest italic opacity-50">Intelligence registry is currently clear.</p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium">No notifications yet</p>
-              </div>
-            ) : (
-              notifications.map((n) => (
-                <Link key={n._id} href={getLink(n)}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors border-b border-zinc-50 last:border-0 ${
-                    !n.read ? "bg-violet-50/50" : ""
-                  }`}>
-                  {/* Sender avatar */}
-                  <div className="relative flex-shrink-0">
-                    {n.sender?.image ? (
-                      <img src={n.sender.image} alt="" className="w-9 h-9 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600 text-sm font-bold">
-                        {n.sender?.name?.[0]?.toUpperCase()}
+              ) : (
+                notifications.map((n, idx) => (
+                  <motion.div
+                    key={n._id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <Link href={getLink(n)}
+                      onClick={() => setOpen(false)}
+                      className={`group flex items-start gap-4 p-4 rounded-[24px] hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-border/50 ${
+                        !n.read ? "bg-indigo-500/5" : ""
+                      }`}>
+                      <div className="relative flex-shrink-0">
+                        {n.sender?.image ? (
+                          <img src={n.sender.image} alt="" className="w-11 h-11 rounded-2xl object-cover border border-border group-hover:scale-105 transition-transform" />
+                        ) : (
+                          <div className="w-11 h-11 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-[14px] font-bold italic shadow-inner">
+                            {n.sender?.name?.[0]}
+                          </div>
+                        )}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center justify-center shadow-sm">
+                          {N_ICONS[n.type]}
+                        </div>
                       </div>
-                    )}
-                    <span className="absolute -bottom-0.5 -right-0.5 text-sm leading-none">
-                      {icons[n.type]}
-                    </span>
-                  </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-700 leading-snug">{n.message}</p>
-                    <p className="text-xs text-zinc-400 mt-0.5">{timeAgo(n.createdAt)}</p>
-                  </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <p className="text-[12px] font-bold text-text-1 italic leading-tight group-hover:text-indigo-500 transition-colors">{n.message}</p>
+                        <div className="flex items-center gap-2 italic">
+                           <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">{timeAgo(n.createdAt)}</span>
+                           <div className="w-1 h-1 rounded-full bg-border" />
+                           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest">Protocol Sync</span>
+                        </div>
+                      </div>
 
-                  {!n.read && (
-                    <div className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0 mt-1.5" />
-                  )}
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+                      {!n.read && (
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0 mt-4 animate-pulse" />
+                      )}
+                    </Link>
+                  </motion.div>
+                ))
+              )}
+            </div>
+
+            {/* Hub Footer */}
+            <div className="p-4 border-t border-border/50">
+               <div className="text-center">
+                  <p className="text-[8px] font-bold text-text-3 uppercase tracking-widest italic opacity-30">Synapse Network Active</p>
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

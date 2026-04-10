@@ -1,6 +1,26 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  BookOpen, 
+  CheckCircle2, 
+  Trash2, 
+  Plus, 
+  Save, 
+  Send, 
+  AlertTriangle, 
+  Loader2, 
+  Sparkles, 
+  ChevronDown,
+  Circle,
+  Check,
+  Zap,
+  Layers,
+  Target
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 const EMPTY_QUESTION = () => ({
   question: "",
@@ -48,31 +68,34 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
 
   const handleSave = async (publish = false) => {
     setError(""); setSuccess("");
-
-    // Client-side validation
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-      if (!q.question.trim()) return setError(`Question ${i + 1} is empty`);
-      if (q.options.some((o) => !o.trim())) return setError(`Question ${i + 1} has empty options`);
+      if (!q.question.trim()) return setError(`Error: Question ${i + 1} text missing.`);
+      if (q.options.some((o) => !o.trim())) return setError(`Error: Question ${i + 1} has empty options.`);
     }
 
     setSaving(true);
-    const res = await authFetch(`/api/videos/${videoId}/quiz`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questions, passingScore, isPublished: publish }),
-    });
-    const data = await res.json();
-    setSaving(false);
-
-    if (!res.ok) return setError(data.error);
-    setIsPublished(publish);
-    setSuccess(publish ? "Quiz published! Students can now take it." : "Draft saved.");
-    onSaved?.();
+    try {
+      const res = await authFetch(`/api/videos/${videoId}/quiz`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questions, passingScore, isPublished: publish }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      setIsPublished(publish);
+      setSuccess(publish ? "Quiz published successfully!" : "Draft saved.");
+      onSaved?.();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this quiz? This cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) return;
     setDeleting(true);
     await authFetch(`/api/videos/${videoId}/quiz`, { method: "DELETE" });
     setDeleting(false);
@@ -80,135 +103,223 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
   };
 
   return (
-    <div className="space-y-5">
-      {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>
-      )}
-      {success && (
-        <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-          </svg>
-          {success}
-        </div>
-      )}
+    <div className="space-y-8 max-w-4xl mx-auto">
+      
+      {/* ── Status Feedback ── */}
+      <AnimatePresence mode="wait">
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-rose-500/5 border border-rose-500/20 px-6 py-4 rounded-[28px] flex items-center gap-4 text-rose-500 shadow-inner"
+          >
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <p className="text-[11px] font-black uppercase tracking-widest italic">{error}</p>
+          </motion.div>
+        )}
+        {success && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-emerald-500/5 border border-emerald-500/20 px-6 py-4 rounded-[28px] flex items-center gap-4 text-emerald-500 shadow-inner"
+          >
+            <Sparkles className="w-5 h-5 shrink-0" />
+            <p className="text-[11px] font-black uppercase tracking-widest italic">{success}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Settings row */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Passing score</label>
-          <select value={passingScore} onChange={(e) => setPassingScore(Number(e.target.value))}
-            className="input w-auto text-sm py-1.5 px-3">
-            {[50, 60, 70, 80, 90, 100].map((v) => (
-              <option key={v} value={v}>{v}%</option>
-            ))}
-          </select>
-        </div>
-        <div className="text-xs text-zinc-400">
-          {questions.length}/10 questions
-        </div>
-      </div>
-
-      {/* Questions */}
-      {questions.map((q, qi) => (
-        <div key={qi} className="card p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-wide">
-              Question {qi + 1}
-            </span>
-            {questions.length > 1 && (
-              <button onClick={() => removeQuestion(qi)}
-                className="text-xs text-zinc-400 hover:text-red-500 transition-colors">
-                Remove
-              </button>
-            )}
+      {/* ── Settings HUD ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-slate-50 dark:bg-white/5 border border-border p-6 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6"
+      >
+        <div className="flex items-center gap-6">
+          <div className="space-y-1">
+             <label className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em]">Passing Score</label>
+             <div className="relative group">
+               <select 
+                 value={passingScore} 
+                 onChange={(e) => setPassingScore(Number(e.target.value))}
+                 className="bg-white dark:bg-slate-900 border border-border rounded-xl px-4 py-2 text-xs font-black text-text-1 outline-none cursor-pointer appearance-none pr-10 hover:border-indigo-500 transition-colors"
+               >
+                 {[50, 60, 70, 80, 90, 100].map((v) => (
+                   <option key={v} value={v}>{v}% Passing</option>
+                 ))}
+               </select>
+               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 pointer-events-none group-focus-within:text-indigo-500 transition-colors" />
+             </div>
           </div>
+          
+          <div className="w-px h-10 bg-border hidden md:block" />
+          
+          <div className="space-y-1">
+            <span className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em]">Quiz Progress</span>
+            <div className="flex items-center gap-3">
+               <div className="h-2 w-32 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(questions.length / 10) * 100}%` }}
+                    className="h-full bg-indigo-500" 
+                  />
+               </div>
+               <span className="text-xs font-black text-text-1 italic">{questions.length}/10 Questions</span>
+            </div>
+          </div>
+        </div>
 
-          <input
-            type="text"
-            placeholder="Enter your question..."
-            value={q.question}
-            onChange={(e) => updateQuestion(qi, "question", e.target.value)}
-            maxLength={500}
-            className="input"
-          />
+        <div className="flex items-center gap-2">
+           <Layers className="w-4 h-4 text-text-3" />
+           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-text-3">Editing Mode</span>
+        </div>
+      </motion.div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Options — click radio to mark correct</p>
-            {q.options.map((opt, oi) => (
-              <div key={oi} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-                q.correctIndex === oi
-                  ? "border-emerald-300 bg-emerald-50"
-                  : "border-stone-200 bg-white hover:border-stone-300"
-              }`}>
-                <button
-                  type="button"
-                  onClick={() => updateQuestion(qi, "correctIndex", oi)}
-                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                    q.correctIndex === oi
-                      ? "border-emerald-500 bg-emerald-500"
-                      : "border-stone-300 hover:border-emerald-400"
-                  }`}>
-                  {q.correctIndex === oi && (
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                  )}
-                </button>
-                <input
-                  type="text"
-                  placeholder={`Option ${oi + 1}`}
-                  value={opt}
-                  onChange={(e) => updateOption(qi, oi, e.target.value)}
-                  maxLength={200}
-                  className="flex-1 bg-transparent text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-                />
-                {q.correctIndex === oi && (
-                  <span className="text-xs text-emerald-600 font-medium flex-shrink-0">Correct</span>
+      {/* ── Question Stack ── */}
+      <div className="space-y-6">
+        <AnimatePresence mode="popLayout">
+          {questions.map((q, qi) => (
+            <motion.div 
+              key={`question-${qi}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ delay: qi * 0.05 }}
+              className="group bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-[48px] shadow-sm hover:shadow-2xl transition-all hover:scale-[1.01] relative"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                   <div className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-900 text-xs font-black">
+                      {qi + 1}
+                   </div>
+                   <span className="text-[10px] font-black text-text-3 uppercase tracking-widest">Question Text</span>
+                </div>
+                {questions.length > 1 && (
+                  <button 
+                    onClick={() => removeQuestion(qi)}
+                    className="p-3 rounded-2xl bg-rose-500/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-inner opacity-0 group-hover:opacity-100"
+                    title="Purge Node"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      ))}
 
-      {/* Add question */}
-      {questions.length < 10 && (
-        <button onClick={addQuestion}
-          className="w-full py-3 border-2 border-dashed border-stone-300 rounded-xl text-sm text-zinc-500
-                     hover:border-zinc-400 hover:text-zinc-700 transition-colors">
-          + Add Question
-        </button>
-      )}
+              <div className="space-y-8">
+                <div className="relative group">
+                   <BookOpen className="absolute left-6 top-5 w-5 h-5 text-text-3 group-focus-within:text-indigo-500 transition-colors" />
+                   <textarea
+                     placeholder="Type your question here..."
+                     value={q.question}
+                     onChange={(e) => updateQuestion(qi, "question", e.target.value)}
+                     maxLength={500}
+                     rows={2}
+                     className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-[28px] pl-16 pr-8 py-5 text-sm font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none resize-none"
+                   />
+                </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <button onClick={() => handleSave(false)} disabled={saving}
-          className="btn-secondary flex items-center gap-2">
-          {saving ? <Spinner /> : null}
-          Save Draft
-        </button>
-        <button onClick={() => handleSave(true)} disabled={saving}
-          className="btn-primary flex items-center gap-2">
-          {saving ? <Spinner /> : null}
-          {isPublished ? "Update & Publish" : "Publish Quiz"}
-        </button>
-        {existingQuiz && (
-          <button onClick={handleDelete} disabled={deleting}
-            className="ml-auto text-sm text-red-500 hover:text-red-700 transition-colors disabled:opacity-50">
-            {deleting ? "Deleting..." : "Delete Quiz"}
-          </button>
-        )}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <p className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em]">Answer Options</p>
+                    <span className="text-[8px] font-black text-indigo-500 uppercase tracking-widest">Select the correct answer</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {q.options.map((opt, oi) => (
+                      <motion.div 
+                        key={`opt-${qi}-${oi}`}
+                        className={`relative flex items-center gap-4 p-5 rounded-[32px] border transition-all duration-300 ${
+                          q.correctIndex === oi
+                            ? "bg-emerald-500/5 border-emerald-500/40 shadow-lg shadow-emerald-500/5"
+                            : "bg-white dark:bg-white/2[0.02] border-border hover:border-indigo-500/30"
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => updateQuestion(qi, "correctIndex", oi)}
+                          className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+                            q.correctIndex === oi
+                              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+                              : "bg-slate-100 dark:bg-white/5 text-text-3 hover:scale-110 active:scale-95"
+                          }`}
+                        >
+                          {q.correctIndex === oi ? <Check className="w-5 h-5" /> : <Circle className="w-5 h-5 opacity-30" />}
+                        </button>
+                        <input
+                          type="text"
+                          placeholder={`Solution Node ${oi + 1}`}
+                          value={opt}
+                          onChange={(e) => updateOption(qi, oi, e.target.value)}
+                          maxLength={200}
+                          className="flex-1 bg-transparent text-sm font-black text-text-1 placeholder:opacity-20 focus:outline-none italic"
+                        />
+                        {q.correctIndex === oi && (
+                          <motion.div 
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="absolute -top-3 -right-3"
+                          >
+                            <span className="bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">Correct Answer</span>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
+
+      {/* ── Actions Matrix ── */}
+      <div className="flex flex-col md:flex-row items-center gap-6 pt-10">
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          {questions.length < 10 && (
+            <button 
+              onClick={addQuestion}
+              className="flex-1 md:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[28px] border-2 border-dashed border-border text-[11px] font-black uppercase tracking-widest text-text-3 hover:border-indigo-500 hover:text-indigo-500 transition-all italic hover:bg-slate-50 dark:hover:bg-white/5"
+            >
+              <Plus className="w-5 h-5" />
+              Expand Matrix Node
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4 w-full md:w-auto md:ml-auto">
+          <button 
+            onClick={() => handleSave(false)} 
+            disabled={saving}
+            className="flex-1 md:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[28px] bg-slate-100 dark:bg-white/5 border border-border text-[11px] font-black uppercase tracking-widest text-text-2 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] italic"
+          >
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+            Save Encrypted Draft
+          </button>
+          
+          <button 
+            onClick={() => handleSave(true)} 
+            disabled={saving}
+            className="flex-1 md:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[11px] font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl italic"
+          >
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+            {isPublished ? "Update Protocol" : "Authorize Synchronization"}
+          </button>
+        </div>
+      </div>
+
+      {existingQuiz && (
+        <div className="pt-12 text-center">
+           <button 
+             onClick={handleDelete} 
+             disabled={deleting}
+             className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-500/50 hover:text-rose-500 transition-all italic"
+           >
+             {deleting ? "Purging Registry..." : "Immediate Matrix Purge"}
+           </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function Spinner() {
-  return (
-    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-    </svg>
-  );
-}

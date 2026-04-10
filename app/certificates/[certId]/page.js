@@ -1,19 +1,37 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Award, 
+  Share2, 
+  Download, 
+  User, 
+  CheckCircle2, 
+  AlertCircle, 
+  ChevronLeft, 
+  Printer, 
+  ExternalLink,
+  ShieldCheck,
+  Zap
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 function CertificateSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto space-y-4 animate-fade-in">
-      <div className="skeleton h-8 w-48 mx-auto" />
-      <div className="skeleton rounded-3xl" style={{ height: "480px" }} />
+    <div className="max-w-4xl mx-auto space-y-8 animate-pulse pb-32">
+      <div className="h-10 w-48 bg-slate-200 dark:bg-white/5 rounded-2xl mx-auto" />
+      <div className="aspect-[1.4/1] w-full rounded-[48px] bg-slate-200 dark:bg-white/5 border border-border mt-12" />
     </div>
   );
 }
 
 export default function CertificatePage() {
   const { certId } = useParams();
+  const router = useRouter();
   const [cert, setCert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -33,10 +51,20 @@ export default function CertificatePage() {
 
   if (loading) return <CertificateSkeleton />;
   if (notFound) return (
-    <div className="text-center py-20">
-      <p className="text-5xl mb-3">🔍</p>
-      <p className="text-lg font-semibold text-zinc-700">Certificate not found</p>
-      <p className="text-sm text-zinc-400 mt-1">This certificate ID doesn't exist or may have been revoked.</p>
+    <div className="text-center py-32 space-y-8">
+      <div className="w-24 h-24 rounded-[32px] bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3 opacity-30 shadow-inner">
+        <AlertCircle className="w-10 h-10" />
+      </div>
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-text-1 tracking-tighter leading-tight">Certificate Not Found</h2>
+        <p className="text-sm text-text-3 font-medium max-w-xs mx-auto">This certificate does not exist or may have been removed.</p>
+      </div>
+      <button 
+        onClick={() => router.push('/explore')}
+        className="px-8 py-3 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-transform active:scale-95"
+      >
+        Explore Content
+      </button>
     </div>
   );
 
@@ -45,163 +73,163 @@ export default function CertificatePage() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-
-      {/* Actions */}
-      <div className="flex items-center justify-between flex-wrap gap-3 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-zinc-900">Certificate of Completion</h1>
-          <p className="text-sm text-zinc-400 mt-0.5">ID: {cert.certId}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Link copied!");
-          }} className="btn-secondary text-sm flex items-center gap-2">
-            🔗 Copy Link
-          </button>
-          <button onClick={handlePrint} className="btn-primary text-sm flex items-center gap-2">
-            ⬇ Download
-          </button>
-        </div>
-      </div>
-
-      {/* Certificate */}
-      <div ref={certRef}
-        className="relative overflow-hidden rounded-3xl print:rounded-none"
-        style={{
-          background: "linear-gradient(135deg, #fefce8 0%, #fff7ed 40%, #fef3c7 100%)",
-          border: "2px solid #fde68a",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)",
-          minHeight: "480px",
-        }}>
-
-        {/* Decorative corner ornaments */}
-        <div className="absolute top-4 left-4 w-16 h-16 opacity-20">
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M4 4 L4 28 M4 4 L28 4" stroke="#92400e" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M4 4 L20 20" stroke="#92400e" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 4"/>
-          </svg>
-        </div>
-        <div className="absolute top-4 right-4 w-16 h-16 opacity-20" style={{ transform: "scaleX(-1)" }}>
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M4 4 L4 28 M4 4 L28 4" stroke="#92400e" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M4 4 L20 20" stroke="#92400e" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 4"/>
-          </svg>
-        </div>
-        <div className="absolute bottom-4 left-4 w-16 h-16 opacity-20" style={{ transform: "scaleY(-1)" }}>
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M4 4 L4 28 M4 4 L28 4" stroke="#92400e" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
-        <div className="absolute bottom-4 right-4 w-16 h-16 opacity-20" style={{ transform: "scale(-1)" }}>
-          <svg viewBox="0 0 64 64" fill="none">
-            <path d="M4 4 L4 28 M4 4 L28 4" stroke="#92400e" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
-
-        {/* Subtle pattern */}
-        <div className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: "radial-gradient(circle, #92400e 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }} />
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-12 py-14 gap-5">
-
-          {/* Logo + platform */}
+    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+      
+      {/* ── Action HUD ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6 print:hidden"
+      >
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-amber-800 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-amber-100" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
-              </svg>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Certificate Details</span>
+            <span className="w-1 h-1 rounded-full bg-border" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">ID: {cert.certId.slice(-12)}</span>
+          </div>
+          <h1 className="text-2xl font-black text-text-1 tracking-tight">
+            Course <span className="text-indigo-500">Certificate</span>
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success("Link copied to clipboard", {
+                 style: { borderRadius: '16px', background: '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 'bold' }
+              });
+            }} 
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[10px] font-black uppercase tracking-widest text-text-2 hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Link
+          </button>
+          <button 
+            onClick={handlePrint} 
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-900/20"
+          >
+            <Download className="w-4 h-4" />
+            Print / Download
+          </button>
+        </div>
+      </motion.div>
+
+      {/* ── Certificate Canvas ── */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={springConfig}
+        ref={certRef}
+        className="relative aspect-[1.4/1] w-full bg-white dark:bg-slate-950 overflow-hidden rounded-[48px] print:rounded-none shadow-3xl ring-1 ring-border group"
+      >
+        {/* Anti-Gravity Decor */}
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/10 transition-all duration-1000" />
+        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-[100px] -z-10" />
+        
+        {/* High-End Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" 
+          style={{ backgroundImage: 'radial-gradient(var(--text-1) 1px, transparent 1px)', backgroundSize: '32px 32px' }} 
+        />
+
+        {/* Framing */}
+        <div className="absolute inset-8 border border-text-1/5 rounded-[32px] pointer-events-none" />
+        <div className="absolute inset-12 border-2 border-text-1/5 rounded-[24px] pointer-events-none" />
+
+        <div className="relative h-full flex flex-col items-center justify-between p-16 md:p-24 text-center">
+          
+          {/* Logo HUD */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-950 shadow-2xl">
+                <Zap className="w-5 h-5" />
+              </div>
+              <span className="text-[12px] font-black text-text-1 uppercase tracking-[0.4em]">EduShare Platform</span>
             </div>
-            <span className="text-amber-900 font-bold text-sm tracking-widest uppercase">EduShare</span>
+            <div className="flex items-center justify-center gap-4">
+               <div className="h-px w-8 bg-text-1/10" />
+               <span className="text-[9px] font-black text-text-3 uppercase tracking-widest">Official Document</span>
+               <div className="h-px w-8 bg-text-1/10" />
+            </div>
           </div>
 
-          {/* Title */}
-          <div>
-            <p className="text-amber-700 text-xs font-semibold uppercase tracking-[0.2em] mb-1">
-              Certificate of Completion
-            </p>
-            <div className="w-24 h-px bg-amber-400 mx-auto" />
+          {/* Recipient Logic */}
+          <div className="space-y-6">
+            <p className="text-[13px] font-black text-text-3 uppercase tracking-[0.3em] font-serif">Certificate of Completion</p>
+            <div className="space-y-2">
+              <p className="text-[11px] font-black text-text-3 uppercase tracking-widest opacity-40">This verifies that</p>
+              <h2 className="text-5xl md:text-7xl font-black text-text-1 tracking-tighter leading-tight drop-shadow-2xl">
+                {cert.recipientName}
+              </h2>
+            </div>
+            <div className="max-w-xl mx-auto space-y-4 pt-4">
+              <p className="text-[14px] font-medium text-text-2 leading-relaxed opacity-80">
+                Has successfully completed the final quiz for the course:
+              </p>
+              <div className="px-8 py-6 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border inline-block shadow-inner">
+                <p className="text-xl md:text-2xl font-black text-text-1 tracking-tight leading-tight">
+                  {cert.videoTitle}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* This certifies */}
-          <p className="text-amber-800/70 text-sm italic">This certifies that</p>
-
-          {/* Recipient name */}
-          <div>
-            <h2 className="text-4xl font-black text-amber-900 tracking-tight"
-              style={{ fontFamily: "Georgia, serif" }}>
-              {cert.recipientName}
-            </h2>
-            <div className="w-48 h-0.5 bg-amber-400/60 mx-auto mt-2" />
+          {/* Vitals Matrix */}
+          <div className="flex items-center gap-12 pt-8">
+            <div className="text-center space-y-1">
+              <p className="text-2xl font-black text-text-1 tracking-tighter">{cert.score}%</p>
+              <p className="text-[9px] font-black text-text-3 uppercase tracking-widest opacity-50">Score</p>
+            </div>
+            <div className="w-px h-10 bg-border shadow-inner" />
+            <div className="text-center space-y-1">
+              <p className="text-[15px] font-black text-text-1 tracking-tight">{cert.issuerName}</p>
+              <p className="text-[9px] font-black text-text-3 uppercase tracking-widest opacity-50">Instructor</p>
+            </div>
+            <div className="w-px h-10 bg-border shadow-inner" />
+            <div className="text-center space-y-1">
+              <p className="text-[15px] font-black text-text-1 tracking-tight">{issuedDate}</p>
+              <p className="text-[9px] font-black text-text-3 uppercase tracking-widest opacity-50">Issue Date</p>
+            </div>
           </div>
 
-          {/* Achievement text */}
-          <p className="text-amber-800/80 text-sm max-w-md leading-relaxed">
-            has successfully completed the knowledge assessment for
+          {/* Integrity Seal */}
+          <div className="flex flex-col items-center gap-3">
+             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/5 text-emerald-500 border border-emerald-500/10 backdrop-blur-md">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Verified Account</span>
+             </div>
+             <p className="text-[9px] font-black text-text-3 uppercase tracking-widest opacity-30 font-mono">
+               Certificate ID: {cert.certId}
+             </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ── Integrity HUD ── */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-[48px] shadow-2xl flex items-center gap-6 print:hidden"
+      >
+        <div className="w-16 h-16 rounded-[24px] bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-inner">
+          <CheckCircle2 className="w-8 h-8" />
+        </div>
+        <div className="flex-1 space-y-1">
+          <p className="text-lg font-black text-text-1 tracking-tight leading-tight">Certificate Verified</p>
+          <p className="text-sm font-medium text-text-3">
+            This certificate is an official record issued by EduShare and can be publicly verified.
           </p>
-
-          {/* Course name */}
-          <div className="bg-white/50 backdrop-blur-sm border border-amber-200 rounded-2xl px-6 py-3 max-w-md">
-            <p className="text-amber-900 font-bold text-lg leading-snug">
-              {cert.videoTitle}
-            </p>
-            {cert.video?.subject && (
-              <p className="text-amber-700/70 text-xs mt-1 uppercase tracking-wide">{cert.video.subject}</p>
-            )}
-          </div>
-
-          {/* Score */}
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <p className="text-3xl font-black text-amber-800">{cert.score}%</p>
-              <p className="text-xs text-amber-700/60 uppercase tracking-wide mt-0.5">Score</p>
-            </div>
-            <div className="w-px h-10 bg-amber-300" />
-            <div className="text-center">
-              <p className="text-sm font-semibold text-amber-800">{cert.issuerName}</p>
-              <p className="text-xs text-amber-700/60 uppercase tracking-wide mt-0.5">Instructor</p>
-            </div>
-            <div className="w-px h-10 bg-amber-300" />
-            <div className="text-center">
-              <p className="text-sm font-semibold text-amber-800">{issuedDate}</p>
-              <p className="text-xs text-amber-700/60 uppercase tracking-wide mt-0.5">Issued</p>
-            </div>
-          </div>
-
-          {/* Verification */}
-          <div className="flex items-center gap-2 bg-white/40 border border-amber-200 rounded-full px-4 py-1.5">
-            <svg className="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-            </svg>
-            <span className="text-xs text-amber-800/70 font-mono">{cert.certId}</span>
-          </div>
         </div>
-      </div>
-
-      {/* Verification info */}
-      <div className="card p-4 flex items-center gap-3 print:hidden">
-        <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-zinc-800">Verified Certificate</p>
-          <p className="text-xs text-zinc-400">
-            This certificate is authentic and verifiable at{" "}
-            <span className="font-mono text-zinc-600">/certificates/verify/{cert.certId}</span>
-          </p>
-        </div>
-        <Link href={`/profile/${cert.recipient?.firebaseUid}`}
-          className="ml-auto btn-secondary text-xs">
+        <button 
+          onClick={() => router.push(`/profile/${cert.recipient?.firebaseUid}`)}
+          className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-900/20"
+        >
           View Profile
-        </Link>
-      </div>
+          <ChevronLeft className="w-4 h-4 rotate-180" />
+        </button>
+      </motion.div>
     </div>
   );
 }
+

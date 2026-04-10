@@ -1,189 +1,296 @@
 "use client";
+import React from "react";
+import { 
+  Video, 
+  FileText, 
+  Zap, 
+  Shield, 
+  Sparkles, 
+  Star, 
+  Users, 
+  ArrowRight,
+  Activity,
+  Layers,
+  Database,
+  Cpu,
+  Monitor,
+  ShieldCheck,
+  ChevronRight,
+  Target,
+  Trophy
+} from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
-const features = [
+const springConfig = { mass: 1, tension: 120, friction: 20 };
+
+const protocolNodes = [
   {
-    icon: "🎥",
-    title: "Teaching Videos",
-    desc: "Upload your lessons and earn credits every time a student watches. Build your teaching portfolio.",
-    tag: "Video",
-    color: "#6366f1",
-    bg: "#f5f3ff",
+    icon: Video,
+    title: "Intelligence Broadcasts",
+    desc: "Materialize your expertise through high-fidelity video nodes. Earn credits through global intellectual distribution.",
+    tag: "Video Node",
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/5",
   },
   {
-    icon: "📄",
-    title: "Study Notes",
-    desc: "Share PDFs, handouts, and study guides. Get rewarded with credits for every download.",
-    tag: "Notes",
-    color: "#10b981",
-    bg: "#f0fdf4",
+    icon: FileText,
+    title: "Static Asset Matrix",
+    desc: "Synchronize PDFs, schematics, and study logs. Accrue liquidity for every node materialization by peers.",
+    tag: "Asset Node",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/5",
   },
   {
-    icon: "📡",
-    title: "Live Sessions",
-    desc: "Host interactive live classes. Connect with students in real-time and earn bonus credits.",
-    tag: "Live",
-    color: "#f59e0b",
-    bg: "#fffbeb",
+    icon: Activity,
+    title: "Sync Seminars",
+    desc: "Host interactive real-time protocols. Forge direct neural links with agents and earn priority bonuses.",
+    tag: "Live Node",
+    color: "text-rose-500",
+    bg: "bg-rose-500/5",
   },
   {
-    icon: "🏆",
-    title: "Credit Rewards",
-    desc: "A fair economy where teaching is valued. The more you share, the more you earn.",
-    tag: "Credits",
-    color: "#ec4899",
-    bg: "#fdf2f8",
+    icon: Zap,
+    title: "Academic Liquidity",
+    desc: "A meritocratic economy where contribution equals influence. The greater the value, the higher your status.",
+    tag: "Elite Node",
+    color: "text-amber-500",
+    bg: "bg-amber-500/5",
   },
 ];
 
-const steps = [
+const syncSequence = [
   {
     n: "01",
-    title: "Create your account",
-    desc: "Sign up free in seconds. No credit card needed.",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-      </svg>
-    ),
+    title: "Identity Initialization",
+    desc: "Standardize your agent profile in seconds. No complex authorization required.",
+    icon: Users,
+    color: "text-indigo-500",
   },
   {
     n: "02",
-    title: "Share your knowledge",
-    desc: "Upload videos, notes, or go live. Any subject, any level.",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-      </svg>
-    ),
+    title: "Protocol Projection",
+    desc: "Uplink videos, asset logs, or initiate live streams. Every subject, every frequency.",
+    icon: Database,
+    color: "text-emerald-500",
   },
   {
     n: "03",
-    title: "Earn as you teach",
-    desc: "Get credits for every view, download, and attendee. Spend credits to access premium content.",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-    ),
+    title: "Merit Accumulation",
+    desc: "Acquire intelligence credits for every validation. Re-allocate resources to access elite content.",
+    icon: Zap,
+    color: "text-amber-500",
   },
 ];
 
-const testimonials = [
+const agentTestimonials = [
   {
-    name: "Priya S.",
-    role: "Engineering Student",
-    text: "EduShare helped me ace my semester exams. The peer-uploaded content is gold.",
+    name: "Agent Priya S.",
+    role: "Engineering Architect",
+    text: "The EduShare protocol optimized my synchronization efficiency. The peer-contributed nodes are of elite caliber.",
     avatar: "P",
-    color: "#6366f1",
+    color: "bg-indigo-500",
   },
   {
-    name: "Rahul M.",
-    role: "Content Creator",
-    text: "I've earned over 2000 credits teaching programming. It's genuinely rewarding.",
+    name: "Agent Rahul M.",
+    role: "System Specialist",
+    text: "I have accrued over 2,000 intelligence credits through node projection. The reward mechanisms are highly optimized.",
     avatar: "R",
-    color: "#10b981",
+    color: "bg-emerald-500",
   },
   {
-    name: "Aisha K.",
-    role: "Study Group Leader",
-    text: "The live sessions feature changed how our group revises. Real-time teaching is powerful.",
+    name: "Agent Aisha K.",
+    role: "Collective Alpha",
+    text: "Real-time sync seminars have revolutionized our group revision protocols. Direct knowledge transfer is unparalleled.",
     avatar: "A",
-    color: "#f59e0b",
+    color: "bg-rose-500",
   },
 ];
 
 export default function HomeClient() {
   return (
-    <>
-      {/* ── Features ── */}
+    <div className="space-y-40 pb-40">
+      
+      {/* ── Foundation Nodes: Features ── */}
       <section>
-        <div className="text-center mb-12">
-          <p className="section-label mb-3">Platform</p>
-          <h2 className="section-title mb-3">Everything in one place</h2>
-          <p className="text-[15px] max-w-md mx-auto" style={{ color: "var(--text-2)" }}>
-            A complete learning ecosystem built by students, for students.
+        <div className="text-center mb-20 space-y-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+             <div className="w-12 h-px bg-indigo-500/20" />
+             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Architecture</p>
+             <div className="w-12 h-px bg-indigo-500/20" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Unified Intelligence Hub</h2>
+          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
+            A frictionless learning ecosystem engineered for the next generation of scholars.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          {features.map((f) => (
-            <div key={f.title}
-              className="card p-6 cursor-default"
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "var(--shadow)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
-              <div className="card-shine" />
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl mb-4"
-                style={{ background: f.bg }}>
-                {f.icon}
-              </div>
-              <span className="badge mb-2 text-[10px]"
-                style={{ background: f.bg, color: f.color, border: `1px solid ${f.color}30` }}>
-                {f.tag}
-              </span>
-              <h3 className="font-bold text-[14px] mb-2 mt-1" style={{ color: "var(--text-1)" }}>{f.title}</h3>
-              <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-2)" }}>{f.desc}</p>
-            </div>
-          ))}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6">
+          {protocolNodes.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <motion.div 
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-[40px] shadow-sm hover:shadow-2xl transition-all"
+              >
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-surface-2 rounded-full blur-2xl group-hover:scale-150 transition-all opacity-20" />
+                
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border border-border/50 ${f.bg} ${f.color} shadow-inner`}>
+                  <Icon className="w-6 h-6 stroke-[2.5px]" />
+                </div>
+                
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 text-[9px] font-black uppercase tracking-widest text-text-3 mb-4 italic">
+                  <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
+                  {f.tag}
+                </div>
+                
+                <h3 className="text-lg font-black text-text-1 tracking-tight mb-3 italic group-hover:text-indigo-500 transition-colors">{f.title}</h3>
+                <p className="text-xs font-semibold text-text-2 leading-relaxed italic opacity-80">{f.desc}</p>
+                
+                <div className="pt-6 flex justify-end">
+                   <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 border border-border flex items-center justify-center text-text-3 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                      <ChevronRight className="w-5 h-5" />
+                   </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section>
-        <div className="text-center mb-12">
-          <p className="section-label mb-3">Process</p>
-          <h2 className="section-title mb-3">Simple as 1, 2, 3</h2>
-          <p className="text-[15px] max-w-md mx-auto" style={{ color: "var(--text-2)" }}>
-            Get started in minutes and become part of a growing learning community.
+      {/* ── Synchronization Sequence: How it works ── */}
+      <section className="relative overflow-hidden py-10">
+        <div className="absolute top-1/2 left-0 w-full h-[500px] bg-indigo-500/5 -translate-y-1/2 blur-[120px] -z-10" />
+        
+        <div className="text-center mb-20 space-y-4">
+           <div className="flex items-center justify-center gap-2 mb-2">
+             <div className="w-12 h-px bg-indigo-500/20" />
+             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Process</p>
+             <div className="w-12 h-px bg-indigo-500/20" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Operational Sequence</h2>
+          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
+            Transition from observer to active node participant in mere minutes.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-grid">
-          {steps.map((s, i) => (
-            <div key={s.n} className="card p-7 relative overflow-hidden">
-              <div className="absolute -top-2 -right-2 text-[80px] font-black leading-none select-none pointer-events-none"
-                style={{ color: "var(--border)", opacity: 0.5 }}>
-                {s.n}
-              </div>
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 relative z-10"
-                style={{ background: "var(--accent-2)", color: "var(--accent)", border: "1px solid var(--accent-3)" }}>
-                {s.icon}
-              </div>
-              <h3 className="font-bold text-[14px] mb-2 relative z-10" style={{ color: "var(--text-1)" }}>{s.title}</h3>
-              <p className="text-[13px] leading-relaxed relative z-10" style={{ color: "var(--text-2)" }}>{s.desc}</p>
-            </div>
-          ))}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-6 max-w-6xl mx-auto">
+          {syncSequence.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <motion.div 
+                key={s.n}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="relative bg-white/40 dark:bg-white/[0.02] border border-border p-10 rounded-[48px] backdrop-blur-md group hover:bg-white dark:hover:bg-white/5 transition-all"
+              >
+                <div className="absolute -top-4 -right-4 text-[120px] font-black leading-none select-none opacity-[0.03] group-hover:opacity-[0.08] transition-all text-text-1">
+                  {s.n}
+                </div>
+                
+                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center mb-8 border border-border bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/5 ${s.color}`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                
+                <h3 className="text-xl font-black text-text-1 tracking-tight mb-4 italic">{s.title}</h3>
+                <p className="text-sm font-semibold text-text-2 leading-relaxed italic opacity-70 italic">{s.desc}</p>
+                
+                {i < syncSequence.length - 1 && (
+                  <div className="absolute top-1/2 -right-4 translate-x-full hidden md:block opacity-20 group-hover:opacity-100 group-hover:-translate-x-1 transition-all">
+                     <ArrowRight className="w-6 h-6 text-indigo-500" />
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section>
-        <div className="text-center mb-12">
-          <p className="section-label mb-3">Community</p>
-          <h2 className="section-title mb-3">Loved by students</h2>
+      {/* ── Agent Testimonials ── */}
+      <section className="px-6">
+        <div className="text-center mb-16 space-y-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+             <div className="w-12 h-px bg-indigo-500/20" />
+             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Collective</p>
+             <div className="w-12 h-px bg-indigo-500/20" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Acknowledged by the Network</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-grid">
-          {testimonials.map((t) => (
-            <div key={t.name} className="card p-6">
-              <div className="flex gap-0.5 mb-4">
-                {Array(5).fill(0).map((_, i) => (
-                  <svg key={i} className="w-4 h-4" fill="#f59e0b" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                  </svg>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {agentTestimonials.map((t, i) => (
+            <motion.div 
+              key={t.name}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-sm relative group hover:shadow-3xl transition-all"
+            >
+              <div className="flex gap-1 mb-8">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 text-amber-500 fill-current" />
                 ))}
               </div>
-              <p className="text-[13.5px] leading-relaxed mb-5 italic" style={{ color: "var(--text-2)" }}>"{t.text}"</p>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                  style={{ background: t.color }}>
+              
+              <div className="relative mb-8">
+                <p className="text-lg font-black text-text-1 leading-relaxed italic relative z-10 line-clamp-4">
+                  "{t.text}"
+                </p>
+                <div className="absolute -top-4 -left-4 w-12 h-12 bg-indigo-500/10 rounded-full blur-xl group-hover:scale-150 transition-all" />
+              </div>
+              
+              <div className="flex items-center gap-4 pt-6 border-t border-border/50">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black text-white shrink-0 shadow-lg ${t.color}`}>
                   {t.avatar}
                 </div>
                 <div>
-                  <p className="text-[13px] font-semibold" style={{ color: "var(--text-1)" }}>{t.name}</p>
-                  <p className="text-[11px]" style={{ color: "var(--text-3)" }}>{t.role}</p>
+                  <p className="text-sm font-black text-text-1 italic">{t.name}</p>
+                  <p className="text-[10px] font-black text-text-3 uppercase tracking-widest italic opacity-60">{t.role}</p>
+                </div>
+                <div className="ml-auto">
+                   <ShieldCheck className="w-5 h-5 text-indigo-500 opacity-30" />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
-    </>
+
+      {/* ── Global Call to Action: Final Polish ── */}
+      <section className="px-6 text-center max-w-4xl mx-auto space-y-12">
+         <div className="space-y-6">
+            <Sparkles className="w-12 h-12 text-indigo-500 mx-auto animate-pulse" />
+            <h2 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter italic">Transcend Legacy Learning.</h2>
+            <p className="text-lg text-text-2 font-medium italic leading-relaxed">
+              Initialize your presence in the global network and start your journey towards intellectual mastery.
+            </p>
+         </div>
+         
+         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link href="/register" className="group relative w-full sm:w-auto px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-black text-[13px] uppercase tracking-[0.3em] italic hover:scale-105 active:scale-95 transition-all shadow-3xl">
+              Authorize Agent Profile
+              <ArrowRight className="w-4 h-4 ml-2 inline group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <div className="flex items-center gap-6">
+               <div className="h-px w-8 bg-border" />
+               <span className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em] italic">or</span>
+               <div className="h-px w-8 bg-border" />
+            </div>
+            <Link href="/login" className="text-[13px] font-black uppercase tracking-[0.3em] text-text-2 hover:text-indigo-500 transition-colors italic">
+              Restore Session
+            </Link>
+         </div>
+      </section>
+
+    </div>
   );
 }
+

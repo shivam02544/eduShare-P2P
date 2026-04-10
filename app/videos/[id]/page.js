@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import Comments from "@/components/Comments";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
 import QuizTaker from "@/components/QuizTaker";
@@ -15,16 +16,45 @@ import ChapterEditor from "@/components/ChapterEditor";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import ReportButton from "@/components/ReportButton";
 import { getCdnUrl } from "@/lib/cdn";
+import { 
+  Play, 
+  User, 
+  Calendar, 
+  Eye, 
+  Flag, 
+  ChevronLeft, 
+  Award, 
+  BookOpen, 
+  Zap, 
+  Layout, 
+  Clock,
+  Sparkles,
+  MoreVertical,
+  CheckCircle2,
+  AlertCircle,
+  Database,
+  ArrowRight,
+  ShieldCheck,
+  Activity,
+  Archive,
+  Terminal,
+  Cpu,
+  Monitor,
+  Target
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 function VideoSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
-      <div className="skeleton w-full rounded-2xl" style={{ aspectRatio: "16/9" }} />
-      <div className="space-y-3">
-        <div className="skeleton h-6 w-3/4" />
-        <div className="skeleton h-4 w-1/3" />
-        <div className="skeleton h-4 w-full" />
-        <div className="skeleton h-4 w-2/3" />
+    <div className="max-w-[1440px] mx-auto space-y-12 animate-pulse pb-32 px-8">
+      <div className="aspect-video w-full rounded-[64px] bg-slate-200 dark:bg-white/5 border border-border/50" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="h-16 w-3/4 bg-slate-200 dark:bg-white/5 rounded-3xl" />
+          <div className="h-8 w-1/4 bg-slate-200 dark:bg-white/5 rounded-xl" />
+        </div>
+        <div className="h-96 bg-slate-200 dark:bg-white/5 rounded-[48px]" />
       </div>
     </div>
   );
@@ -35,21 +65,21 @@ export default function VideoPage() {
   const { user, loading: authLoading, authFetch } = useAuth();
   const router = useRouter();
   const videoRef = useRef(null);
+  const viewLogged = useRef(false);
   const [video, setVideo] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [duration, setDuration] = useState(0);
+  const [adminMode, setAdminMode] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
   }, [user, authLoading]);
 
-  // SEO: Update page title
   useEffect(() => {
     if (video?.title) {
-      document.title = `${video.title} — EduShare`;
+      document.title = `${video.title} — Video Lesson`;
     }
-    return () => { document.title = "EduShare – Peer Knowledge Exchange"; };
   }, [video]);
 
   useEffect(() => {
@@ -59,7 +89,6 @@ export default function VideoPage() {
       authFetch(`/api/videos/${id}/quiz`).then((r) => r.json()),
       authFetch(`/api/watch-history`).then((r) => r.json()),
     ]).then(([videoData, quizData, historyData]) => {
-      // Attach saved progress to video object
       const myProgress = Array.isArray(historyData)
         ? historyData.find((h) => h.video?._id === id || h.video === id)
         : null;
@@ -69,7 +98,6 @@ export default function VideoPage() {
     });
   }, [id, user]);
 
-  // Track watch progress
   useWatchProgress({
     videoRef,
     videoId: id,
@@ -77,268 +105,426 @@ export default function VideoPage() {
     enabled: !!video && !!user,
   });
 
-  // Record view once loaded
   useEffect(() => {
-    if (video && user) {
+    if (video && user && !viewLogged.current) {
+      viewLogged.current = true;
       authFetch(`/api/videos/${id}/view`, { method: "POST" })
         .then((r) => r.json())
         .then((d) => {
           if (d.message?.includes("credits")) {
-             toast(d.message, {
-               icon: (
-                 <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                   <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
-                 </svg>
-               )
+             toast.success(d.message, {
+               icon: <Zap className="w-5 h-5 text-amber-500" />,
+               style: { borderRadius: '24px', background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontWeight: '900', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em' }
              });
           }
         });
     }
-  }, [video, user]);
+  }, [video, user, id, authFetch]);
 
   if (authLoading || loading) return <VideoSkeleton />;
   if (!video || video.error) return (
-    <div className="text-center py-20">
-      <p className="text-lg font-semibold text-zinc-700">Video not found</p>
-      <Link href="/explore" className="text-sm text-violet-600 hover:underline mt-2 block">Back to Explore</Link>
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center space-y-10">
+      <div className="relative">
+         <div className="w-40 h-40 rounded-[48px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
+           <AlertCircle className="w-20 h-20" />
+         </div>
+         <motion.div 
+           animate={{ rotate: 360 }}
+           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+           className="absolute -inset-4 border border-indigo-500/20 rounded-full border-dashed"
+         />
+      </div>
+      <div className="space-y-4">
+        <h2 className="text-4xl font-bold text-text-1 tracking-tighter">Video Not Found</h2>
+        <p className="text-text-3 font-bold uppercase tracking-widest text-[10px]">Access Denied or Video Offline</p>
+      </div>
+      <Link href="/explore" className="group flex items-center gap-4 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-bold text-[12px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        Go Back
+      </Link>
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
 
-      {/* Video player — direct MP4 via S3/CloudFront */}
-      <div className="bg-zinc-900 rounded-2xl overflow-hidden shadow-xl" style={{ aspectRatio: "16/9" }}>
+      {/* ── Video Player ── */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={springConfig}
+        className="relative aspect-video w-full rounded-[64px] overflow-hidden bg-slate-950 shadow-3xl ring-1 ring-white/10"
+      >
         <video
           ref={videoRef}
           src={getCdnUrl(video.videoUrl)}
           controls
-          className="w-full h-full"
+          className="w-full h-full shadow-inner"
           preload="metadata"
           poster={getCdnUrl(video.thumbnailUrl || "")}
           onLoadedMetadata={(e) => {
             setDuration(e.target.duration);
-            // Resume from saved progress if available
             if (video?.watchProgress?.progressSeconds > 10) {
               e.target.currentTime = video.watchProgress.progressSeconds;
             }
           }}
         />
-      </div>
-
-      {/* Info */}
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="badge bg-violet-50 text-violet-700 border border-violet-100">
-                {video.subject}
-              </span>
-              {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
-                <span className="badge bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0111 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                  </svg>
-                  Boosted
-                </span>
-              )}
-            </div>
-            <h1 className="text-2xl font-bold text-zinc-900 leading-tight">{video.title}</h1>
-          </div>
+        <div className="absolute top-8 left-8 p-1.5 px-4 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white text-[9px] font-bold uppercase tracking-widest pointer-events-none">
+           Video Player
         </div>
+      </motion.div>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <Link href={`/profile/${video.uploader?.firebaseUid}`}
-            className="flex items-center gap-2.5 group">
-            {video.uploader?.image ? (
-              <img src={video.uploader.image} alt="" className="w-9 h-9 rounded-xl object-cover" />
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-violet-700 font-bold">
-                {video.uploader?.name?.[0]?.toUpperCase()}
+      {/* ── Lesson Content ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-16">
+        <div className="xl:col-span-2 space-y-12">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                 <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20">
+                    <Database className="w-3.5 h-3.5" />
+                    {video.subject || "Lesson"}
+                 </div>
+                 {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
+                   <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] border border-amber-500/20 animate-pulse">
+                      <Zap className="w-3.5 h-3.5 fill-current" />
+                      Featured
+                   </div>
+                 )}
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-text-1 tracking-tighter leading-tight">
+                {video.title}
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-6 justify-between border-b border-border/50 pb-10 pt-4">
+              <Link href={`/profile/${video.uploader?.firebaseUid}`} className="flex items-center gap-5 group">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-[28px] overflow-hidden border border-border shadow-2xl transition-transform group-hover:scale-105 active:scale-95">
+                    {video.uploader?.image ? (
+                      <img src={video.uploader.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 font-bold text-lg">
+                        {video.uploader?.name?.[0]}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1">
+                     <ShieldCheck className="w-5 h-5 text-indigo-500 fill-white dark:fill-slate-950" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[15px] font-bold text-text-1 group-hover:text-indigo-500 transition-colors tracking-tight">
+                    {video.uploader?.name}
+                  </p>
+                  <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">Course Instructor</p>
+                </div>
+              </Link>
+
+              <div className="flex items-center gap-8">
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-xl leading-none">
+                    <Activity className="w-4 h-4 text-emerald-500" />
+                    {video.views} 
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-text-3 opacity-40">Views</span>
+                </div>
+                <div className="w-px h-10 bg-border/50" />
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-xl leading-none">
+                    <Calendar className="w-4 h-4 text-indigo-500" />
+                    {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-text-3 opacity-40">Posted On</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Video Actions: Interaction HUD */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-4 flex-wrap"
+          >
+            <div className="p-2 px-6 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border flex items-center gap-4 shadow-sm hover:border-indigo-500/30 transition-all group">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-text-3 group-hover:text-indigo-500 transition-colors">Likes</span>
+              <div className="w-px h-6 bg-border/50" />
+              <LikeBookmarkBar item={video} type="video" />
+            </div>
+            
+            <div className="p-1 px-2 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border shadow-sm hover:border-indigo-500/30 transition-all">
+               <AddToCollection videoId={id} />
+            </div>
+
+            {video?.uploader?.firebaseUid === user?.uid && (
+              <div className="flex items-center gap-2">
+                <BoostButton
+                  type="video"
+                  id={id}
+                  boostedUntil={video.boostedUntil}
+                  onBoosted={(until) => setVideo((v) => ({ ...v, boostedUntil: until }))}
+                />
+                <button 
+                  onClick={() => setAdminMode(!adminMode)}
+                  className={`px-6 py-2.5 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                    adminMode 
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xl" 
+                      : "bg-white dark:bg-white/5 border-border text-text-3 hover:text-indigo-500 hover:border-indigo-500/50"
+                  }`}
+                >
+                  {adminMode ? "Close Settings" : "Edit Video"}
+                </button>
               </div>
             )}
-            <div>
-              <p className="text-sm font-semibold text-zinc-800 group-hover:text-violet-600 transition-colors">
-                {video.uploader?.name}
-              </p>
-              <p className="text-xs text-zinc-400">Instructor</p>
+            
+            <div className="ml-auto">
+              <ReportButton contentType="video" contentId={id} compact />
             </div>
-          </Link>
+          </motion.div>
 
-          <div className="flex items-center gap-4 ml-auto text-sm text-zinc-400">
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-              {video.views} views
-            </span>
-            <span>
-              {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-            </span>
-            <ReportButton contentType="video" contentId={id} compact />
-          </div>
-        </div>
-
-        {/* Like / Bookmark / Share / Add to Collection */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <LikeBookmarkBar item={video} type="video" />
-          <AddToCollection videoId={id} />
-          {/* Boost — only for uploader */}
-          {video?.uploader?.firebaseUid === user?.uid && (
-            <BoostButton
-              type="video"
-              id={id}
-              boostedUntil={video.boostedUntil}
-              onBoosted={(until) => setVideo((v) => ({ ...v, boostedUntil: until }))}
-            />
+          {/* Description */}
+          {video.description && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[56px] shadow-2xl relative group overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all">
+                 <Terminal className="w-24 h-24" />
+              </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
+                   <Archive className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Information</span>
+                   <span className="text-lg font-bold text-text-1">Description</span>
+                </div>
+              </div>
+              <p className="text-[16px] font-medium text-text-2 leading-relaxed whitespace-pre-line opacity-90">{video.description}</p>
+            </motion.div>
           )}
-        </div>
 
-        {/* Description */}
-        {video.description && (
-          <div className="card p-4">
-            <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{video.description}</p>
-          </div>
-        )}
+          {/* Video Sections: Chapters indices */}
+          {video.chapters?.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[56px] shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-[80px]" />
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-14 h-14 rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-xl">
+                  <Target className="w-7 h-7" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-text-1 tracking-tighter">Video Chapters</h2>
+                  <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">Video Sections</p>
+                </div>
+              </div>
+              <ChapterList
+                chapters={video.chapters}
+                videoRef={videoRef}
+                videoDuration={duration}
+              />
+            </motion.div>
+          )}
+          
+          {/* Quiz Section: Manage and Take tests */}
+          <AnimatePresence>
+            {(quiz?.exists || (video?.uploader?.firebaseUid === user?.uid)) && (
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 md:p-14 rounded-[56px] shadow-2l relative group overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -z-10 transition-transform duration-1000 group-hover:scale-150" />
+                
+                <div className="space-y-12">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="flex items-center gap-6">
+                      <div className="w-16 h-16 rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30">
+                        <Zap className="w-8 h-8 fill-current" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold text-text-1 tracking-tighter">Video Quiz</h2>
+                        <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">
+                          {quiz?.exists ? (
+                            quiz.attempted
+                              ? `Status: Success (${quiz.attempt.score}%)`
+                              : `Quiz Pending: Take the test`
+                          ) : "No quiz available"}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {quiz?.exists && quiz.attempted && (
+                      <div className={`px-8 py-4 rounded-3xl border text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${
+                        quiz.attempt.passed ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                      }`}>
+                         {quiz.attempt.passed ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                         {quiz.attempt.passed ? "Passed" : "Failed"}
+                      </div>
+                    )}
+                  </div>
 
-        {/* Back link */}
-        <div className="pt-2">
-          <button onClick={() => router.back()}
-            className="btn-ghost flex items-center gap-2 text-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-            </svg>
-            Back
-          </button>
-        </div>
-      </div>
-
-      {/* Chapters — viewer */}
-      {video.chapters?.length > 0 && (
-        <div className="card p-5">
-          <ChapterList
-            chapters={video.chapters}
-            videoRef={videoRef}
-            videoDuration={duration}
-          />
-        </div>
-      )}
-
-      {/* Chapter editor — uploader only */}
-      {video?.uploader?.firebaseUid === user?.uid && (
-        <div className="card p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-semibold text-zinc-900">
-                {video.chapters?.length > 0 ? "Edit Chapters" : "Add Chapters"}
-              </h2>
-              <p className="text-xs text-zinc-400">
-                {video.chapters?.length > 0
-                  ? `${video.chapters.length} chapters · Viewers can click to jump`
-                  : "Add timestamps so viewers can navigate your video"}
-              </p>
-            </div>
-          </div>
-          <ChapterEditor
-            videoId={id}
-            initialChapters={video.chapters || []}
-            onSaved={(chapters) => setVideo((v) => ({ ...v, chapters }))}
-          />
-        </div>
-      )}
-
-      {/* Quiz section */}
-      {quiz?.exists && (
-        <div className="card p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-semibold text-zinc-900">Knowledge Check</h2>
-              <p className="text-xs text-zinc-400">
-                {quiz.attempted
-                  ? `You scored ${quiz.attempt.score}% — ${quiz.attempt.passed ? "Passed ✓" : "Not passed"}`
-                  : `${quiz.questionCount} questions · Pass at ${quiz.passingScore}%`}
-              </p>
-            </div>
-            {quiz.attempted && quiz.attempt.creditsAwarded > 0 && (
-              <span className="ml-auto badge bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                +{quiz.attempt.creditsAwarded} earned
-              </span>
+                  {quiz?.exists ? (
+                    <div className="space-y-10">
+                      {quiz.attempted ? (
+                        <div className={`rounded-[32px] p-10 border transition-all ${
+                          quiz.attempt.passed
+                            ? "bg-emerald-500/5 border-emerald-500/20 shadow-inner"
+                            : "bg-rose-500/5 border-rose-500/20 shadow-inner"
+                        }`}>
+                          <div className={`flex items-center gap-4 mb-6 ${quiz.attempt.passed ? "text-emerald-500" : "text-rose-500"}`}>
+                             <Award className="w-8 h-8" />
+                             <span className="text-xl font-bold tracking-tight">{quiz.attempt.passed ? "Passed" : "Failed"}</span>
+                          </div>
+                          <p className="text-[15px] font-bold leading-relaxed text-text-1 opacity-80 mb-8 max-w-2xl">
+                            {quiz.attempt.passed
+                              ? `Quiz complete. You scored ${quiz.attempt.score}%. Great job!`
+                              : `You scored ${quiz.attempt.score}%. You need ${quiz.passingScore}% to pass. Please watch the video again.`}
+                          </p>
+                          {quiz.attempt.creditsAwarded > 0 && (
+                            <div className="flex items-center justify-between p-6 px-10 bg-white/50 dark:bg-slate-900 border border-border rounded-[28px] shadow-2xl">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-text-3">Credits Earned</span>
+                              <div className="flex items-center gap-3 text-amber-500 font-bold">
+                                <Zap className="w-5 h-5 fill-current" />
+                                <span className="text-2xl">+{quiz.attempt.creditsAwarded}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="pt-4">
+                           <QuizTaker
+                            quiz={quiz}
+                            videoId={id}
+                            onComplete={(result) => {
+                              setQuiz((prev) => ({
+                                ...prev,
+                                attempted: true,
+                                attempt: { score: result.score, passed: result.passed, creditsAwarded: result.creditsAwarded },
+                              }));
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : video?.uploader?.firebaseUid === user?.uid && (
+                    <div className="space-y-8 bg-slate-50 dark:bg-white/5 p-10 rounded-[40px] border border-dashed border-border">
+                       <p className="text-sm font-bold text-text-3 leading-relaxed opacity-70">Implement a quiz for this video to allow users to earn credits and verify their learning progress.</p>
+                       <QuizBuilder
+                        videoId={id}
+                        existingQuiz={null}
+                        onSaved={() => authFetch(`/api/videos/${id}/quiz`).then(r => r.json()).then(setQuiz)}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Admin: Edit Quiz */}
+                  <AnimatePresence>
+                    {adminMode && video?.uploader?.firebaseUid === user?.uid && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pt-12 border-t border-border/50 mt-10"
+                      >
+                         <div className="flex items-center gap-3 mb-8 text-text-3 opacity-40">
+                            <Cpu className="w-4 h-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Edit Mode Active</span>
+                         </div>
+                         <QuizBuilder
+                          videoId={id}
+                          existingQuiz={quiz}
+                          onSaved={() => authFetch(`/api/videos/${id}/quiz`).then(r => r.json()).then(setQuiz)}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
-          {quiz.attempted ? (
-            <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-              quiz.attempt.passed
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-red-50 text-red-700 border border-red-200"
-            }`}>
-              {quiz.attempt.passed
-                ? `You passed with ${quiz.attempt.score}%! Great work.`
-                : `You scored ${quiz.attempt.score}%. You need ${quiz.passingScore}% to pass. Each video allows one attempt.`}
+          {/* Discussion: Comments Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[64px] shadow-3xl"
+          >
+            <div className="flex items-center justify-between mb-10 px-4">
+               <div className="flex items-center gap-4">
+                  <Activity className="w-5 h-5 text-indigo-500" />
+                  <span className="text-xl font-bold text-text-1 tracking-tight">Comments</span>
+               </div>
+               <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-40">Real-time</span>
             </div>
-          ) : (
-            <QuizTaker
-              quiz={quiz}
-              videoId={id}
-              onComplete={(result) => {
-                setQuiz((prev) => ({
-                  ...prev,
-                  attempted: true,
-                  attempt: { score: result.score, passed: result.passed, creditsAwarded: result.creditsAwarded },
-                }));
-              }}
-            />
-          )}
+            <Comments videoId={id} />
+          </motion.div>
         </div>
-      )}
 
-      {/* Quiz builder — only for uploader */}
-      {video?.uploader?.firebaseUid === user?.uid && (
-        <div className="card p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="font-semibold text-zinc-900">
-                {quiz?.exists ? "Edit Quiz" : "Add Quiz"}
-              </h2>
-              <p className="text-xs text-zinc-400">
-                {quiz?.exists
-                  ? `${quiz.questionCount} questions · ${quiz.isPublished ? "Published" : "Draft"}`
-                  : "Add a quiz to test your viewers and earn bonus credits"}
-              </p>
-            </div>
-          </div>
-          <QuizBuilder
-            videoId={id}
-            existingQuiz={quiz?.exists ? quiz : null}
-            onSaved={() => authFetch(`/api/videos/${id}/quiz`).then(r => r.json()).then(setQuiz)}
-          />
+        {/* Sidebar Space: Settings & Management */}
+        <div className="space-y-12">
+          
+
+          {/* Chapter Manager (Admin Only) */}
+          <AnimatePresence>
+            {adminMode && video?.uploader?.firebaseUid === user?.uid && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-indigo-500/30 p-10 rounded-[56px] shadow-2xl relative group overflow-hidden"
+              >
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl group-hover:scale-150 transition-transform" />
+                <div className="flex items-center gap-5 mb-10">
+                  <div className="w-14 h-14 rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-xl">
+                    <Monitor className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-text-1 tracking-tighter">Dashboard</h2>
+                    <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">
+                      Manage Chapters
+                    </p>
+                  </div>
+                </div>
+                <ChapterEditor
+                  videoId={id}
+                  initialChapters={video.chapters || []}
+                  onSaved={(chapters) => setVideo((v) => ({ ...v, chapters }))}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation Controls */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex justify-center"
+          >
+            <button 
+              onClick={() => router.back()}
+              className="group flex items-center gap-5 px-10 py-5 rounded-[32px] bg-slate-50 dark:bg-white/5 text-text-2 border border-border text-[11px] font-bold uppercase tracking-widest hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all active:scale-95 shadow-xl"
+            >
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Go Back
+            </button>
+          </motion.div>
         </div>
-      )}
-
-      {/* Comments */}
-      <div className="card p-6">
-        <Comments videoId={id} />
       </div>
     </div>
   );

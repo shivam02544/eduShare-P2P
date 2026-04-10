@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -8,54 +8,57 @@ import { usePathname, useRouter } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import NotificationBell from "@/components/NotificationBell";
 import { useTheme } from "@/context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Compass, 
+  Layers, 
+  Video as VideoIcon, 
+  Trophy, 
+  Rss, 
+  LayoutDashboard, 
+  User as UserIcon, 
+  Edit3, 
+  History, 
+  Bookmark, 
+  Zap, 
+  Award, 
+  LogOut, 
+  ChevronDown, 
+  Sun, 
+  Moon,
+  ShieldCheck,
+  Command,
+  Activity,
+  Cpu,
+  Monitor,
+  Menu,
+  X,
+  Target,
+  Sparkles,
+  ArrowRight
+} from "lucide-react";
 
-const NAV = [
-  { href: "/explore",     label: "Explore",     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
-  { href: "/collections", label: "Collections", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
-  { href: "/live",        label: "Live",        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M23 7 16 12 23 17z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg> },
-  { href: "/leaderboard", label: "Leaderboard", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> },
-];
-const AUTH_NAV = [
-  { href: "/feed", label: "Feed", icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg> },
+const springConfig = { mass: 1, tension: 120, friction: 20 };
+
+const MISSION_NAV = [
+  { href: "/explore",     label: "Explore Content",     icon: Compass },
+  { href: "/collections", label: "My Collections", icon: Layers },
+  { href: "/live",        label: "Live Classes",        icon: VideoIcon },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
-const DROPDOWN = [
-  { 
-    href: "/dashboard",    
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>, 
-    label: "Dashboard" 
-  },
-  { 
-    href: "/profile",      
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>, 
-    label: "My Profile",    
-    dynamic: true 
-  },
-  { 
-    href: "/profile/edit", 
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>, 
-    label: "Edit Profile" 
-  },
-  { 
-    href: "/history",      
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, 
-    label: "Watch History" 
-  },
-  { 
-    href: "/bookmarks",    
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>, 
-    label: "Bookmarks" 
-  },
-  { 
-    href: "/credits",      
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>, 
-    label: "Credits" 
-  },
-  { 
-    href: "/certificates", 
-    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>, 
-    label: "Certificates" 
-  },
+const AUTH_ALIGNED = [
+  { href: "/feed", label: "Social Feed", icon: Rss },
+];
+
+const IDENTITY_PROTOCOLS = [
+  { href: "/dashboard",    icon: LayoutDashboard, label: "My Dashboard" },
+  { href: "/profile",      icon: UserIcon,        label: "My Profile", dynamic: true },
+  { href: "/profile/edit", icon: Edit3,           label: "Edit Profile" },
+  { href: "/history",      icon: History,         label: "Watch History" },
+  { href: "/bookmarks",    icon: Bookmark,        label: "Bookmarks" },
+  { href: "/credits",      icon: Zap,             label: "Credits" },
+  { href: "/certificates", icon: Award,           label: "Certificates" },
 ];
 
 export default function Navbar() {
@@ -68,9 +71,11 @@ export default function Navbar() {
   const dropRef = useRef(null);
 
   useEffect(() => {
-    const h = (e) => { if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    const handleOutsideClick = (e) => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
   useEffect(() => { setDropOpen(false); }, [pathname]);
@@ -87,237 +92,231 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ── Desktop / Tablet Top Bar ── */}
-      <header className="sticky top-0 z-50 hidden md:block"
-        style={{
-          background: "color-mix(in srgb, var(--bg) 82%, transparent)",
-          backdropFilter: "blur(20px) saturate(200%)",
-          borderBottom: "1px solid var(--border)",
-        }}>
-        <div className="max-w-7xl mx-auto px-5 xl:px-6 h-[58px] flex items-center gap-3">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group mr-2">
-            <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shadow-sm transition-all duration-200 group-hover:shadow-md group-hover:scale-105"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-              <svg className="w-4 h-4" fill="white" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
-                <path d="M9.848 20.788a1 1 0 00.636-1.166v-4.93l-5.2-2.229A1 1 0 004 13.39v3.566a1 1 0 00.576.904l5 2.25a1 1 0 00.272.048 1 1 0 00.637-.37z" opacity=".6"/>
-              </svg>
+      {/* ── Desktop Global Protocol Bridge ── */}
+      <header className="sticky top-0 z-[100] hidden lg:block select-none">
+        <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-border/50 shadow-sm transition-colors duration-500" />
+        
+        <div className="relative max-w-[1440px] mx-auto px-8 h-[72px] flex items-center gap-6">
+          {/* Logo: Mission Control Brand */}
+          <Link href="/" className="flex items-center gap-4 mr-8 group">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: -5 }}
+              transition={springConfig}
+              className="w-11 h-11 rounded-[14px] flex items-center justify-center shadow-2xl shadow-indigo-500/30 bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+            >
+              <Command className="w-5 h-5" />
+            </motion.div>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg tracking-tight text-text-1 leading-none">EduShare</span>
+              <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1 pl-0.5">Peer Learning</span>
             </div>
-            <span className="font-bold text-[15px] tracking-tight" style={{ color: "var(--text-1)" }}>
-              EduShare
-            </span>
           </Link>
 
-          {/* Desktop nav links */}
-          <nav className="flex items-center gap-0.5">
-            {[...NAV, ...(user ? AUTH_NAV : [])].map((l) => (
-              <Link key={l.href} href={l.href}
-                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150 ${
-                  isActive(l.href)
-                    ? "text-[var(--text-1)] bg-[var(--surface-2)]"
-                    : "text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--surface-2)]"
-                }`}>
-                {l.label}
-              </Link>
-            ))}
+          {/* Primary Navigation */}
+          <nav className="flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border/50">
+            {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].map((l) => {
+              const Icon = l.icon;
+              const active = isActive(l.href);
+              return (
+                <Link key={l.href} href={l.href} className="relative px-5 py-2 group overflow-hidden">
+                  <div className={`flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${
+                    active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
+                  }`}>
+                    <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
+                    {l.label}
+                  </div>
+                  {active && (
+                    <motion.div 
+                      layoutId="nav-glow"
+                      className="absolute inset-0 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-border/30 -z-10"
+                      transition={springConfig}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Search */}
-          {user && <div className="w-56 xl:w-64"><SearchBar /></div>}
+          {/* Actions & Core Interfacing */}
+          <div className="flex items-center gap-4 min-w-0">
+            {user && (
+              <div className="flex-1 max-w-[320px] min-w-[40px] transition-all duration-500">
+                <SearchBar />
+              </div>
+            )}
 
-          {/* Right controls */}
-          <div className="flex items-center gap-1">
-            {/* Theme toggle */}
-            <button onClick={toggle}
-              className="btn-ghost w-8 h-8 p-0 rounded-lg flex items-center justify-center"
-              title={isDark ? "Light mode" : "Dark mode"}>
-              {isDark ? (
-                <svg className="w-[17px] h-[17px]" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"/>
-                </svg>
-              ) : (
-                <svg className="w-[17px] h-[17px]" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-                </svg>
-              )}
-            </button>
+            <div className="h-8 w-px bg-border/50 mx-2" />
+
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggle}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 text-text-2 hover:text-indigo-500 transition-all"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </motion.button>
 
             {loading ? (
-              <div className="skeleton w-8 h-8 rounded-full ml-1" />
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse border border-border/50" />
             ) : user ? (
-              <>
+              <div className="flex items-center gap-3">
                 <NotificationBell />
-                {/* Avatar dropdown */}
-                <div className="relative ml-0.5" ref={dropRef}>
-                  <button onClick={() => setDropOpen(!dropOpen)}
-                    className={`flex items-center gap-2 px-2 py-1.5 rounded-xl transition-all duration-150 ${
-                      dropOpen ? "bg-[var(--surface-2)]" : "hover:bg-[var(--surface-2)]"
-                    }`}>
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full object-cover ring-2 ring-[var(--border)]" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
-                        style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff" }}>
-                        {initials}
-                      </div>
-                    )}
-                    <span className="text-[13px] font-medium max-w-[80px] truncate" style={{ color: "var(--text-1)" }}>
-                      {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
-                    </span>
-                    <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${dropOpen ? "rotate-180" : ""}`}
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--text-3)" }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                    </svg>
-                  </button>
-
-                  {dropOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl py-2 animate-pop-in overflow-hidden"
-                      style={{
-                        background: "var(--surface)",
-                        border: "1px solid var(--border)",
-                        boxShadow: "var(--shadow-lg)",
-                      }}>
-                      {/* User info header */}
-                      <div className="px-4 py-3 mb-1" style={{ borderBottom: "1px solid var(--border)" }}>
-                        <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-1)" }}>
-                          {user.displayName || "User"}
-                        </p>
-                        <p className="text-[11px] truncate mt-0.5" style={{ color: "var(--text-3)" }}>
-                          {user.email}
-                        </p>
-                      </div>
-
-                      <div className="py-1 px-2">
-                        {DROPDOWN.map((item) => (
-                          <Link key={item.href}
-                            href={item.dynamic ? `/profile/${user.uid}` : item.href}
-                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-100 group"
-                            style={{ color: "var(--text-2)" }}
-                            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--text-1)"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-2)"; }}>
-                            <span className="w-5 flex items-center justify-center opacity-70 flex-shrink-0">{item.icon}</span>
-                            {item.label}
-                          </Link>
-                        ))}
-                          <Link href="/admin"
-                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-100 bg-amber-50 text-amber-700 hover:bg-amber-100 group">
-                            <span className="w-5 flex items-center justify-center flex-shrink-0 opacity-80">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                            </span>
-                            Admin Console
-                          </Link>
-                      </div>
-
-                      <div className="px-2 pt-1 pb-1" style={{ borderTop: "1px solid var(--border)" }}>
-                        <button onClick={handleSignOut} disabled={signingOut}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-100 text-left"
-                          style={{ color: "var(--red)" }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--red-2)"}
-                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                          <svg className="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                          </svg>
-                          {signingOut ? "Signing out…" : "Sign out"}
-                        </button>
-                      </div>
+                <div className="relative" ref={dropRef}>
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setDropOpen(!dropOpen)}
+                    className={`flex items-center gap-3 pl-2 pr-4 py-2 rounded-2xl border transition-all ${
+                      dropOpen 
+                        ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-slate-900 dark:border-white shadow-xl" 
+                        : "bg-white dark:bg-white/5 border-border/50 hover:bg-slate-50 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="relative">
+                       {user.photoURL ? (
+                         <img src={user.photoURL} alt="" className="w-8 h-8 rounded-xl object-cover ring-2 ring-indigo-500/20" />
+                       ) : (
+                         <div className="w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-[10px] font-black text-white">
+                           {initials}
+                         </div>
+                       )}
+                       <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
                     </div>
-                  )}
+                    <span className="text-[10px] font-bold uppercase tracking-widest hidden lg:block">User Account</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-500 ${dropOpen ? "rotate-180" : ""}`} />
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {dropOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 15, scale: 0.95, filter: "blur(10px)" }}
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, y: 15, scale: 0.95, filter: "blur(10px)" }}
+                        transition={springConfig}
+                        className="absolute right-0 mt-4 w-72 rounded-[32px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-border shadow-3xl overflow-hidden z-[100] p-3 ring-1 ring-border/50"
+                      >
+                        <div className="px-5 py-6 mb-3 bg-slate-50 dark:bg-white/5 rounded-[24px] border border-border/50 relative overflow-hidden group/profile">
+                          <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl transition-all group/profile:scale-150" />
+                          <p className="text-[11px] font-bold text-text-3 uppercase tracking-widest mb-1">User Profile</p>
+                          <p className="text-sm font-bold text-text-1 truncate tracking-tight">{user.displayName || "Student"}</p>
+                          <p className="text-[9px] text-text-3 truncate font-bold uppercase tracking-widest mt-2 opacity-50">{user.email}</p>
+                        </div>
+
+                        <div className="space-y-1">
+                          {IDENTITY_PROTOCOLS.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <Link 
+                                key={item.href}
+                                href={item.dynamic ? `/profile/${user.uid}` : item.href}
+                                className="flex items-center gap-4 px-5 py-3 rounded-xl text-[11px] font-semibold uppercase tracking-widest text-text-2 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all group"
+                              >
+                                <Icon className="w-3.5 h-3.5 text-text-3 group-hover:text-indigo-500 transition-all" />
+                                {item.label}
+                                <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-500" />
+                              </Link>
+                            );
+                          })}
+
+                          <div className="h-px bg-border/50 mx-4 my-2" />
+
+                          <Link href="/admin" className="flex items-center gap-4 px-5 py-4 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white dark:text-slate-900 bg-slate-900 dark:bg-white shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                            <ShieldCheck className="w-4 h-4" />
+                            Admin Panel
+                          </Link>
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t border-border/50 px-2">
+                          <button 
+                            onClick={handleSignOut}
+                            disabled={signingOut}
+                            className="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-500/5 transition-all"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            {signingOut ? "Signing Out..." : "Sign Out"}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="flex items-center gap-2 ml-1">
-                <Link href="/login" className="btn-ghost text-[13px] px-3 py-1.5">Log in</Link>
-                <Link href="/register" className="btn-accent text-[13px] px-4 py-1.5">Get started</Link>
+              <div className="flex items-center gap-2 pl-4">
+                <Link href="/login" className="text-[11px] font-black uppercase tracking-[0.3em] text-text-2 hover:text-text-1 px-6 py-3 transition-colors">Log in</Link>
+                <Link href="/register" className="relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.03] active:scale-[0.97] transition-all shadow-2xl">
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5" />
+                    Join Now
+                  </span>
+                </Link>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* ── Mobile Top Bar ── */}
-      <header className="sticky top-0 z-50 md:hidden"
-        style={{
-          background: "color-mix(in srgb, var(--bg) 88%, transparent)",
-          backdropFilter: "blur(20px) saturate(180%)",
-          borderBottom: "1px solid var(--border)",
-        }}>
-        <div className="px-4 h-[54px] flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-7 h-7 rounded-[8px] flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-              <svg className="w-3.5 h-3.5" fill="white" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
-              </svg>
-            </div>
-            <span className="font-bold text-[15px] tracking-tight" style={{ color: "var(--text-1)" }}>EduShare</span>
-          </Link>
-
-          <div className="flex-1" />
-
-          <div className="flex items-center gap-1">
-            {user && <NotificationBell />}
-            <button onClick={toggle} className="btn-ghost w-8 h-8 p-0 rounded-lg flex items-center justify-center">
-              {isDark ? (
-                <svg className="w-[17px] h-[17px]" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"/>
-                </svg>
-              ) : (
-                <svg className="w-[17px] h-[17px]" fill="currentColor" viewBox="0 0 20 20" style={{ color: "var(--text-2)" }}>
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-                </svg>
-              )}
-            </button>
-            {user ? (
-              <Link href={`/profile/${user.uid}`} className="ml-0.5">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full object-cover ring-2 ring-[var(--border)]" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
-                    style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff" }}>
-                    {initials}
-                  </div>
-                )}
-              </Link>
-            ) : (
-              <Link href="/login" className="btn-accent text-[12px] px-3 py-1.5">Login</Link>
-            )}
+      {/* ── Mobile Mission Dock Transitions ── */}
+      <header className="sticky top-0 z-[100] lg:hidden bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border-b border-border/50 h-[64px] flex items-center px-6">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl">
+            <Command className="w-4 h-4" />
           </div>
+          <span className="font-black text-sm tracking-tighter">EduShare</span>
+        </Link>
+        <div className="flex-1" />
+        <div className="flex items-center gap-3">
+          <button onClick={toggle} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 border border-border/50 text-text-2 transition-transform active:rotate-12">
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+          {user ? (
+            <Link href={`/profile/${user.uid}`} className="w-9 h-9 rounded-xl overflow-hidden border border-border shadow-sm active:scale-90 transition-transform">
+               {user.photoURL ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-indigo-500" />}
+            </Link>
+          ) : (
+            <Link href="/login" className="text-[10px] font-black uppercase tracking-widest px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl shadow-lg">Login</Link>
+          )}
         </div>
       </header>
 
-      {/* ── Mobile Bottom Navigation ── */}
-      <nav className="bottom-nav">
-        {[...NAV, ...(user ? AUTH_NAV : [])].slice(0, 5).map((l) => (
-          <Link key={l.href} href={l.href}
-            className={`bottom-nav-item ${isActive(l.href) ? "active" : ""}`}>
-            {l.icon}
-            <span>{l.label}</span>
+      {/* ── Floating Mobile Bottom Mission Dock ── */}
+      <nav className="fixed bottom-6 left-6 right-6 z-[100] lg:hidden">
+        <div className="flex bg-slate-900/90 dark:bg-white/95 backdrop-blur-2xl border border-white/10 dark:border-black/5 rounded-[28px] h-18 py-3 px-4 shadow-3xl shadow-indigo-500/20">
+          {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].slice(0, 4).map((l) => {
+            const Icon = l.icon;
+            const active = isActive(l.href);
+            return (
+              <Link key={l.href} href={l.href} className="flex-1 flex flex-col items-center justify-center gap-1.5 transition-all">
+                <motion.div 
+                  animate={{ scale: active ? 1.2 : 1, y: active ? -4 : 0 }}
+                  className={`${active ? "text-indigo-400 dark:text-indigo-600" : "text-white/40 dark:text-slate-900/40"}`}
+                >
+                  <Icon className="w-5 h-5" />
+                </motion.div>
+                <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${active ? "text-indigo-400 dark:text-indigo-600" : "text-white/20 dark:text-slate-900/20"}`}>
+                  {l.label.split(' ')[0]}
+                </span>
+              </Link>
+            );
+          })}
+          <div className="w-px h-8 bg-white/10 dark:bg-black/10 my-auto mx-2" />
+          <Link href={user ? "/dashboard" : "/register"} className="flex-1 flex flex-col items-center justify-center gap-1.5 group">
+             <motion.div 
+               animate={{ scale: isActive("/dashboard") ? 1.2 : 1, y: isActive("/dashboard") ? -4 : 0 }}
+               className="relative"
+             >
+                <LayoutDashboard className={`w-5 h-5 ${isActive("/dashboard") ? "text-indigo-400 dark:text-indigo-600" : "text-white/40 dark:text-slate-900/40"}`} />
+                {user && <Activity className="absolute -top-1 -right-1 w-2.5 h-2.5 text-emerald-400 animate-pulse" />}
+             </motion.div>
+             <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isActive("/dashboard") ? "text-indigo-400 dark:text-indigo-600" : "text-white/20 dark:text-slate-900/20"}`}>
+               {user ? "DASH" : "JOIN"}
+             </span>
           </Link>
-        ))}
-        {user ? (
-          <Link href="/dashboard" className={`bottom-nav-item ${isActive("/dashboard") ? "active" : ""}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            <span>Dashboard</span>
-          </Link>
-        ) : (
-          <Link href="/register" className="bottom-nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span>Join</span>
-          </Link>
-        )}
+        </div>
       </nav>
     </>
   );
 }
+
+

@@ -1,6 +1,28 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Activity, 
+  CheckCircle2, 
+  XCircle, 
+  Award, 
+  FileText, 
+  ChevronRight, 
+  Zap, 
+  Loader2, 
+  Sparkles, 
+  Trophy,
+  Target,
+  ShieldCheck,
+  ShieldAlert,
+  ArrowRight,
+  ExternalLink,
+  Lock,
+  AlertTriangle
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 export default function QuizTaker({ quiz, videoId, onComplete }) {
   const { authFetch } = useAuth();
@@ -8,171 +30,335 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [violations, setViolations] = useState(0);
+  const [securityStatus, setSecurityStatus] = useState("verified"); // verified, warning, locked
+  const violationLimit = 3;
 
   const allAnswered = answers.every((a) => a !== null);
+  const progressPercent = (answers.filter((a) => a !== null).length / quiz.questions.length) * 100;
+
+  useEffect(() => {
+    if (result) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setViolations(prev => {
+          const next = prev + 1;
+          if (next >= violationLimit) {
+            setSecurityStatus("locked");
+            setError("Quiz Locked: Tab switching detected.");
+          } else {
+            setSecurityStatus("warning");
+          }
+          return next;
+        });
+      }
+    };
+
+    const handleBlur = () => {
+      setSecurityStatus("warning");
+    };
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      return false;
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("contextmenu", handleContextMenu);
+
+    return () => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, [result]);
 
   const handleSubmit = async () => {
-    if (!allAnswered) return setError("Please answer all questions before submitting.");
+    if (securityStatus === "locked") return setError("Locked: Quiz security compromised.");
+    if (!allAnswered) return setError("Please answer all questions.");
     setError("");
     setSubmitting(true);
-
-    const res = await authFetch(`/api/videos/${videoId}/quiz/attempt`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers }),
-    });
-
-    const data = await res.json();
-    setSubmitting(false);
-
-    if (!res.ok) return setError(data.error);
-    setResult(data);
-    onComplete?.(data);
+    try {
+      const res = await authFetch(`/api/videos/${videoId}/quiz/attempt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers, violations }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setResult(data);
+      onComplete?.(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // ── Result screen ──
+  // ── Result Matrix ──
   if (result) {
     return (
-      <div className="space-y-5 animate-fade-in">
-        {/* Score card */}
-        <div className={`rounded-2xl p-6 text-center border ${
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-8 max-w-2xl mx-auto"
+      >
+        {/* Score HUD */}
+        <div className={`relative overflow-hidden rounded-[48px] p-10 text-center border shadow-3xl ${
           result.passed
-            ? "bg-emerald-50 border-emerald-200"
-            : "bg-red-50 border-red-200"
+            ? "bg-emerald-500/5 border-emerald-500/20 shadow-emerald-500/10"
+            : "bg-rose-500/5 border-rose-500/20 shadow-rose-500/10"
         }`}>
-          <div className="text-5xl font-black mb-2" style={{ color: result.passed ? "#059669" : "#dc2626" }}>
-            {result.score}%
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+          
+          <motion.div 
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`text-7xl font-black mb-4 italic tracking-tighter ${result.passed ? "text-emerald-500" : "text-rose-500"}`}
+          >
+            {result.score}<span className="text-3xl font-black opacity-40">%</span>
+          </motion.div>
+          
+          <div className="flex flex-col items-center gap-2">
+            <h2 className={`text-xl font-black uppercase tracking-[0.2em] ${result.passed ? "text-emerald-500" : "text-rose-500"}`}>
+              {result.passed ? "Success" : "Failed"}
+            </h2>
+            <p className="text-[10px] font-black uppercase tracking-widest text-text-3">
+              {result.correctCount} / {result.totalQuestions} Correct · Required: {result.passingScore}%
+            </p>
           </div>
-          <p className={`text-lg font-bold ${result.passed ? "text-emerald-700" : "text-red-700"}`}>
-            {result.passed ? "🎉 Passed!" : "😔 Not quite"}
-          </p>
-          <p className="text-sm text-zinc-500 mt-1">
-            {result.correctCount}/{result.totalQuestions} correct · Passing: {result.passingScore}%
-          </p>
-          {result.creditsAwarded > 0 && (
-            <div className="mt-3 inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🏆 +{result.creditsAwarded} credits earned
-            </div>
-          )}
-          {result.certificate && (
-            <div className="mt-3">
-              <a href={`/certificates/${result.certificate.certId}`}
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-amber-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors">
-                🏅 View Your Certificate
+
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            {result.creditsAwarded > 0 && (
+              <motion.div 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="inline-flex items-center gap-3 bg-slate-900 dark:bg-white px-6 py-3 rounded-2xl shadow-xl"
+              >
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white dark:text-slate-900">+{result.creditsAwarded} Credits Earned</span>
+              </motion.div>
+            )}
+            
+            {result.passed && result.certificate && (
+              <a 
+                href={`/certificates/${result.certificate.certId}`}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 bg-indigo-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl shadow-indigo-500/20 italic"
+              >
+                <Award className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                View Certificate
+                <ChevronRight className="w-4 h-4 ml-1" />
               </a>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Answer breakdown */}
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Answer Breakdown</p>
+        {/* Answer Breakdown Matrix */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+             <Activity className="w-4 h-4 text-text-3" />
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-3">Quiz Results</p>
+          </div>
           {result.results.map((r, i) => (
-            <div key={i} className={`card p-4 border-l-4 ${r.correct ? "border-l-emerald-400" : "border-l-red-400"}`}>
-              <p className="text-sm font-medium text-zinc-800 mb-2">
-                <span className="text-zinc-400 mr-2">Q{i + 1}.</span>{r.question}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-6 rounded-[32px] shadow-sm relative overflow-hidden ${
+                r.correct ? "border-emerald-500/30" : "border-rose-500/30"
+              }`}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black italic border ${
+                   r.correct ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                 }`}>
+                   {i + 1}
+                 </div>
+                 <p className="text-sm font-black text-text-1 tracking-tight italic">
+                   {r.question}
+                 </p>
+                 <div className="ml-auto">
+                    {r.correct ? <ShieldCheck className="w-5 h-5 text-emerald-500" /> : <ShieldAlert className="w-5 h-5 text-rose-500" />}
+                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {r.options.map((opt, oi) => {
                   const isSelected = r.selectedIndex === oi;
                   const isCorrect = r.correctIndex === oi;
                   return (
-                    <div key={oi} className={`text-xs px-3 py-2 rounded-lg border ${
+                    <div key={oi} className={`text-[10px] font-black uppercase tracking-widest px-4 py-3 rounded-2xl border flex items-center gap-3 italic transition-all ${
                       isCorrect
-                        ? "bg-emerald-50 border-emerald-300 text-emerald-800 font-medium"
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
                         : isSelected && !isCorrect
-                        ? "bg-red-50 border-red-300 text-red-700"
-                        : "bg-stone-50 border-stone-200 text-zinc-500"
+                        ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+                        : "bg-slate-50 dark:bg-white/5 border-border text-text-3 opacity-50"
                     }`}>
-                      {isCorrect && "✓ "}{isSelected && !isCorrect && "✗ "}{opt}
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0 bg-current" />
+                      {opt}
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     );
   }
 
-  // ── Quiz form ──
+  // ── Protocol Interface ──
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">
-            {quiz.questions.length} questions · Pass at {quiz.passingScore}%
-          </p>
+    <div className="space-y-12 pb-20">
+      
+      {/* Integrity HUD & Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`col-span-1 md:col-span-2 bg-slate-50 dark:bg-white/5 border p-6 rounded-[32px] flex items-center justify-between gap-6 transition-all duration-500 ${
+          integrityStatus === "breached" ? "border-rose-500 bg-rose-500/10" : 
+          integrityStatus === "warning" ? "border-amber-500 bg-amber-500/10" : "border-border"
+        }`}>
+          <div className="flex items-center gap-5">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform ${
+              integrityStatus === "breached" ? "bg-rose-500 text-white scale-110" : 
+              integrityStatus === "warning" ? "bg-amber-500 text-white animate-pulse" : "bg-indigo-500 text-white"
+            }`}>
+               {integrityStatus === "breached" ? <Lock className="w-6 h-6" /> : 
+                integrityStatus === "warning" ? <AlertTriangle className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]">Quiz Security Status</p>
+              <p className={`text-sm font-bold tracking-tight ${
+                securityStatus === "locked" ? "text-rose-500" : 
+                securityStatus === "warning" ? "text-amber-500" : "text-emerald-500"
+              }`}>
+                {securityStatus === "locked" ? "LOCKED" : 
+                 securityStatus === "warning" ? "WARNING" : "Verified"}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+             <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Violations</p>
+             <p className="text-sm font-bold text-text-1">{violations} / {violationLimit}</p>
+          </div>
         </div>
-        <div className="text-xs text-zinc-400">
-          {answers.filter((a) => a !== null).length}/{quiz.questions.length} answered
+
+        <div className="bg-slate-50 dark:bg-white/5 border border-border p-6 rounded-[32px] flex flex-col justify-center gap-1">
+           <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Passing Score</p>
+           <div className="flex items-center gap-3">
+              <span className="text-xl font-bold text-text-1 italic">{quiz.passingScore}%</span>
+              <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                 <div className="h-full bg-indigo-500" style={{ width: `${quiz.passingScore}%` }} />
+              </div>
+           </div>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{error}</div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-rose-500/5 border border-rose-500/20 px-6 py-4 rounded-[28px] flex items-center gap-4 text-rose-500 italic shadow-inner"
+        >
+          <ShieldAlert className="w-5 h-5 shrink-0" />
+          <p className="text-[11px] font-black uppercase tracking-widest">{error}</p>
+        </motion.div>
       )}
 
-      {quiz.questions.map((q, qi) => (
-        <div key={q._id} className="card p-5 space-y-3">
-          <p className="text-sm font-semibold text-zinc-800">
-            <span className="text-zinc-400 mr-2">{qi + 1}.</span>{q.question}
-          </p>
-          <div className="space-y-2">
-            {q.options.map((opt, oi) => (
-              <button
-                key={oi}
-                type="button"
-                onClick={() => {
-                  const updated = [...answers];
-                  updated[qi] = oi;
-                  setAnswers(updated);
-                }}
-                className={`w-full text-left text-sm px-4 py-3 rounded-xl border transition-all duration-150 ${
-                  answers[qi] === oi
-                    ? "border-violet-400 bg-violet-50 text-violet-800 font-medium"
-                    : "border-stone-200 bg-white hover:border-stone-300 text-zinc-700"
-                }`}>
-                <span className="inline-flex w-6 h-6 rounded-full border mr-3 items-center justify-center text-xs flex-shrink-0
-                                 align-middle font-bold"
-                  style={{
-                    borderColor: answers[qi] === oi ? "#7c6af7" : "#d4d0ca",
-                    background: answers[qi] === oi ? "#7c6af7" : "transparent",
-                    color: answers[qi] === oi ? "white" : "#a1a1aa",
-                  }}>
-                  {["A","B","C","D"][oi]}
-                </span>
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
+          {/* Question Matrix Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {quiz.questions.map((q, qi) => (
+          <motion.div 
+            key={q._id}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: qi * 0.05 }}
+            className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-8 rounded-[48px] shadow-sm hover:shadow-2xl transition-all ${
+              answers[qi] !== null ? "border-indigo-500/20" : "border-border"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-8">
+               <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest flex items-center gap-2">
+                 <Target className="w-3.5 h-3.5" />
+                 Question {qi + 1}
+               </span>
+               <div className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-30 italic">Question ID: {q._id.slice(-6)}</div>
+            </div>
+            
+            <p className="text-xl font-bold text-text-1 tracking-tight mb-10 leading-relaxed min-h-[4rem]">
+              {q.question}
+            </p>
 
-      {/* Progress bar */}
-      <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-violet-500 rounded-full transition-all duration-300"
-          style={{ width: `${(answers.filter((a) => a !== null).length / quiz.questions.length) * 100}%` }}
-        />
+            <div className="space-y-3">
+              {q.options.map((opt, oi) => (
+                <button
+                  key={oi}
+                  type="button"
+                  disabled={securityStatus === "locked"}
+                  onClick={() => {
+                    const updated = [...answers];
+                    updated[qi] = oi;
+                    setAnswers(updated);
+                  }}
+                  className={`group w-full flex items-center gap-5 px-6 py-4 rounded-[28px] border transition-all duration-300 disabled:opacity-20 ${
+                    answers[qi] === oi
+                      ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white text-white dark:text-slate-950 shadow-xl"
+                      : "bg-white dark:bg-white/5 border-border hover:border-indigo-500/40 text-text-1"
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold border transition-colors ${
+                    answers[qi] === oi
+                      ? "bg-white/10 border-white/20 text-white"
+                      : "bg-slate-50 dark:bg-white/5 border-border text-text-3 group-hover:bg-indigo-500 group-hover:text-white"
+                  }`}>
+                    {["A","B","C","D"][oi]}
+                  </div>
+                  <span className="text-[14px] font-bold italic text-left flex-1">{opt}</span>
+                  {answers[qi] === oi && (
+                    <motion.div layoutId={`check-${qi}`} className="mr-2">
+                       <CheckCircle2 className="w-5 h-5" />
+                    </motion.div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={!allAnswered || submitting}
-        className="btn-primary w-full py-3 disabled:opacity-50">
-        {submitting ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-            </svg>
-            Submitting...
-          </span>
-        ) : allAnswered ? "Submit Quiz" : `Answer all ${quiz.questions.length} questions to submit`}
-      </button>
+      {/* Footer Controls */}
+      <div className="space-y-6 pt-10">
+        {/* Progress Vector */}
+        <div className="h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden shadow-inner">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            className="h-full bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+          />
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={!allAnswered || submitting || integrityStatus === "breached"}
+          className="group relative w-full overflow-hidden rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-6 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-3xl disabled:opacity-50"
+        >
+          <div className="flex items-center gap-4">
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+            <span className="text-[11px] font-bold uppercase tracking-widest">
+              {securityStatus === "locked" ? "QUIZ LOCKED" : 
+               submitting ? "Submitting..." : 
+               allAnswered ? "Submit Quiz" : `Answer all questions (${answers.filter(a => a !== null).length} / ${quiz.questions.length})`}
+            </span>
+          </div>
+          <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[40px]" />
+        </button>
+      </div>
+
     </div>
   );
 }
+

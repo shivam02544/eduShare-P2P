@@ -37,7 +37,7 @@ export default function AdminReportsPage() {
   }, [statusFilter]);
 
   const handleAction = async (reportId, status, unflag = false) => {
-    if (status === "actioned" && !confirm("CRITICAL ACTION: This will PERMANENTLY delete the content and notify the user. Proceed?")) return;
+    if (status === "actioned" && !confirm("Warning: This will permanently delete the content and notify the user. Are you sure?")) return;
     
     setUpdating(reportId);
     const res = await authFetch("/api/admin/reports", {
@@ -135,12 +135,12 @@ export default function AdminReportsPage() {
                   )}
                 </div>
                 {r.description && (
-                  <p className="text-sm text-zinc-500 mt-2 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed italic">
+                  <p className="text-sm text-zinc-500 mt-2 bg-stone-50 p-3 rounded-xl border border-stone-100 leading-relaxed">
                     "{r.description}"
                   </p>
                 )}
                 <div className="flex items-center gap-2 mt-4 text-[11px] font-bold text-zinc-500">
-                  <span className="text-zinc-300">REASON:</span>
+                  <span className="text-zinc-300">Reason:</span>
                   <span className="text-red-500 uppercase tracking-wider">{r.reason.replace("_", " ")}</span>
                 </div>
               </div>

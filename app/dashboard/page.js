@@ -3,111 +3,54 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Video, 
+  FileText, 
+  Play, 
+  Eye, 
+  Download, 
+  Users, 
+  Zap, 
+  ArrowUpRight, 
+  Clock, 
+  Sparkles, 
+  Plus, 
+  Compass, 
+  UserCircle,
+  TrendingUp,
+  Flame,
+  LayoutDashboard
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 const memCache = {};
 function getMemCache(key) { const e = memCache[key]; return e && e.exp > Date.now() ? e.data : null; }
 function setMemCache(key, data, ttlMs = 60_000) { memCache[key] = { data, exp: Date.now() + ttlMs }; }
 
 const STATS = [
-  { 
-    key: "totalVideos",    
-    label: "Videos",     
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
-    color: "#6366f1", 
-    bg: "#eef2ff" 
-  },
-  { 
-    key: "totalNotes",     
-    label: "Notes",      
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-    color: "#10b981", 
-    bg: "#ecfdf5" 
-  },
-  { 
-    key: "totalSessions",  
-    label: "Sessions",   
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>, 
-    color: "#f59e0b", 
-    bg: "#fffbeb" 
-  },
-  { 
-    key: "totalViews",     
-    label: "Views",      
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
-    color: "#3b82f6", 
-    bg: "#eff6ff" 
-  },
-  { 
-    key: "totalDownloads", 
-    label: "Downloads",  
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
-    color: "#8b5cf6", 
-    bg: "#f5f3ff" 
-  },
-  { 
-    key: "totalAttendees", 
-    label: "Attendees",  
-    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
-    color: "#ec4899", 
-    bg: "#fdf2f8" 
-  },
+  { key: "totalVideos", label: "Videos", icon: Video, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { key: "totalNotes", label: "Notes", icon: FileText, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { key: "totalSessions", label: "Sessions", icon: Play, color: "text-amber-500", bg: "bg-amber-500/10" },
+  { key: "totalViews", label: "Views", icon: Eye, color: "text-blue-500", bg: "bg-blue-500/10" },
+  { key: "totalDownloads", label: "Downloads", icon: Download, color: "text-violet-500", bg: "bg-violet-500/10" },
+  { key: "totalAttendees", label: "Attendees", icon: Users, color: "text-rose-500", bg: "bg-rose-500/10" },
 ];
 
 const QUICK_ACTIONS = [
-  { 
-    href: "/upload-video", 
-    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>, 
-    label: "Upload Video",     
-    desc: "Share a lesson", 
-    color: "#6366f1", 
-    bg: "#eef2ff" 
-  },
-  { 
-    href: "/upload-notes", 
-    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>, 
-    label: "Upload Notes",     
-    desc: "Share study material", 
-    color: "#10b981", 
-    bg: "#ecfdf5" 
-  },
-  { 
-    href: "/live/create",  
-    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>, 
-    label: "Go Live",          
-    desc: "Start a session", 
-    color: "#f59e0b", 
-    bg: "#fffbeb" 
-  },
-  { 
-    href: "/explore",      
-    icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>, 
-    label: "Explore",          
-    desc: "Browse content", 
-    color: "#3b82f6", 
-    bg: "#eff6ff" 
-  },
+  { href: "/upload-video", icon: Video, label: "Upload Video", desc: "Share a video", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { href: "/upload-notes", icon: FileText, label: "Share Notes", desc: "Upload notes", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { href: "/live/create", icon: Flame, label: "Host Live", desc: "Start a live session", color: "text-rose-500", bg: "bg-rose-500/10" },
+  { href: "/explore", icon: Compass, label: "Explore", desc: "Browse resources", color: "text-amber-500", bg: "bg-amber-500/10" },
 ];
-
-function Skeleton({ className = "" }) {
-  return <div className={`skeleton ${className}`} />;
-}
 
 function DashSkeleton() {
   return (
-    <div className="space-y-6 animate-fade-up">
-      {/* Welcome skeleton */}
-      <div className="rounded-2xl p-6 sm:p-8" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
-        <div className="flex items-center gap-4">
-          <Skeleton className="w-14 h-14 rounded-2xl flex-shrink-0" />
-          <div className="space-y-2.5 flex-1">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-3.5 w-60" />
-          </div>
-        </div>
-      </div>
-      {/* Stats skeleton */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-        {Array(6).fill(0).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+    <div className="max-w-7xl mx-auto space-y-12 animate-pulse pb-24">
+      <div className="h-64 rounded-[48px] bg-slate-200 dark:bg-white/5" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {Array(6).fill(0).map((_, i) => <div key={i} className="h-32 rounded-[32px] bg-slate-200 dark:bg-white/5" />)}
       </div>
     </div>
   );
@@ -123,11 +66,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.push("/login"); return; }
-
-    if (user.providerData?.[0]?.providerId === "password" && !user.emailVerified) {
-      router.push("/verify-email");
-      return;
-    }
 
     const cached = getMemCache("dashboard");
     if (cached) {
@@ -147,203 +85,238 @@ export default function DashboardPage() {
   }, [user, authLoading]);
 
   if (authLoading || loading || !user) return <DashSkeleton />;
-  if (!data?.stats) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4 animate-fade-in">
-      <div className="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-300">
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <p className="text-[15px] font-medium" style={{ color: "var(--text-2)" }}>Could not load dashboard</p>
-      <button onClick={() => window.location.reload()} className="btn-secondary text-[13px]">Try again</button>
-    </div>
-  );
 
   const { stats = {}, recentVideos = [], recentNotes = [] } = data;
   const firstName = user.displayName?.split(" ")[0] || "there";
 
   return (
-    <div className="space-y-6 animate-fade-up">
-
-      {/* ── Welcome Banner ── */}
-      <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
-        style={{ background: "linear-gradient(135deg, var(--accent) 0%, #8b5cf6 60%, #a855f7 100%)" }}>
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%)", transform: "translate(30%, -30%)" }} />
-        <div className="absolute bottom-0 left-0 w-36 h-36 rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%)", transform: "translate(-30%, 30%)" }} />
-
-        <div className="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="" className="w-14 h-14 rounded-2xl object-cover flex-shrink-0"
-                style={{ border: "2px solid rgba(255,255,255,0.3)" }} />
-            ) : (
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black flex-shrink-0"
-                style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "2px solid rgba(255,255,255,0.25)" }}>
-                {firstName[0].toUpperCase()}
+    <div className="max-w-7xl mx-auto space-y-10 pb-32 px-6 md:px-0">
+      
+      {/* ── Welcome Stage ── */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={springConfig}
+        className="relative overflow-hidden rounded-[48px] p-8 md:p-16 bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-3xl"
+      >
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px]" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="flex items-center gap-8">
+            <div className="relative">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-24 h-24 rounded-[32px] object-cover ring-4 ring-white/20 dark:ring-indigo-500/10 shadow-2xl" />
+              ) : (
+                <div className="w-24 h-24 rounded-[32px] bg-white/10 dark:bg-indigo-500/10 flex items-center justify-center text-4xl font-black border border-white/20">
+                  {firstName[0].toUpperCase()}
+                </div>
+              )}
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-xl border-4 border-slate-900 dark:border-white">
+                 <Zap className="w-5 h-5" />
               </div>
-            )}
-            <div>
-              <p className="text-[12px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
-                Welcome back
-              </p>
-              <h1 className="text-[22px] sm:text-[26px] font-black text-white leading-tight">
-                Hey, {firstName}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <LayoutDashboard className="w-5 h-5 opacity-40" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">My Dashboard</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+                Welcome back, <span className="opacity-60">{firstName}</span>
               </h1>
-              <p className="text-[12px] mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>{user.email}</p>
+              <p className="text-sm font-medium opacity-50 tracking-tight">{user.email}</p>
             </div>
           </div>
 
-          {/* Credits badge */}
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl flex-shrink-0"
-            style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }}>
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.294 2.744.88 4.226a1 1 0 01-1.476 1.065L10 17.024l-3.991 2.026a1 1 0 01-1.476-1.065l.88-4.226-3.294-2.744a1 1 0 01-.285-1.05L3.57 7.509l-1.233-.616a1 1 0 01.894-1.79l1.599.8L8.954 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Credits</p>
-              <p className="text-[26px] font-black text-white leading-none stat-number">{stats.credits ?? 0}</p>
-            </div>
+          <div className="flex items-center gap-10 px-10 py-8 rounded-[40px] bg-white/5 dark:bg-slate-500/5 border border-white/10 dark:border-slate-900/5 backdrop-blur-md shadow-inner">
+             <div className="text-center space-y-2">
+               <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Total Credits</p>
+               <div className="flex items-center justify-center gap-3">
+                 <TrendingUp className="w-6 h-6 text-emerald-400" />
+                 <p className="text-4xl font-black tracking-tighter">{stats.credits ?? 0}</p>
+               </div>
+             </div>
+             <div className="w-px h-12 bg-white/10" />
+             <div className="text-center group cursor-help">
+               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white mx-auto mb-2 transition-transform group-hover:rotate-12">
+                 <Sparkles className="w-6 h-6" />
+               </div>
+               <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Platform Level 4</p>
+             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── Stats Grid ── */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 stagger-grid">
-        {STATS.map((s) => (
-          <div key={s.key} className="rounded-2xl p-4 text-center transition-all duration-200 cursor-default"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "var(--shadow)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-[17px] mx-auto mb-2"
-              style={{ background: s.bg }}>
-              {s.icon}
+      {/* ── Metric Matrix ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {STATS.map((s, i) => (
+          <motion.div
+            key={s.key}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...springConfig, delay: i * 0.05 }}
+            className="group relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-6 rounded-[32px] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-2"
+          >
+            <div className={`w-12 h-12 rounded-[18px] ${s.bg} ${s.color} flex items-center justify-center mb-6 transition-transform group-hover:scale-110`}>
+              <s.icon className="w-6 h-6" />
             </div>
-            <p className="text-[22px] font-black stat-number leading-none" style={{ color: "var(--text-1)" }}>
+            <p className="text-3xl font-black text-text-1 tracking-tighter leading-none mb-1">
               {stats[s.key] ?? 0}
             </p>
-            <p className="text-[10px] mt-1 font-semibold uppercase tracking-wider" style={{ color: "var(--text-3)" }}>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 opacity-60">
               {s.label}
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* ── Continue Watching ── */}
-      {continueWatching.length > 0 && (
-        <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 text-accent">
-                <svg fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
-              </div>
-              <p className="text-[13px] font-bold" style={{ color: "var(--text-1)" }}>Continue Watching</p>
-            </div>
-            <Link href="/history" className="text-[12px] font-medium transition-colors"
-              style={{ color: "var(--accent)" }}>View all →</Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-            {continueWatching.map((h) => {
-              const pct = h.durationSeconds > 0 ? Math.min(100, Math.round((h.progressSeconds / h.durationSeconds) * 100)) : 0;
-              return (
-                <Link key={h._id} href={`/videos/${h.video._id}`}
-                  className="group rounded-xl overflow-hidden transition-all duration-200"
-                  style={{ border: "1px solid var(--border)", background: "var(--surface-2)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-2)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                  <div className="relative" style={{ aspectRatio: "16/9", background: "var(--surface-3)" }}>
-                    {h.video.thumbnailUrl ? (
-                      <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : <div className="w-full h-full flex items-center justify-center text-lg">🎥</div>}
-                    {/* Progress */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px]" style={{ background: "rgba(0,0,0,0.3)" }}>
-                      <div className="h-full" style={{ width: `${pct}%`, background: "#ef4444" }} />
-                    </div>
-                  </div>
-                  <div className="p-2">
-                    <p className="text-[11px] font-semibold line-clamp-1" style={{ color: "var(--text-1)" }}>{h.video.title}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-3)" }}>{pct}% watched</p>
-                  </div>
+      <div className="grid lg:grid-cols-12 gap-10">
+        
+        {/* ── Main Stream (Left) ── */}
+        <div className="lg:col-span-8 space-y-10">
+          
+          {/* Continue Watching Protocol */}
+          {continueWatching.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-indigo-500" />
+                  <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-text-1">Continue Learning</h2>
+                </div>
+                <Link href="/history" className="text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-indigo-500 transition-colors">
+                  Watch History →
                 </Link>
-              );
-            })}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {continueWatching.map((h, i) => {
+                  const pct = h.durationSeconds > 0 ? Math.min(100, Math.round((h.progressSeconds / h.durationSeconds) * 100)) : 0;
+                  return (
+                    <motion.div
+                      key={h._id}
+                      whileHover={{ scale: 1.02 }}
+                      className="group relative overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border rounded-3xl"
+                    >
+                      <Link href={`/videos/${h.video._id}`}>
+                        <div className="relative aspect-video bg-slate-100 dark:bg-white/5 overflow-hidden">
+                          {h.video.thumbnailUrl ? (
+                            <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          ) : <div className="w-full h-full flex items-center justify-center text-2xl">🎥</div>}
+                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-500" />
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <p className="text-sm font-black text-text-1 leading-tight line-clamp-1">{h.video.title}</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-black text-text-3 uppercase">
+                               <span>{pct}% Complete</span>
+                               <span>{h.video.uploader?.name}</span>
+                            </div>
+                            <div className="h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden shadow-inner font-black">
+                               <div className="h-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-all duration-1000" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Activity Matrix */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              { title: "Recent Videos", items: recentVideos, icon: Video, type: 'video' },
+              { title: "Recent Notes", items: recentNotes, icon: FileText, type: 'note' },
+            ].map((s) => (
+              <div key={s.title} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[40px] p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <s.icon className="w-5 h-5 text-text-3" />
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-text-1">{s.title}</h3>
+                  </div>
+                  <Link href="/explore" className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 hover:text-indigo-500 transition-all">
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                {s.items.length === 0 ? (
+                  <div className="text-center py-10 space-y-4">
+                    <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-text-3 opacity-20">
+                      <Compass className="w-6 h-6" />
+                    </div>
+                    <p className="text-[10px] font-black text-text-3 uppercase tracking-widest opacity-40">No items found</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-4">
+                    {s.items.map((item, i) => (
+                      <li key={item._id} className="group flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-border hover:bg-white dark:hover:bg-slate-800 transition-all">
+                         <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                               {s.type === 'video' ? <Play className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            </div>
+                            <span className="text-[13px] font-black text-text-1 truncate tracking-tight">{item.title}</span>
+                         </div>
+                         <div className="text-[10px] font-black text-text-3 uppercase tracking-tighter opacity-40 ml-4">
+                            {s.type === 'video' ? `${item.views} Views` : `${item.downloads} Downloads`}
+                         </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* ── Quick Actions ── */}
-      <div className="card p-5">
-        <p className="text-[13px] font-bold mb-4" style={{ color: "var(--text-1)" }}>Quick Actions</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {QUICK_ACTIONS.map((a) => (
-            <Link key={a.href} href={a.href}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl text-center transition-all duration-200 group"
-              style={{ background: a.bg, border: `1px solid ${a.color}20` }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 24px ${a.color}25`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-              <span className="text-2xl">{a.icon}</span>
-              <div>
-                <p className="text-[12px] font-bold" style={{ color: a.color }}>{a.label}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>{a.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Recent Content ── */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {[
-          { 
-            title: "Recent Videos", 
-            items: recentVideos, 
-            link: "/upload-video", 
-            empty: "No videos yet", 
-            emptyIcon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>, 
-            meta: (v) => `${v.views} views` 
-          },
-          { 
-            title: "Recent Notes",  
-            items: recentNotes,  
-            link: "/upload-notes", 
-            empty: "No notes yet",  
-            emptyIcon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>, 
-            meta: (n) => `${n.downloads} downloads` 
-          },
-        ].map((s) => (
-          <div key={s.title} className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[13px] font-bold" style={{ color: "var(--text-1)" }}>{s.title}</p>
-              <Link href="/explore" className="text-[12px] font-medium" style={{ color: "var(--accent)" }}>View all →</Link>
+        {/* ── Terminal Actions (Right) ── */}
+        <div className="lg:col-span-4 space-y-10">
+          
+          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] p-10 shadow-sm space-y-8">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-text-1 mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {QUICK_ACTIONS.map((a) => (
+                <Link key={a.href} href={a.href}
+                  className={`group relative flex items-center gap-6 p-6 rounded-[32px] overflow-hidden transition-all duration-300 border border-transparent hover:border-border hover:bg-white dark:hover:bg-slate-800 shadow-sm hover:shadow-2xl`}
+                >
+                  <div className={`w-14 h-14 rounded-2xl ${a.bg} ${a.color} flex items-center justify-center transition-transform group-hover:rotate-12`}>
+                    <a.icon className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className={`text-[15px] font-black tracking-tight ${a.color}`}>{a.label}</p>
+                    <p className="text-[11px] font-medium text-text-3 mt-0.5">{a.desc}</p>
+                  </div>
+                  <ArrowUpRight className="absolute top-4 right-4 w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </Link>
+              ))}
             </div>
-            {s.items.length === 0 ? (
-              <div className="empty-state py-8">
-                <div className="empty-state-icon bg-zinc-50 text-zinc-300 w-12 h-12 flex items-center justify-center rounded-full mb-3">{s.emptyIcon}</div>
-                <p className="text-[13px] font-medium" style={{ color: "var(--text-2)" }}>{s.empty}</p>
-                <Link href={s.link} className="btn-accent text-[12px] px-4 py-2 mt-2">Upload now</Link>
-              </div>
-            ) : (
-              <ul className="space-y-0">
-                {s.items.map((item, i) => (
-                  <li key={item._id}
-                    className="flex justify-between items-center py-3 transition-colors duration-100 rounded-xl px-2 -mx-2"
-                    style={{ borderBottom: i < s.items.length - 1 ? "1px solid var(--border)" : "none" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-2)"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                    <span className="text-[13px] truncate font-medium" style={{ color: "var(--text-1)" }}>{item.title}</span>
-                    <span className="text-[12px] ml-3 flex-shrink-0 font-medium" style={{ color: "var(--text-3)" }}>{s.meta(item)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
-        ))}
-      </div>
 
+          <div className="relative overflow-hidden bg-indigo-500 p-10 rounded-[48px] text-white shadow-2xl group">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -z-0" />
+             <div className="relative z-10 space-y-6">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20">
+                   <Users className="w-6 h-6" />
+                </div>
+                <div className="space-y-2">
+                   <h4 className="text-2xl font-black tracking-tighter leading-tight">Community Standings</h4>
+                   <p className="text-xs font-medium opacity-70 leading-relaxed">
+                     Check the global leaderboard to see how your learning progress compares with other educators.
+                   </p>
+                </div>
+                <Link href="/leaderboard" className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest shadow-xl transition-transform hover:scale-105">
+                   View Leaderboard
+                </Link>
+             </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
+

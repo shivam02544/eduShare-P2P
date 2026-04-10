@@ -1,6 +1,24 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Plus, 
+  FolderPlus, 
+  CheckCircle2, 
+  Loader2, 
+  List, 
+  ChevronRight, 
+  Settings, 
+  Sparkles,
+  Layers,
+  Archive,
+  ArrowUpRight,
+  Database
+} from "lucide-react";
+import Link from "next/link";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 export default function AddToCollection({ videoId }) {
   const { user, authFetch } = useAuth();
@@ -9,108 +27,174 @@ export default function AddToCollection({ videoId }) {
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(null);
   const [feedback, setFeedback] = useState({});
-  const ref = useRef(null);
+  const containerRef = useRef(null);
 
   // Close on outside click
   useEffect(() => {
-    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
   const fetchMyCollections = async () => {
     if (!user) return;
     setLoading(true);
-    const res = await authFetch(`/api/collections?creatorUid=${user.uid}`);
-    const data = await res.json();
-    setCollections(Array.isArray(data) ? data : []);
-    setLoading(false);
+    try {
+      const res = await authFetch(`/api/collections?creatorUid=${user.uid}`);
+      const data = await res.json();
+      setCollections(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Collection registry retrieval failure.", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOpen = () => {
-    setOpen(!open);
-    if (!open) fetchMyCollections();
+  const handleToggle = () => {
+    const nextState = !open;
+    setOpen(nextState);
+    if (nextState) fetchMyCollections();
   };
 
   const handleAdd = async (collectionId) => {
     setAdding(collectionId);
-    const res = await authFetch(`/api/collections/${collectionId}/videos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoId }),
-    });
-    const data = await res.json();
-    setAdding(null);
-    setFeedback((prev) => ({
-      ...prev,
-      [collectionId]: data.error ? `Error: ${data.error}` : "Added ✓",
-    }));
+    try {
+      const res = await authFetch(`/api/collections/${collectionId}/videos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId }),
+      });
+      const data = await res.json();
+      setFeedback((prev) => ({
+        ...prev,
+        [collectionId]: data.error ? `Error` : "Added",
+      }));
+    } catch (err) {
+      setFeedback((prev) => ({ ...prev, [collectionId]: "Error" }));
+    } finally {
+      setAdding(null);
+    }
   };
 
   if (!user) return null;
 
   return (
-    <div ref={ref} className="relative">
-      <button onClick={handleOpen}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium
-                   bg-stone-100 text-zinc-600 border border-stone-200 hover:bg-stone-200 transition-all">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 4v16m8-8H4"/>
-        </svg>
-        Save to Collection
+    <div ref={containerRef} className="relative inline-block text-left">
+      
+      {/* ── Trigger Button ── */}
+      <button 
+        onClick={handleToggle}
+        className={`group flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all duration-300 ${
+          open 
+            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-slate-900 dark:border-white shadow-2xl" 
+            : "bg-white/50 dark:bg-white/5 border-border hover:border-indigo-500/40 text-text-1 backdrop-blur-md"
+        }`}
+      >
+        <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
+          open ? "bg-white/10 dark:bg-slate-950/10 text-white dark:text-slate-950" : "bg-slate-100 dark:bg-white/10 text-text-3 group-hover:bg-indigo-500 group-hover:text-white"
+        }`}>
+          <Plus className={`w-4 h-4 transition-transform duration-500 ${open ? "rotate-45" : ""}`} />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">Archive to Matrix</span>
       </button>
 
-      {open && (
-        <div className="absolute left-0 mt-2 w-64 rounded-2xl border border-stone-200 py-1.5 z-50 animate-slide-down overflow-hidden"
-          style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)",
-                   boxShadow: "0 4px 24px rgba(0,0,0,0.1)" }}>
-          <p className="px-4 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-b border-stone-100">
-            Your Collections
-          </p>
-
-          {loading ? (
-            <div className="px-4 py-4 text-sm text-zinc-400 text-center">Loading...</div>
-          ) : collections.length === 0 ? (
-            <div className="px-4 py-4 text-center">
-              <p className="text-sm text-zinc-400">No collections yet</p>
-              <a href="/collections" className="text-xs text-violet-600 hover:underline mt-1 block">
-                Create one →
-              </a>
+      {/* ── Dropdown Registry ── */}
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.95, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 10, scale: 0.95, filter: "blur(10px)" }}
+            transition={springConfig}
+            className="absolute left-0 mt-4 w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-border rounded-[32px] shadow-3xl z-[100] overflow-hidden p-2 ring-1 ring-border/50"
+          >
+            <div className="p-4 border-b border-border/50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                 <Database className="w-3.5 h-3.5 text-text-3" />
+                 <p className="text-[9px] font-black text-text-3 uppercase tracking-[0.3em] italic">Collection Nodes</p>
+              </div>
+              <Sparkles className="w-3 h-3 text-indigo-500 animate-pulse" />
             </div>
-          ) : (
-            <div className="max-h-56 overflow-y-auto">
-              {collections.map((c) => (
-                <button key={c._id} onClick={() => handleAdd(c._id)}
-                  disabled={!!adding || feedback[c._id] === "Added ✓"}
-                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone-50
-                             transition-colors text-left disabled:opacity-60">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-800 truncate">{c.title}</p>
-                    <p className="text-xs text-zinc-400">{c.videoCount} videos</p>
-                  </div>
-                  <span className={`text-xs ml-2 flex-shrink-0 ${
-                    feedback[c._id] === "Added ✓" ? "text-emerald-600 font-medium" : "text-zinc-400"
-                  }`}>
-                    {adding === c._id ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-                      </svg>
-                    ) : feedback[c._id] || "+"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
 
-          <div className="border-t border-stone-100 px-4 py-2">
-            <a href="/collections" className="text-xs text-zinc-500 hover:text-zinc-700 transition-colors">
-              Manage collections →
-            </a>
-          </div>
-        </div>
-      )}
+            <div className="max-h-64 overflow-y-auto custom-scrollbar p-2 space-y-1">
+              {loading ? (
+                <div className="p-10 flex flex-col items-center justify-center gap-3 opacity-30 italic">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="text-[9px] font-black uppercase tracking-widest">Scanning Registry...</span>
+                </div>
+              ) : collections.length === 0 ? (
+                <div className="p-8 text-center space-y-4">
+                  <p className="text-[10px] font-black text-text-3 italic">No active collection nodes detected.</p>
+                  <Link 
+                    href="/collections" 
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-colors italic"
+                  >
+                    <FolderPlus className="w-3 h-3" />
+                    Initialize Protocol
+                  </Link>
+                </div>
+              ) : (
+                collections.map((c) => {
+                  const isAdded = feedback[c._id] === "Added";
+                  const isError = feedback[c._id] === "Error";
+                  return (
+                    <button 
+                      key={c._id} 
+                      onClick={() => handleAdd(c._id)}
+                      disabled={!!adding || isAdded}
+                      className={`w-full group/item flex items-center justify-between p-4 rounded-2xl transition-all ${
+                        isAdded 
+                          ? "bg-emerald-500/10 text-emerald-500" 
+                          : "hover:bg-slate-50 dark:hover:bg-white/5 text-text-1"
+                      }`}
+                    >
+                      <div className="text-left min-w-0">
+                        <p className="text-xs font-black italic truncate">{c.title}</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-text-3 opacity-50 italic">
+                          {c.videoCount} Assets Synchronized
+                        </p>
+                      </div>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all ${
+                        isAdded 
+                          ? "bg-emerald-500 text-white border-emerald-500" 
+                          : isError 
+                          ? "bg-rose-500 text-white border-rose-500"
+                          : "bg-slate-50 dark:bg-white/5 border-border text-text-3 group-hover/item:border-indigo-500/30 group-hover/item:text-indigo-500"
+                      }`}>
+                        {adding === c._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isAdded ? (
+                          <CheckCircle2 className="w-4 h-4" />
+                        ) : isError ? (
+                          <span className="text-[8px] font-black">!</span>
+                        ) : (
+                          <Plus className="w-4 h-4" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-3 bg-slate-50/50 dark:bg-white/2 border-t border-border/50">
+              <Link 
+                href="/collections" 
+                className="flex items-center justify-between w-full px-4 py-3 rounded-xl hover:bg-white dark:hover:bg-slate-900 transition-all group/manage"
+              >
+                <div className="flex items-center gap-2">
+                   <Settings className="w-3.5 h-3.5 text-text-3 group-hover/manage:rotate-90 transition-transform" />
+                   <span className="text-[9px] font-black uppercase tracking-widest text-text-2 italic">Architecture Oversight</span>
+                </div>
+                <ArrowUpRight className="w-3.5 h-3.5 text-text-3 opacity-0 group-hover/manage:opacity-100 transition-all" />
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

@@ -6,6 +6,8 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import ProgressBar from "@/components/ProgressBar";
 import MouseEffects from "@/components/MouseEffects";
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 
 export const metadata = {
   title: "EduShare – Peer Knowledge Exchange",
@@ -14,11 +16,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
+
       <body>
         <ThemeProvider>
           <AuthProvider>

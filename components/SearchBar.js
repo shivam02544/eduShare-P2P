@@ -1,7 +1,25 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, 
+  Activity, 
+  Video, 
+  FileText, 
+  Users, 
+  ArrowRight,
+  Database,
+  ShieldCheck,
+  Zap,
+  Target,
+  Layers,
+  SearchCode,
+  ChevronRight
+} from "lucide-react";
+
+const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -12,7 +30,6 @@ export default function SearchBar() {
   const timer = useRef(null);
   const router = useRouter();
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -50,100 +67,151 @@ export default function SearchBar() {
   const hasResults = results && (results.videos?.length || results.notes?.length || results.users?.length);
 
   return (
-    <div ref={ref} className="relative w-full max-w-xs">
+    <div ref={ref} className="relative w-full max-w-[320px] group">
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+          {loading ? (
+             <motion.div 
+               animate={{ rotate: 360 }}
+               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+             >
+                <Activity className="w-4 h-4 text-indigo-500" />
+             </motion.div>
+          ) : (
+             <Search className="w-4 h-4 text-text-3 group-hover:text-indigo-500 transition-colors" />
+          )}
+        </div>
+        
         <input
           type="text"
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onFocus={() => results && setOpen(true)}
-          placeholder="Search videos, notes..."
-          className="w-full pl-9 pr-4 py-2 text-sm bg-zinc-50 border border-zinc-200 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white transition-all"
+          placeholder="Explore..."
+          className="w-full pl-12 pr-10 py-3.5 text-[11px] font-bold uppercase tracking-widest italic bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[24px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/30 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-xl shadow-slate-900/5 placeholder:text-text-3/50"
         />
-        {loading && (
-          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-          </svg>
-        )}
+        
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-text-3 uppercase tracking-widest italic opacity-30 pointer-events-none hidden xl:block">
+           CMD+K
+        </div>
       </div>
 
-      {/* Dropdown results */}
-      {open && (
-        <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-xl border border-zinc-100 overflow-hidden z-50 animate-slide-down">
-          {!hasResults ? (
-            <div className="px-4 py-6 text-center text-sm text-zinc-400">No results for "{query}"</div>
-          ) : (
-            <div className="max-h-80 overflow-y-auto">
-              {results.videos?.length > 0 && (
-                <div>
-                  <p className="px-4 pt-3 pb-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide">Videos</p>
-                  {results.videos.map((v) => (
-                    <Link key={v._id} href={`/videos/${v._id}`} onClick={() => { setOpen(false); setQuery(""); }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 transition-colors">
-                      <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-violet-600" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-800 truncate">{v.title}</p>
-                        <p className="text-xs text-zinc-400">{v.subject} · {v.uploader?.name}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-              {results.notes?.length > 0 && (
-                <div>
-                  <p className="px-4 pt-3 pb-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide">Notes</p>
-                  {results.notes.map((n) => (
-                    <div key={n._id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 transition-colors cursor-pointer">
-                      <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-800 truncate">{n.title}</p>
-                        <p className="text-xs text-zinc-400">{n.subject} · {n.uploader?.name}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {results.users?.length > 0 && (
-                <div>
-                  <p className="px-4 pt-3 pb-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide">People</p>
-                  {results.users.map((u) => (
-                    <Link key={u._id} href={`/profile/${u.firebaseUid}`} onClick={() => { setOpen(false); setQuery(""); }}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 transition-colors">
-                      {u.image ? (
-                        <img src={u.image} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center text-zinc-600 text-sm font-bold flex-shrink-0">
-                          {u.name?.[0]?.toUpperCase()}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-800 truncate">{u.name}</p>
-                        <p className="text-xs text-zinc-400">🏆 {u.credits} credits</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-              <div className="border-t border-zinc-50 px-4 py-2.5">
-                <Link href={`/search?q=${encodeURIComponent(query)}`} onClick={() => { setOpen(false); }}
-                  className="text-xs text-violet-600 hover:underline">
-                  See all results for "{query}" →
-                </Link>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={springConfig}
+            className="absolute top-full mt-4 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[32px] shadow-3xl border border-border overflow-hidden z-50 p-2"
+          >
+            {!hasResults ? (
+              <div className="px-6 py-10 text-center space-y-3">
+                 <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center mx-auto border border-border">
+                    <SearchCode className="w-6 h-6 text-text-3 opacity-30" />
+                 </div>
+                 <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-text-1 uppercase tracking-widest">No results found</p>
+                    <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">No matches for "{query}"</p>
+                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            ) : (
+              <div className="max-h-[70vh] overflow-y-auto no-scrollbar py-2">
+                {results.videos?.length > 0 && (
+                  <div className="space-y-1 mb-4">
+                    <div className="px-5 py-2 flex items-center gap-2">
+                       <Video className="w-3.5 h-3.5 text-indigo-500" />
+                       <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest italic">Media Nodes</span>
+                    </div>
+                    {results.videos.map((v) => (
+                      <Link key={v._id} href={`/videos/${v._id}`} onClick={() => { setOpen(false); setQuery(""); }}
+                        className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group/item">
+                        <div className="w-10 h-10 bg-indigo-500/5 border border-indigo-500/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover/item:scale-110 group-hover/item:bg-indigo-500 group-hover/item:text-white transition-all">
+                          <Target className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-bold text-text-1 truncate italic tracking-tight">{v.title}</p>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[9px] font-bold text-indigo-500 uppercase italic opacity-70">{v.subject}</span>
+                             <div className="w-1 h-1 rounded-full bg-border" />
+                             <span className="text-[9px] font-bold text-text-3 uppercase italic opacity-50">{v.uploader?.name}</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-text-3 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {results.notes?.length > 0 && (
+                  <div className="space-y-1 mb-4">
+                    <div className="px-5 py-2 flex items-center gap-2">
+                       <FileText className="w-3.5 h-3.5 text-emerald-500" />
+                       <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest italic">Asset Manifests</span>
+                    </div>
+                    {results.notes.map((n) => (
+                      <Link key={n._id} href={`/notes/${n._id}`} onClick={() => { setOpen(false); setQuery(""); }}
+                        className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group/item">
+                        <div className="w-10 h-10 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover/item:scale-110 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-all">
+                          <Database className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-bold text-text-1 truncate italic tracking-tight">{n.title}</p>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[9px] font-bold text-emerald-500 uppercase italic opacity-70">{n.subject}</span>
+                             <div className="w-1 h-1 rounded-full bg-border" />
+                             <span className="text-[9px] font-bold text-text-3 uppercase italic opacity-50">{n.uploader?.name}</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-text-3 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {results.users?.length > 0 && (
+                  <div className="space-y-1 mb-2">
+                    <div className="px-5 py-2 flex items-center gap-2">
+                       <Users className="w-3.5 h-3.5 text-rose-500" />
+                       <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest italic">Agent Registry</span>
+                    </div>
+                    {results.users.map((u) => (
+                      <Link key={u._id} href={`/profile/${u.firebaseUid}`} onClick={() => { setOpen(false); setQuery(""); }}
+                        className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group/person">
+                        {u.image ? (
+                          <img src={u.image} alt="" className="w-10 h-10 rounded-[14px] object-cover border border-border group-hover/person:scale-110 transition-transform" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-[14px] bg-indigo-500 text-white flex items-center justify-center text-[12px] font-bold italic border border-white/10">
+                            {u.name?.[0]}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12px] font-bold text-text-1 truncate italic tracking-tight">{u.name}</p>
+                          <div className="flex items-center gap-2">
+                             <Zap className="w-3 h-3 text-amber-500 fill-current" />
+                             <span className="text-[9px] font-bold text-text-3 uppercase italic opacity-50">{u.credits} CREDITS</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-text-3 opacity-0 group-hover/person:opacity-100 group-hover/person:translate-x-1 transition-all" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                <div className="px-4 py-4 mt-2 border-t border-border/50">
+                  <Link href={`/search?q=${encodeURIComponent(query)}`} onClick={() => { setOpen(false); }}
+                    className="group flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-50 dark:bg-white/5 text-[10px] font-bold text-indigo-500 uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">
+                    View All Results
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
