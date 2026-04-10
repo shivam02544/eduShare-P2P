@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
 import WatchHistory from "@/models/WatchHistory";
+import Video from "@/models/Video";
+import User from "@/models/User";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 import { z } from "zod";
 

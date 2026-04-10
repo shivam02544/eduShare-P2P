@@ -1,5 +1,8 @@
 "use client";
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import { 
   Users, 
@@ -41,6 +44,15 @@ const itemVariants = {
 };
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, loading, router]);
+
   return (
     <div className="space-y-32 pb-32">
       

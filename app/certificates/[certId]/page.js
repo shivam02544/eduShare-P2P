@@ -75,7 +75,7 @@ export default function CertificatePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Action HUD ── */}
+      {/* ── Page Actions ── */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -115,7 +115,7 @@ export default function CertificatePage() {
         </div>
       </motion.div>
 
-      {/* ── Certificate Canvas ── */}
+      {/* ── Certificate Document ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -123,7 +123,7 @@ export default function CertificatePage() {
         ref={certRef}
         className="relative aspect-[1.4/1] w-full bg-white dark:bg-slate-950 overflow-hidden rounded-[48px] print:rounded-none shadow-3xl ring-1 ring-border group"
       >
-        {/* Anti-Gravity Decor */}
+        {/* Visual Accents */}
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/10 transition-all duration-1000" />
         <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-[100px] -z-10" />
         
@@ -138,7 +138,7 @@ export default function CertificatePage() {
 
         <div className="relative h-full flex flex-col items-center justify-between p-16 md:p-24 text-center">
           
-          {/* Logo HUD */}
+          {/* Platform Identity */}
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-950 shadow-2xl">
@@ -153,7 +153,7 @@ export default function CertificatePage() {
             </div>
           </div>
 
-          {/* Recipient Logic */}
+          {/* Recipient Details */}
           <div className="space-y-6">
             <p className="text-[13px] font-black text-text-3 uppercase tracking-[0.3em] font-serif">Certificate of Completion</p>
             <div className="space-y-2">
@@ -174,7 +174,7 @@ export default function CertificatePage() {
             </div>
           </div>
 
-          {/* Vitals Matrix */}
+          {/* Certificate Metrics */}
           <div className="flex items-center gap-12 pt-8">
             <div className="text-center space-y-1">
               <p className="text-2xl font-black text-text-1 tracking-tighter">{cert.score}%</p>
@@ -192,7 +192,7 @@ export default function CertificatePage() {
             </div>
           </div>
 
-          {/* Integrity Seal */}
+          {/* Verification Seal */}
           <div className="flex flex-col items-center gap-3">
              <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/5 text-emerald-500 border border-emerald-500/10 backdrop-blur-md">
                 <ShieldCheck className="w-4 h-4" />
@@ -205,7 +205,7 @@ export default function CertificatePage() {
         </div>
       </motion.div>
 
-      {/* ── Integrity HUD ── */}
+      {/* ── Verification Status ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}

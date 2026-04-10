@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
 import Notification from "@/models/Notification";
+import Video from "@/models/Video";
+import Note from "@/models/Note";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";

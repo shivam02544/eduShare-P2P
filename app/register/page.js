@@ -4,10 +4,20 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, authLoading, router]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +69,7 @@ export default function RegisterPage() {
   const handleGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user") {
         setError("Google sign-up failed. Please try again.");

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
 import Transaction from "@/models/Transaction";
+import Video from "@/models/Video";
+import Note from "@/models/Note";
+import LiveSession from "@/models/LiveSession";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";

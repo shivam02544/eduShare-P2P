@@ -146,7 +146,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* ── Metric Matrix ── */}
+      {/* ── Dashboard Statistics ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {STATS.map((s, i) => (
           <motion.div
@@ -171,10 +171,10 @@ export default function DashboardPage() {
 
       <div className="grid lg:grid-cols-12 gap-10">
         
-        {/* ── Main Stream (Left) ── */}
+        {/* ── Content Stream (Left) ── */}
         <div className="lg:col-span-8 space-y-10">
           
-          {/* Continue Watching Protocol */}
+          {/* Continue Learning Selection */}
           {continueWatching.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -227,7 +227,7 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
-          {/* Activity Matrix */}
+          {/* Activity Overviews */}
           <div className="grid md:grid-cols-2 gap-8">
             {[
               { title: "Recent Videos", items: recentVideos, icon: Video, type: 'video' },
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Terminal Actions (Right) ── */}
+        {/* ── Quick Actions (Right) ── */}
         <div className="lg:col-span-4 space-y-10">
           
           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] p-10 shadow-sm space-y-8">

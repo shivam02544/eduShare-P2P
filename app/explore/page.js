@@ -126,7 +126,7 @@ export default function ExplorePage() {
   return (
     <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
 
-      {/* ── Explore Content ── */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* ── Frequency Matrix: Subject Toggles ── */}
+      {/* ── Category Selection ── */}
       <div className="relative py-2">
         <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-bg via-bg/80 to-transparent z-10 pointer-events-none" />
         <div className="overflow-x-auto no-scrollbar scroll-smooth">
@@ -202,7 +202,7 @@ export default function ExplorePage() {
         <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-bg via-bg/80 to-transparent z-10 pointer-events-none" />
       </div>
 
-      {/* ── Operations Sync: Tabs ── */}
+      {/* ── Content Type Selection ── */}
       <div className="flex justify-center">
         <div className="inline-flex p-2 rounded-[40px] bg-slate-50 dark:bg-white/5 border border-border shadow-inner backdrop-blur-md">
           {[
@@ -234,7 +234,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* ── Intelligence Matrix: Grid ── */}
+      {/* ── Content Grid ── */}
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -271,7 +271,7 @@ export default function ExplorePage() {
         )}
       </AnimatePresence>
       
-      {/* ── Matrix Metadata Footnote ── */}
+      {/* ── Page Footer Info ── */}
       <div className="flex items-center justify-center gap-8 pt-12 opacity-30 group-hover:opacity-100 transition-opacity">
          <div className="flex items-center gap-3 text-[10px] font-black text-text-3 uppercase tracking-[0.4em]">
             <Monitor className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function ExplorePage() {
          <div className="w-1.5 h-1.5 rounded-full bg-border" />
          <div className="flex items-center gap-3 text-[10px] font-black text-text-3 uppercase tracking-[0.4em]">
             <Cpu className="w-4 h-4" />
-            System Index Updated
+            System Updated
          </div>
       </div>
     </div>

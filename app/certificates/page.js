@@ -24,7 +24,7 @@ function CertCard({ cert, index }) {
         {/* Aesthetic accents */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -z-10 group-hover:bg-amber-500/20 transition-colors" />
         
-        {/* Header Board */}
+        {/* Card Header */}
         <div className="flex items-start justify-between gap-6 mb-8">
           <div className="w-14 h-14 rounded-[22px] bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 shadow-inner group-hover:rotate-12 transition-transform duration-500">
             <Award className="w-8 h-8" />
@@ -37,7 +37,7 @@ function CertCard({ cert, index }) {
           </div>
         </div>
 
-        {/* Content Node */}
+        {/* Certificate Details */}
         <div className="space-y-6">
           <div className="space-y-2">
             <p className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em]">Topic</p>
@@ -71,7 +71,7 @@ function CertCard({ cert, index }) {
           </div>
         </div>
 
-        {/* Interaction HUD */}
+        {/* Certificate Actions */}
         <div className="mt-8 pt-6 border-t border-border/50 flex items-center justify-between">
           <button 
             onClick={() => {
@@ -117,7 +117,7 @@ export default function CertificatesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-32 px-6 lg:px-0">
       
-      {/* ── Merit Header ── */}
+      {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -158,7 +158,7 @@ export default function CertificatesPage() {
         </div>
       </motion.div>
 
-      {/* ── Merit Matrix ── */}
+      {/* ── Certificates Grid ── */}
       <div className="space-y-8">
         <div className="flex items-center justify-between border-b border-border/50 pb-6">
           <h2 className="text-sm font-black text-text-1 uppercase tracking-widest flex items-center gap-3">

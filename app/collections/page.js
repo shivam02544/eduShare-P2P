@@ -38,7 +38,7 @@ function CollectionCard({ collection, index }) {
       whileHover={{ y: -12 }}
     >
       <Link href={`/collections/${collection._id}`} className="group relative block rounded-[56px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl border border-border p-8 transition-all hover:shadow-3xl hover:shadow-indigo-500/10 overflow-hidden">
-        {/* Anti-Gravity Cover */}
+        {/* Collection Cover */}
         <div className="relative h-56 rounded-[40px] overflow-hidden bg-slate-100 dark:bg-white/5 mb-8 border border-border/50 shadow-inner">
           {collection.coverImage ? (
             <img 
@@ -68,12 +68,12 @@ function CollectionCard({ collection, index }) {
           </div>
           
           <div className="absolute bottom-6 right-6 px-4 py-2 rounded-2xl bg-indigo-500/90 backdrop-blur-xl text-white text-[9px] font-bold uppercase tracking-widest border border-white/10 flex items-center gap-2 shadow-2xl">
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <Video className="w-3.5 h-3.5" />
             {collection.videoCount} Videos
           </div>
         </div>
 
-        {/* Content Section */}
+        {/* Collection Information */}
         <div className="px-2 space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between items-start">
@@ -168,7 +168,7 @@ export default function CollectionsPage() {
   return (
     <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
       
-      {/* ── Intelligence Header ── */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
         <div className="space-y-6">
           <motion.div 
@@ -177,7 +177,7 @@ export default function CollectionsPage() {
             className="flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-               <Database className="w-5 h-5" />
+               <Library className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">My Library</span>
           </motion.div>
@@ -236,7 +236,7 @@ export default function CollectionsPage() {
             <div className="max-w-3xl mx-auto space-y-12 text-center lg:text-left">
               <div className="flex flex-col lg:flex-row items-center gap-6">
                 <div className="w-16 h-16 rounded-[24px] bg-indigo-500 text-white flex items-center justify-center shadow-xl shadow-indigo-500/30">
-                  <Cpu className="w-8 h-8" />
+                  <Library className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
                   <h2 className="text-4xl font-bold text-text-1 tracking-tighter">Create New Collection</h2>
@@ -299,7 +299,7 @@ export default function CollectionsPage() {
                 <div className="md:col-span-2 pt-8">
                   <button type="submit" disabled={creating} className="w-full flex items-center justify-center gap-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-6 rounded-[32px] font-bold text-[12px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-3xl">
                     {creating ? (
-                      <Activity className="w-6 h-6 animate-spin" />
+                      <Plus className="w-6 h-6 animate-pulse" />
                     ) : (
                       <>
                         Create Collection
@@ -314,7 +314,7 @@ export default function CollectionsPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Collection Matrix ── */}
+      {/* ── Collections Grid ── */}
       <AnimatePresence mode="wait">
         {loading ? (
           <div key="skeleton" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">

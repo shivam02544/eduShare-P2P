@@ -56,7 +56,7 @@ export default function LeaderboardPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Podium Header ── */}
+      {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,7 +81,7 @@ export default function LeaderboardPage() {
             </p>
           </div>
 
-          {/* User Status Node */}
+          {/* User Rank Overview */}
           {myRank > 0 && (
             <motion.div 
               initial={{ scale: 0.9 }}
@@ -112,7 +112,7 @@ export default function LeaderboardPage() {
         </div>
       </motion.div>
 
-      {/* ── Matrix Content ── */}
+      {/* ── Rankings List ── */}
       <div className="space-y-8">
         <div className="flex items-center justify-between border-b border-border/50 pb-6">
           <div className="flex items-center gap-3">
@@ -146,14 +146,14 @@ export default function LeaderboardPage() {
                         isMe ? "bg-indigo-500/10 border-indigo-500/30 shadow-xl" : "bg-white/70 dark:bg-slate-900/70 border-border hover:bg-slate-50 dark:hover:bg-white/5"
                       }`}
                     >
-                      {/* Rank Logic */}
+                      {/* Rank Indicator */}
                       <div className="w-10 flex flex-col items-center justify-center">
                         {isTop3 ? medals[i] : (
                           <span className="text-sm font-black text-text-3 opacity-40">#{i + 1}</span>
                         )}
                       </div>
 
-                      {/* Avatar HUD */}
+                      {/* User Avatar */}
                       <div className="relative">
                         {u.image ? (
                           <img src={u.image} alt="" className="w-14 h-14 rounded-[20px] object-cover ring-2 ring-border shadow-lg group-hover:scale-110 transition-transform duration-500" />
@@ -165,7 +165,7 @@ export default function LeaderboardPage() {
                         {isMe && <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 border-2 border-white dark:border-slate-900" />}
                       </div>
 
-                      {/* Info Board */}
+                      {/* User Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3">
                           <p className="text-lg font-black text-text-1 tracking-tight group-hover:text-amber-500 transition-colors">{u.name}</p>
@@ -182,7 +182,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
 
-                      {/* Credits Matrix */}
+                      {/* Credit Score */}
                       <div className="flex items-center gap-4 bg-slate-900 dark:bg-white px-5 py-3 rounded-2xl shadow-xl shadow-slate-900/20 group-hover:scale-105 transition-transform duration-500">
                         <div className="text-center">
                           <p className="text-[8px] font-black uppercase tracking-widest text-white/50 dark:text-slate-400 mb-0.5">Credits</p>

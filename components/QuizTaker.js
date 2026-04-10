@@ -97,7 +97,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
     }
   };
 
-  // ── Result Matrix ──
+  // ── Results Summary ──
   if (result) {
     return (
       <motion.div 
@@ -157,7 +157,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
           </div>
         </div>
 
-        {/* Answer Breakdown Matrix */}
+        {/* Results Analysis */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 px-2">
              <Activity className="w-4 h-4 text-text-3" />
@@ -212,23 +212,23 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
     );
   }
 
-  // ── Protocol Interface ──
+  // ── Quiz Interface ──
   return (
     <div className="space-y-12 pb-20">
       
-      {/* Integrity HUD & Metrics */}
+      {/* Security Status & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className={`col-span-1 md:col-span-2 bg-slate-50 dark:bg-white/5 border p-6 rounded-[32px] flex items-center justify-between gap-6 transition-all duration-500 ${
-          integrityStatus === "breached" ? "border-rose-500 bg-rose-500/10" : 
-          integrityStatus === "warning" ? "border-amber-500 bg-amber-500/10" : "border-border"
+          securityStatus === "locked" ? "border-rose-500 bg-rose-500/10" : 
+          securityStatus === "warning" ? "border-amber-500 bg-amber-500/10" : "border-border"
         }`}>
           <div className="flex items-center gap-5">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform ${
-              integrityStatus === "breached" ? "bg-rose-500 text-white scale-110" : 
-              integrityStatus === "warning" ? "bg-amber-500 text-white animate-pulse" : "bg-indigo-500 text-white"
+              securityStatus === "locked" ? "bg-rose-500 text-white scale-110" : 
+              securityStatus === "warning" ? "bg-amber-500 text-white animate-pulse" : "bg-indigo-500 text-white"
             }`}>
-               {integrityStatus === "breached" ? <Lock className="w-6 h-6" /> : 
-                integrityStatus === "warning" ? <AlertTriangle className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
+               {securityStatus === "locked" ? <Lock className="w-6 h-6" /> : 
+                securityStatus === "warning" ? <AlertTriangle className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]">Quiz Security Status</p>
@@ -269,7 +269,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
         </motion.div>
       )}
 
-          {/* Question Matrix Grid */}
+          {/* Question List */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {quiz.questions.map((q, qi) => (
           <motion.div 
@@ -332,7 +332,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
 
       {/* Footer Controls */}
       <div className="space-y-6 pt-10">
-        {/* Progress Vector */}
+        {/* Progress Bar */}
         <div className="h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden shadow-inner">
           <motion.div
             initial={{ width: 0 }}
@@ -343,7 +343,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
 
         <button
           onClick={handleSubmit}
-          disabled={!allAnswered || submitting || integrityStatus === "breached"}
+          disabled={!allAnswered || submitting || securityStatus === "locked"}
           className="group relative w-full overflow-hidden rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-6 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-3xl disabled:opacity-50"
         >
           <div className="flex items-center gap-4">

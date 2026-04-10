@@ -152,7 +152,7 @@ export default function UploadVideoPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Header HUD ── */}
+      {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -180,7 +180,7 @@ export default function UploadVideoPage() {
 
       <div className="grid lg:grid-cols-12 gap-10">
         
-        {/* ── Manifest Form (Left) ── */}
+        {/* ── Upload Form (Left) ── */}
         <div className="lg:col-span-7 space-y-8">
           <motion.form 
             initial={{ opacity: 0, scale: 0.98 }}
@@ -189,7 +189,7 @@ export default function UploadVideoPage() {
             onSubmit={handleSubmit}
             className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8"
           >
-            {/* Title Node */}
+            {/* Title Section */}
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Video Title</label>
               <input 
@@ -202,7 +202,7 @@ export default function UploadVideoPage() {
               />
             </div>
 
-            {/* Subject Node */}
+            {/* Subject Selection */}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Category</label>
@@ -215,7 +215,7 @@ export default function UploadVideoPage() {
                 </select>
               </div>
               <div className="space-y-3">
-                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Integrity Check</label>
+                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Verification Status</label>
                  <div className="w-full bg-emerald-500/5 border border-emerald-500/10 rounded-3xl px-6 py-4 flex items-center gap-3">
                     <ShieldCheck className="w-5 h-5 text-emerald-500" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Verified Educator</span>
@@ -223,7 +223,7 @@ export default function UploadVideoPage() {
               </div>
             </div>
 
-            {/* Description Node */}
+            {/* Description Section */}
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Description</label>
               <textarea 
@@ -235,7 +235,7 @@ export default function UploadVideoPage() {
               />
             </div>
 
-            {/* Submit HUD */}
+            {/* Form Actions */}
             <div className="pt-4">
               <button 
                 type="submit" 
@@ -259,7 +259,7 @@ export default function UploadVideoPage() {
           </motion.form>
         </div>
 
-        {/* ── Asset Matrix (Right) ── */}
+        {/* ── Assets Selection (Right) ── */}
         <div className="lg:col-span-5 space-y-10">
           
           {/* Video Drop Zone */}
@@ -306,7 +306,7 @@ export default function UploadVideoPage() {
             </div>
           </motion.div>
 
-          {/* Thumbnail Node */}
+          {/* Thumbnail Settings */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -327,7 +327,7 @@ export default function UploadVideoPage() {
                       thumbSource === "auto" ? "bg-emerald-500 text-white" : "bg-indigo-500 text-white"
                     }`}
                   >
-                    {thumbSource === "auto" ? "Native Sync" : "Custom Node"}
+                    {thumbSource === "auto" ? "Auto-Generated" : "Manual Upload"}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -348,8 +348,8 @@ export default function UploadVideoPage() {
               <div className="flex-1 space-y-4">
                  <p className="text-[10px] font-medium text-text-3 leading-relaxed">
                    {file 
-                     ? "Native thumbnail synchronized from intake stream. You may override with a custom visual signature."
-                     : "Waiting for intelligence node to generate visual signature preview."}
+                     ? "Automatic thumbnail generated from your video. You can override it with a custom image."
+                     : "The system will automatically generate a thumbnail preview after you select a video."}
                  </p>
                  <div className="flex gap-3">
                     <input 

@@ -36,7 +36,7 @@ function HistoryItem({ item, index }) {
       <Link href={`/videos/${item.video._id}`}
         className="group relative flex gap-6 p-5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border rounded-[32px] hover:bg-slate-50 dark:hover:bg-white/10 transition-all duration-300 shadow-sm hover:shadow-2xl"
       >
-        {/* Thumbnail Stage */}
+        {/* Video Thumbnail */}
         <div className="relative w-40 h-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5 flex-shrink-0 shadow-inner group-hover:scale-[1.02] transition-transform duration-500">
           {item.video.thumbnailUrl ? (
             <img src={item.video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
@@ -66,7 +66,7 @@ function HistoryItem({ item, index }) {
           )}
         </div>
 
-        {/* Info Board */}
+        {/* Video Details */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
@@ -132,7 +132,7 @@ export default function HistoryPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Chronology Header ── */}
+      {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

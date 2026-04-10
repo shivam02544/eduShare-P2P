@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
 import Certificate from "@/models/Certificate";
+import Video from "@/models/Video";
+import User from "@/models/User";
 
 export const dynamic = "force-dynamic";
 

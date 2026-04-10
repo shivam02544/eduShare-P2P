@@ -212,7 +212,7 @@ export default function PublicProfilePage() {
                   </div>
                 )}
 
-                {/* Skill Manifest */}
+                {/* Skills Overview */}
                 {profileUser.skills?.length > 0 && (
                   <div className="flex flex-wrap gap-3 pt-4">
                     {profileUser.skills.map((s) => (
@@ -301,7 +301,7 @@ export default function PublicProfilePage() {
         ))}
       </div>
 
-      {/* ── Dynamic Content Matrix ── */}
+      {/* ── Profile Content ── */}
       <div className="space-y-12">
         <div className="flex justify-center">
           <div className="inline-flex p-2 rounded-[40px] bg-slate-50 dark:bg-white/5 border border-border shadow-inner backdrop-blur-md">
@@ -394,14 +394,14 @@ export default function PublicProfilePage() {
                       className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-[48px] transition-all hover:shadow-3xl hover:-translate-y-3 overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.1] transition-all">
-                         <Terminal className="w-20 h-20" />
+                         <Library className="w-20 h-20" />
                       </div>
                       <div className="aspect-[16/10] rounded-[32px] bg-slate-100 dark:bg-white/5 flex items-center justify-center overflow-hidden mb-8 border border-border/50 shadow-inner">
                         {c.coverImage ? (
                           <img src={c.coverImage} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
                           <div className="flex flex-col items-center gap-4 text-text-3 opacity-20">
-                             <Database className="w-12 h-12" />
+                             <BookOpen className="w-12 h-12" />
                              <span className="text-[9px] font-black uppercase tracking-[0.4em]">Empty</span>
                           </div>
                         )}
@@ -413,11 +413,11 @@ export default function PublicProfilePage() {
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-border/50">
                            <div className="flex items-center gap-2">
-                              <Monitor className="w-3.5 h-3.5 text-indigo-500" />
+                              <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
                               <span className="text-[10px] font-black text-text-1 uppercase">Resources</span>
                            </div>
                            <div className="flex items-center gap-2">
-                              <Activity className="w-3.5 h-3.5 text-text-3" />
+                              <Users className="w-3.5 h-3.5 text-text-3" />
                               <span className="text-[10px] font-black text-text-3 uppercase">Followers</span>
                            </div>
                         </div>
@@ -445,7 +445,7 @@ export default function PublicProfilePage() {
                     >
                       <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500" />
                       <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.1] transition-all">
-                         <Target className="w-20 h-20" />
+                         <Award className="w-20 h-20" />
                       </div>
                       <div className="space-y-8">
                         <div className="flex items-center justify-between">
@@ -465,7 +465,7 @@ export default function PublicProfilePage() {
 
                         <div className="flex items-center justify-between text-[11px] font-black border-t border-border/50 pt-8">
                           <div className="flex items-center gap-3 bg-emerald-500/10 px-4 py-2 rounded-2xl border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                             <Activity className="w-4 h-4" />
+                             <Zap className="w-4 h-4" />
                              <span>{c.score}% SCORE</span>
                           </div>
                           <div className="flex items-center gap-2 text-text-3">

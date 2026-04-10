@@ -79,7 +79,7 @@ export default function LivePage() {
   return (
     <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
       
-      {/* ── Header Terminal ── */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -118,7 +118,7 @@ export default function LivePage() {
         )}
       </div>
 
-      {/* ── Active Node Matrix ── */}
+      {/* ── Live Sessions Grid ── */}
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -179,7 +179,7 @@ export default function LivePage() {
                 </div>
 
                 <div className="relative space-y-8 h-full flex flex-col">
-                  {/* Node Header */}
+                  {/* Session Header */}
                   <div className="flex items-start justify-between">
                      <div className="px-5 py-2 rounded-2xl bg-indigo-500 text-white text-[9px] font-black uppercase tracking-[0.3em] shadow-xl shadow-indigo-500/20">
                         {s.subject}
@@ -196,7 +196,7 @@ export default function LivePage() {
                      </div>
                   </div>
 
-                  {/* Node Identity */}
+                  {/* Session Details */}
                   <div className="space-y-4 flex-1">
                      <div className="space-y-1">
                         <p className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.6em] opacity-50">Live Session</p>
@@ -209,7 +209,7 @@ export default function LivePage() {
                      </p>
                   </div>
 
-                  {/* Curator Section */}
+                  {/* Host Information */}
                   <div className="flex items-center gap-4 pt-6 border-t border-border/50">
                     <Link href={`/profile/${s.teacher?.firebaseUid}`} className="relative group/u">
                       {s.teacher?.image ? (
@@ -233,7 +233,7 @@ export default function LivePage() {
                     </div>
                   </div>
 
-                  {/* Protocol Action */}
+                  {/* Session Actions */}
                   <div className="flex gap-4 pt-4">
                     {s.meetingLink ? (
                       <motion.a 

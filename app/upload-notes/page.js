@@ -85,7 +85,7 @@ export default function UploadNotesPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Header HUD ── */}
+      {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,7 +113,7 @@ export default function UploadNotesPage() {
 
       <div className="grid lg:grid-cols-12 gap-10">
         
-        {/* ── Manifest Form (Left) ── */}
+        {/* ── Upload Form (Left) ── */}
         <div className="lg:col-span-7 space-y-8">
           <motion.form 
             initial={{ opacity: 0, scale: 0.98 }}
@@ -122,7 +122,7 @@ export default function UploadNotesPage() {
             onSubmit={handleSubmit}
             className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8"
           >
-            {/* Identity Node */}
+            {/* Title Section */}
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Title</label>
               <input 
@@ -135,7 +135,7 @@ export default function UploadNotesPage() {
               />
             </div>
 
-            {/* Config Matrix */}
+            {/* Configuration Options */}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Category</label>
@@ -204,7 +204,7 @@ export default function UploadNotesPage() {
               </AnimatePresence>
             </div>
 
-            {/* Submit HUD */}
+            {/* Form Actions */}
             <div className="pt-4">
               <button 
                 type="submit" 
@@ -218,7 +218,7 @@ export default function UploadNotesPage() {
           </motion.form>
         </div>
 
-        {/* ── Asset Matrix (Right) ── */}
+        {/* ── Document Selection (Right) ── */}
         <div className="lg:col-span-5 space-y-10">
           
           {/* PDF Drop Zone */}
@@ -255,7 +255,7 @@ export default function UploadNotesPage() {
                     <p className="text-sm font-black text-text-1 truncate">{file.name}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                  </div>
-                 <button className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-6 py-2 rounded-full border border-emerald-500/10">Replace Node</button>
+                 <button className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-6 py-2 rounded-full border border-emerald-500/10">Replace File</button>
               </div>
             ) : (
               <>
@@ -271,7 +271,7 @@ export default function UploadNotesPage() {
             </div>
           </motion.div>
 
-          {/* Integrity Badge */}
+          {/* Verification Badge */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
