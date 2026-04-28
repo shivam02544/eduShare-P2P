@@ -13,5 +13,10 @@ const LiveSessionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Upcoming sessions — queried with date >= now on every list call
+LiveSessionSchema.index({ date: 1 });
+// Fast lookup by teacher
+LiveSessionSchema.index({ teacher: 1, date: 1 });
+
 export default mongoose.models.LiveSession ||
   mongoose.model("LiveSession", LiveSessionSchema);

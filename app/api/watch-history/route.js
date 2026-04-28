@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import WatchHistory from "@/models/WatchHistory";
-import Video from "@/models/Video";
-import User from "@/models/User";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
+import { getWatchHistory, saveWatchHistory, clearWatchHistory } from "@/services/watch-history.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -24,20 +22,9 @@ export const GET = apiHandler(async (ctx) => {
   const { searchParams } = new URL(req.url);
   const { type } = querySchema.parse(Object.fromEntries(searchParams));
 
-  const query = { user: me._id };
-  if (type === "continue") query.completed = false;
+  const history = await getWatchHistory(me._id, type);
 
-  const history = await WatchHistory.find(query)
-    .sort({ lastWatchedAt: -1 })
-    .limit(type === "continue" ? 10 : 50)
-    .populate({
-      path: "video",
-      select: "title thumbnailUrl subject uploader views",
-      populate: { path: "uploader", select: "name" },
-    });
-
-  // Filter out deleted videos
-  return NextResponse.json(history.filter((h) => h.video));
+  return NextResponse.json(history);
 }, { isProtected: true });
 
 const watchHistorySchema = z.object({
@@ -56,27 +43,13 @@ export const POST = apiHandler(async (ctx) => {
   const rl = rateLimit({ key: buildKey(ip, "watch-history-post"), limit: 120, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  const progress = Math.floor(progressSeconds);
-  const duration = Math.floor(durationSeconds || 0);
-  const completed = duration > 0 && progress / duration >= 0.9;
+  const result = await saveWatchHistory(me._id, videoId, progressSeconds, durationSeconds);
 
-  await WatchHistory.findOneAndUpdate(
-    { user: me._id, video: videoId },
-    {
-      progressSeconds: progress,
-      durationSeconds: duration,
-      completed,
-      lastWatchedAt: new Date(),
-      ...(completed ? { completedAt: new Date() } : {}),
-    },
-    { upsert: true }
-  );
-
-  return NextResponse.json({ saved: true });
+  return NextResponse.json(result);
 }, { isProtected: true, schema: watchHistorySchema });
 
 // DELETE /api/watch-history — clear all history
 export const DELETE = apiHandler(async (ctx) => {
-  await WatchHistory.deleteMany({ user: ctx.user._id });
-  return NextResponse.json({ message: "History cleared" });
+  const result = await clearWatchHistory(ctx.user._id);
+  return NextResponse.json(result);
 }, { isProtected: true });

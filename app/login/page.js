@@ -67,7 +67,7 @@ export default function LoginPage() {
 
       router.replace("/dashboard");
     } catch (err) {
-      setError(errorMap[err.code] || "Unidentified transmission error.");
+      setError(errorMap[err.code] || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function LoginPage() {
       await signInWithPopup(auth, googleProvider);
       router.push("/dashboard");
     } catch (err) {
-      setError(errorMap[err.code] || "Third-party synchronization failed.");
+      setError(errorMap[err.code] || "Google sign-in failed. Please try again.");
     } finally {
       setGLoading(false);
     }

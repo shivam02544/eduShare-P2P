@@ -7,8 +7,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Comments from "@/components/Comments";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
-import QuizTaker from "@/components/QuizTaker";
-import QuizBuilder from "@/components/QuizBuilder";
+
 import AddToCollection from "@/components/AddToCollection";
 import BoostButton from "@/components/BoostButton";
 import ChapterList from "@/components/ChapterList";
@@ -338,120 +337,39 @@ export default function VideoPage() {
             </motion.div>
           )}
           
-          {/* Quiz Section: Manage and Take tests */}
+          {/* Quiz Gateway CTA */}
           <AnimatePresence>
             {(quiz?.exists || (video?.uploader?.firebaseUid === user?.uid)) && (
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 md:p-14 rounded-[56px] shadow-2l relative group overflow-hidden"
+                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-indigo-500/20 p-8 md:p-12 rounded-[40px] md:rounded-[56px] shadow-2l relative group overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-8"
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -z-10 transition-transform duration-1000 group-hover:scale-150" />
                 
-                <div className="space-y-12">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30">
-                        <Zap className="w-8 h-8 fill-current" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold text-text-1 tracking-tighter">Video Quiz</h2>
-                        <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">
-                          {quiz?.exists ? (
-                            quiz.attempted
-                              ? `Status: Success (${quiz.attempt.score}%)`
-                              : `Quiz Pending: Take the test`
-                          ) : "No quiz available"}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {quiz?.exists && quiz.attempted && (
-                      <div className={`px-8 py-4 rounded-3xl border text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${
-                        quiz.attempt.passed ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                      }`}>
-                         {quiz.attempt.passed ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                         {quiz.attempt.passed ? "Passed" : "Failed"}
-                      </div>
-                    )}
+                <div className="flex items-center gap-5 md:gap-6">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-[24px] md:rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30 shrink-0">
+                    <Zap className="w-7 h-7 md:w-8 md:h-8 fill-current" />
                   </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-text-1 tracking-tighter">Video Knowledge Quiz</h2>
+                    <p className="text-[10px] md:text-[11px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-70">
+                      {quiz?.exists 
+                        ? (quiz.attempted ? "Review your performance" : "Test your knowledge & earn credits") 
+                        : "No quiz available currently"}
+                    </p>
+                  </div>
+                </div>
 
-                  {quiz?.exists ? (
-                    <div className="space-y-10">
-                      {quiz.attempted ? (
-                        <div className={`rounded-[32px] p-10 border transition-all ${
-                          quiz.attempt.passed
-                            ? "bg-emerald-500/5 border-emerald-500/20 shadow-inner"
-                            : "bg-rose-500/5 border-rose-500/20 shadow-inner"
-                        }`}>
-                          <div className={`flex items-center gap-4 mb-6 ${quiz.attempt.passed ? "text-emerald-500" : "text-rose-500"}`}>
-                             <Award className="w-8 h-8" />
-                             <span className="text-xl font-bold tracking-tight">{quiz.attempt.passed ? "Passed" : "Failed"}</span>
-                          </div>
-                          <p className="text-[15px] font-bold leading-relaxed text-text-1 opacity-80 mb-8 max-w-2xl">
-                            {quiz.attempt.passed
-                              ? `Quiz complete. You scored ${quiz.attempt.score}%. Great job!`
-                              : `You scored ${quiz.attempt.score}%. You need ${quiz.passingScore}% to pass. Please watch the video again.`}
-                          </p>
-                          {quiz.attempt.creditsAwarded > 0 && (
-                            <div className="flex items-center justify-between p-6 px-10 bg-white/50 dark:bg-slate-900 border border-border rounded-[28px] shadow-2xl">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-text-3">Credits Earned</span>
-                              <div className="flex items-center gap-3 text-amber-500 font-bold">
-                                <Zap className="w-5 h-5 fill-current" />
-                                <span className="text-2xl">+{quiz.attempt.creditsAwarded}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="pt-4">
-                           <QuizTaker
-                            quiz={quiz}
-                            videoId={id}
-                            onComplete={(result) => {
-                              setQuiz((prev) => ({
-                                ...prev,
-                                attempted: true,
-                                attempt: { score: result.score, passed: result.passed, creditsAwarded: result.creditsAwarded },
-                              }));
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ) : video?.uploader?.firebaseUid === user?.uid && (
-                    <div className="space-y-8 bg-slate-50 dark:bg-white/5 p-10 rounded-[40px] border border-dashed border-border">
-                       <p className="text-sm font-bold text-text-3 leading-relaxed opacity-70">Implement a quiz for this video to allow users to earn credits and verify their learning progress.</p>
-                       <QuizBuilder
-                        videoId={id}
-                        existingQuiz={null}
-                        onSaved={() => authFetch(`/api/videos/${id}/quiz`).then(r => r.json()).then(setQuiz)}
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Admin: Edit Quiz */}
-                  <AnimatePresence>
-                    {adminMode && video?.uploader?.firebaseUid === user?.uid && (
-                      <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="pt-12 border-t border-border/50 mt-10"
-                      >
-                         <div className="flex items-center gap-3 mb-8 text-text-3 opacity-40">
-                            <Cpu className="w-4 h-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Edit Mode Active</span>
-                         </div>
-                         <QuizBuilder
-                          videoId={id}
-                          existingQuiz={quiz}
-                          onSaved={() => authFetch(`/api/videos/${id}/quiz`).then(r => r.json()).then(setQuiz)}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                <div className="flex items-center">
+                  <Link 
+                    href={`/videos/${id}/quiz`} 
+                    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 md:px-10 py-4 md:py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[20px] md:rounded-[28px] font-black text-[11px] uppercase tracking-widest shadow-2xl hover:scale-[1.03] active:scale-[0.97] transition-all group/btn"
+                  >
+                    {quiz?.exists ? (quiz.attempted ? "View Results" : "Take the Quiz") : (video?.uploader?.firebaseUid === user?.uid ? "Create Quiz Module" : "View Quiz Portal")}
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
               </motion.div>
             )}

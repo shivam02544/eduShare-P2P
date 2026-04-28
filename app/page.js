@@ -15,14 +15,16 @@ import {
   FileText,
   ShieldCheck
 } from "lucide-react";
+import TrendingSection from "@/components/TrendingSection";
+import ContributorsSection from "@/components/ContributorsSection";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 const stats = [
-  { value: "12K+", label: "Students",     icon: Users,    color: "text-indigo-500" },
-  { value: "8K+",  label: "Videos",       icon: BookOpen, color: "text-emerald-500" },
-  { value: "600+", label: "Classes",      icon: Play,     color: "text-rose-500" },
-  { value: "80K+", label: "Credits",      icon: Zap,      color: "text-amber-500" },
+  { value: "12K+", label: "Students",  icon: Users,    color: "text-indigo-500" },
+  { value: "8K+",  label: "Videos",    icon: BookOpen, color: "text-emerald-500" },
+  { value: "600+", label: "Classes",   icon: Play,     color: "text-rose-500" },
+  { value: "80K+", label: "Credits",   icon: Zap,      color: "text-amber-500" },
 ];
 
 const containerVariants = {
@@ -130,8 +132,19 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* ── Glassmorphic Stats ── */}
+      {/* ── Platform Stats ── */}
       <section className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-14 space-y-4">
+          <div className="flex items-center justify-center gap-2.5">
+            <div className="w-12 h-px bg-indigo-500/20" />
+            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em]">Platform</p>
+            <div className="w-12 h-px bg-indigo-500/20" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter">By the Numbers</h2>
+          <p className="text-sm text-text-2 font-medium max-w-md mx-auto leading-relaxed">
+            A growing community of students and educators sharing knowledge every day.
+          </p>
+        </div>
         <motion.div 
           initial="hidden"
           whileInView="visible"
@@ -158,6 +171,12 @@ export default function HomePage() {
           ))}
         </motion.div>
       </section>
+
+      {/* ── Trending Content ── */}
+      <TrendingSection />
+
+      {/* ── Top Contributors ── */}
+      <ContributorsSection />
 
       {/* ── Pro-Grade CTA ── */}
       <section className="max-w-7xl mx-auto px-6">

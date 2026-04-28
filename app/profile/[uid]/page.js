@@ -35,7 +35,8 @@ import {
   Target,
   ArrowRight,
   Layers,
-  Terminal
+  Terminal,
+  BookOpen
 } from "lucide-react";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };

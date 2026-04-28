@@ -1,26 +1,19 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import Video from "@/models/Video";
+import { apiHandler } from "@/lib/apiHandler";
+import { getVideoById, VideoError } from "@/services/video.service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req, { params }) {
-  await connectDB();
+export const GET = apiHandler(async (ctx) => {
+  const { user, params } = ctx;
 
-  let mongoUserId = null;
   try {
-    const { verifyAuth } = await import("@/lib/verifyAuth");
-    const auth = await verifyAuth(req);
-    if (auth) mongoUserId = auth.mongoUser._id.toString();
-  } catch {}
-
-  const video = await Video.findById(params.id)
-    .populate("uploader", "name image firebaseUid");
-  if (!video) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  const obj = video.toObject();
-  obj.isLiked = mongoUserId ? obj.likes?.map(String).includes(mongoUserId) : false;
-  obj.isBookmarked = mongoUserId ? obj.bookmarks?.map(String).includes(mongoUserId) : false;
-
-  return NextResponse.json(obj);
-}
+    const result = await getVideoById(params.id, user?._id);
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof VideoError) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
+    }
+    throw err;
+  }
+}, { isProtected: false });

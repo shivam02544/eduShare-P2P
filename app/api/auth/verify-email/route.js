@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import EmailVerification from "@/models/EmailVerification";
-import User from "@/models/User";
+import { verifyEmailToken, AuthError } from "@/services/auth.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -19,25 +18,13 @@ export const GET = apiHandler(async (ctx) => {
   const { searchParams } = new URL(req.url);
   const { token } = verifyQuerySchema.parse(Object.fromEntries(searchParams));
 
-  console.log("[verify-email] Looking for token:", token.substring(0, 16) + "...");
-  const record = await EmailVerification.findOne({ token });
-  console.log("[verify-email] Record found:", !!record);
-
-  if (!record) return NextResponse.json({ error: "Invalid or expired link" }, { status: 400 });
-  if (record.expiresAt < new Date()) return NextResponse.json({ error: "Link expired" }, { status: 400 });
-
-  // If already used, just return success (idempotent)
-  if (!record.used) {
-    record.used = true;
-    await record.save();
-
-    // Mark user as verified — upsert so it works even if user doc doesn't exist yet
-    await User.findOneAndUpdate(
-      { email: record.email },
-      { $set: { isVerified: true } },
-      { upsert: true, new: true }
-    );
+  try {
+    const result = await verifyEmailToken(token);
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
+    }
+    throw err;
   }
-
-  return NextResponse.json({ verified: true, email: record.email });
 }, { isProtected: false });

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import User from "@/models/User";
-import { transferCredits } from "@/lib/credits";
-import { createNotification } from "@/lib/notify";
+import { tipUser, ProfileError } from "@/services/profile.service";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 import { z } from "zod";
 
@@ -35,29 +33,13 @@ export const POST = apiHandler(async (ctx) => {
   const rl = rateLimit({ key: buildKey(ip, "tip"), limit: 10, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  const target = await User.findOne({ firebaseUid: uid }).select("_id name");
-  if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-  const result = await transferCredits({
-    fromUserId: me._id,
-    toUserId: target._id,
-    amount,
-    fromReason: "tip_sent",
-    toReason: "tip_received",
-    fromDescription: `You tipped ${target.name} ${amount} credits`,
-    toDescription: `${me.name} tipped you ${amount} credits`,
-  });
-
-  if (!result.success)
-    return NextResponse.json({ error: result.error }, { status: 400 });
-
-  // Notify recipient
-  await createNotification({
-    recipient: target._id,
-    sender: me._id,
-    type: "credit",
-    message: `${me.name} tipped you ${amount} credits 🎁`,
-  });
-
-  return NextResponse.json({ message: `Sent ${amount} credits to ${target.name}` });
+  try {
+    const result = await tipUser(uid, me, amount);
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof ProfileError) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
+    }
+    throw err;
+  }
 }, { isProtected: true, schema: tipSchema });

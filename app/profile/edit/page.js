@@ -77,10 +77,10 @@ export default function EditProfilePage() {
       });
 
       invalidateCache("dashboard");
-      toast.success("Identity synchronization complete");
+      toast.success("Profile updated successfully");
       setSaving(false);
     } catch (err) {
-      toast.error("Synchronization failure: " + err.message);
+      toast.error("Update failed: " + err.message);
       setSaving(false);
     }
   };

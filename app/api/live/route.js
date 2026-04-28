@@ -1,32 +1,13 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import LiveSession from "@/models/LiveSession";
+import { getLiveSessions, createLiveSession } from "@/services/live.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 export const GET = apiHandler(async (ctx) => {
   const { user } = ctx;
-  const sessions = await LiveSession.find({ date: { $gte: new Date() } })
-    .sort({ date: 1 })
-    .populate("teacher", "name image firebaseUid")
-    .populate("attendees", "name image firebaseUid");
-
-  const myId = user?._id?.toString();
-
-  const result = sessions.map((s) => {
-    const obj = s.toObject();
-    const isTeacher = myId && s.teacher?._id?.toString() === myId;
-    const isAttendee = myId && s.attendees?.some(a => a._id?.toString() === myId);
-
-    // Secure the link
-    if (!isTeacher && !isAttendee) {
-      delete obj.meetingLink;
-    }
-
-    return obj;
-  });
-
+  const result = await getLiveSessions(user?._id);
   return NextResponse.json(result);
 }, { isProtected: false });
 
@@ -47,16 +28,6 @@ const liveSessionSchema = z.object({
 
 export const POST = apiHandler(async (ctx) => {
   const { user: me, body } = ctx;
-  const { title, subject, date, meetingLink, description } = body;
-
-  const session = await LiveSession.create({
-    title,
-    subject,
-    description: description || "",
-    date: new Date(date),
-    teacher: me._id,
-    meetingLink,
-  });
-
+  const session = await createLiveSession(me._id, body);
   return NextResponse.json(session, { status: 201 });
 }, { isProtected: true, schema: liveSessionSchema });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import Video from "@/models/Video";
+import { getVideos, createVideo } from "@/services/video.service";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { invalidateCache } from "@/lib/cache";
@@ -13,22 +13,7 @@ export const GET = apiHandler(async (ctx) => {
   const subject = searchParams.get("subject");
   const sort = searchParams.get("sort");
 
-  const query = subject ? { subject, flagged: { $ne: true } } : { flagged: { $ne: true } };
-  const sortOption = sort === "popular" ? { views: -1 } : { createdAt: -1 };
-
-  const videos = await Video.find(query)
-    .sort(sortOption)
-    .populate("uploader", "name image firebaseUid");
-
-  const mongoUserId = user ? user._id.toString() : null;
-
-  const result = videos.map((v) => {
-    const obj = v.toObject();
-    obj.isLiked = mongoUserId ? obj.likes?.map(String).includes(mongoUserId) : false;
-    obj.isBookmarked = mongoUserId ? obj.bookmarks?.map(String).includes(mongoUserId) : false;
-    return obj;
-  });
-
+  const result = await getVideos(subject, sort, user?._id);
   return NextResponse.json(result);
 }, { isProtected: false });
 
@@ -41,21 +26,14 @@ const videoPostSchema = z.object({
 });
 
 export const POST = apiHandler(async (ctx) => {
-  const { title, description, subject, videoUrl, thumbnailUrl } = ctx.body;
+  const { user: me, body } = ctx;
 
-  const video = await Video.create({
-    title,
-    description: description || "",
-    subject,
-    videoUrl,
-    thumbnailUrl: thumbnailUrl || "",
-    uploader: ctx.user._id,
-  });
+  const video = await createVideo(body, me._id);
 
-  logger.info({ videoId: video._id, title }, "Video created and immediately available for playback");
+  logger.info({ videoId: video._id, title: video.title }, "Video created and immediately available for playback");
 
   // Invalidate dashboard cache so new upload appears immediately
-  await invalidateCache(`dashboard:${ctx.user._id}`);
+  await invalidateCache(`dashboard:${me._id}`);
 
   return NextResponse.json(video, { status: 201 });
 }, { isProtected: true, schema: videoPostSchema });

@@ -19,4 +19,11 @@ const NoteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Explore page — filter by subject, exclude flagged, sort by date
+NoteSchema.index({ subject: 1, flagged: 1, createdAt: -1 });
+// Dashboard / profile — all notes by a specific uploader
+NoteSchema.index({ uploader: 1, createdAt: -1 });
+// Boosted content sorting
+NoteSchema.index({ boostedUntil: 1 });
+
 export default mongoose.models.Note || mongoose.model("Note", NoteSchema);

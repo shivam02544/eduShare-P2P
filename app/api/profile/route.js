@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import User from "@/models/User";
+import { getProfile, updateProfile } from "@/services/profile.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/profile — get current user's full profile
 export const GET = apiHandler(async (ctx) => {
-  const user = await User.findById(ctx.user._id).select("-__v");
-  return NextResponse.json(user);
+  const result = await getProfile(ctx.user._id);
+  return NextResponse.json(result);
 }, { isProtected: true });
 
 const profileSchema = z.object({
@@ -19,17 +19,6 @@ const profileSchema = z.object({
 
 // PATCH /api/profile — update name, bio, skills
 export const PATCH = apiHandler(async (ctx) => {
-  const { name, bio, skills } = ctx.body;
-
-  const updated = await User.findByIdAndUpdate(
-    ctx.user._id,
-    {
-      ...(name && { name }),
-      ...(bio !== undefined && { bio }),
-      ...(skills && { skills }),
-    },
-    { new: true }
-  ).select("-__v");
-
-  return NextResponse.json(updated);
+  const result = await updateProfile(ctx.user._id, ctx.body);
+  return NextResponse.json(result);
 }, { isProtected: true, schema: profileSchema });

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
+import { apiHandler } from "@/lib/apiHandler";
 
-export async function GET(req) {
-  const auth = await verifyAuth(req);
-  if (!auth) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const dynamic = "force-dynamic";
 
-  // verifyAuth already returns the mongoUser with dynamic role elevation applied.
-  return NextResponse.json(auth.mongoUser);
-}
+export const GET = apiHandler(async (ctx) => {
+  const { user } = ctx;
+  // apiHandler already returns the mongoUser with dynamic role elevation applied,
+  // attached as `ctx.user`.
+  return NextResponse.json(user);
+}, { isProtected: true });

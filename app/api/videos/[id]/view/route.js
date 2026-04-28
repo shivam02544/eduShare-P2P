@@ -1,43 +1,25 @@
 import { NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { connectDB } from "@/lib/mongodb";
-import Video from "@/models/Video";
-import { awardCredits } from "@/lib/credits";
+import { apiHandler } from "@/lib/apiHandler";
+import { recordVideoView, VideoError } from "@/services/video.service";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req, { params }) {
+export const POST = apiHandler(async (ctx) => {
+  const { req, params, user } = ctx;
+
   // 30 video views per hour per IP — prevents bot inflation
   const ip = getClientIp(req);
   const rl = rateLimit({ key: buildKey(ip, "video-view"), limit: 30, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
-  const auth = await verifyAuth(req);
-  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await connectDB();
-  const video = await Video.findById(params.id);
-  if (!video) return NextResponse.json({ error: "Video not found" }, { status: 404 });
-
-  const viewerId = auth.mongoUser._id.toString();
-
-  if (video.uploader.toString() === viewerId)
-    return NextResponse.json({ message: "Self-view, no credits" });
-
-  if (video.viewedBy.map(String).includes(viewerId))
-    return NextResponse.json({ message: "Already viewed" });
-
-  video.views += 1;
-  video.viewedBy.push(auth.mongoUser._id);
-  await video.save();
-
-  await awardCredits({
-    userId: video.uploader,
-    amount: 5,
-    reason: "video_view",
-    video: video._id,
-    description: `Someone watched "${video.title}"`,
-  });
-
-  return NextResponse.json({ message: "View recorded, +5 credits awarded" });
-}
+  try {
+    const result = await recordVideoView(params.id, user);
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof VideoError) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
+    }
+    throw err;
+  }
+}, { isProtected: true });

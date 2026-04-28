@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import { generatePresignedUrl } from "@/lib/s3";
+import { getPresignedUrl } from "@/services/upload.service";
 import { z } from "zod";
 
 const presignedSchema = z.object({
@@ -11,12 +11,6 @@ const presignedSchema = z.object({
 
 export const POST = apiHandler(async (ctx) => {
   const { filename, contentType, folder } = ctx.body;
-
-  const { presignedUrl, key, fileUrl } = await generatePresignedUrl(
-    filename,
-    contentType,
-    folder
-  );
-
-  return NextResponse.json({ presignedUrl, key, fileUrl });
+  const result = await getPresignedUrl(filename, contentType, folder);
+  return NextResponse.json(result);
 }, { isProtected: true, schema: presignedSchema });

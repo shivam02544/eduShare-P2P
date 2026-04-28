@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import Transaction from "@/models/Transaction";
-import Video from "@/models/Video";
-import Note from "@/models/Note";
-import LiveSession from "@/models/LiveSession";
+import { getCreditsHistory } from "@/services/credit.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -17,30 +14,7 @@ export const GET = apiHandler(async (ctx) => {
   const { req, user: me } = ctx;
   const { searchParams } = new URL(req.url);
   const { page } = querySchema.parse(Object.fromEntries(searchParams));
-  const limit = 20;
 
-  const [transactions, total] = await Promise.all([
-    Transaction.find({ user: me._id })
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("video", "title")
-      .populate("note", "title")
-      .populate("session", "title"),
-    Transaction.countDocuments({ user: me._id }),
-  ]);
-
-  // Running balance summary
-  const earned = await Transaction.aggregate([
-    { $match: { user: me._id, amount: { $gt: 0 } } },
-    { $group: { _id: null, total: { $sum: "$amount" } } },
-  ]);
-
-  return NextResponse.json({
-    transactions,
-    total,
-    pages: Math.ceil(total / limit),
-    page,
-    totalEarned: earned[0]?.total || 0,
-  });
+  const result = await getCreditsHistory(me._id, page);
+  return NextResponse.json(result);
 }, { isProtected: true });

@@ -106,7 +106,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
         className="space-y-8 max-w-2xl mx-auto"
       >
         {/* Score HUD */}
-        <div className={`relative overflow-hidden rounded-[48px] p-10 text-center border shadow-3xl ${
+        <div className={`relative overflow-hidden rounded-[32px] md:rounded-[48px] p-6 md:p-10 text-center border shadow-3xl ${
           result.passed
             ? "bg-emerald-500/5 border-emerald-500/20 shadow-emerald-500/10"
             : "bg-rose-500/5 border-rose-500/20 shadow-rose-500/10"
@@ -116,9 +116,9 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
           <motion.div 
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`text-7xl font-black mb-4 italic tracking-tighter ${result.passed ? "text-emerald-500" : "text-rose-500"}`}
+            className={`text-6xl md:text-7xl font-black mb-4 italic tracking-tighter ${result.passed ? "text-emerald-500" : "text-rose-500"}`}
           >
-            {result.score}<span className="text-3xl font-black opacity-40">%</span>
+            {result.score}<span className="text-2xl md:text-3xl font-black opacity-40">%</span>
           </motion.div>
           
           <div className="flex flex-col items-center gap-2">
@@ -169,7 +169,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-6 rounded-[32px] shadow-sm relative overflow-hidden ${
+              className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-5 md:p-6 rounded-[24px] md:rounded-[32px] shadow-sm relative overflow-hidden ${
                 r.correct ? "border-emerald-500/30" : "border-rose-500/30"
               }`}
             >
@@ -218,7 +218,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
       
       {/* Security Status & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className={`col-span-1 md:col-span-2 bg-slate-50 dark:bg-white/5 border p-6 rounded-[32px] flex items-center justify-between gap-6 transition-all duration-500 ${
+        <div className={`col-span-1 md:col-span-2 bg-slate-50 dark:bg-white/5 border p-5 md:p-6 rounded-[24px] md:rounded-[32px] flex flex-col sm:flex-row items-center justify-between gap-4 md:gap-6 transition-all duration-500 ${
           securityStatus === "locked" ? "border-rose-500 bg-rose-500/10" : 
           securityStatus === "warning" ? "border-amber-500 bg-amber-500/10" : "border-border"
         }`}>
@@ -247,7 +247,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
           </div>
         </div>
 
-        <div className="bg-slate-50 dark:bg-white/5 border border-border p-6 rounded-[32px] flex flex-col justify-center gap-1">
+        <div className="bg-slate-50 dark:bg-white/5 border border-border p-5 md:p-6 rounded-[24px] md:rounded-[32px] flex flex-col justify-center gap-1">
            <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Passing Score</p>
            <div className="flex items-center gap-3">
               <span className="text-xl font-bold text-text-1 italic">{quiz.passingScore}%</span>
@@ -277,7 +277,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: qi * 0.05 }}
-            className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-8 rounded-[48px] shadow-sm hover:shadow-2xl transition-all ${
+            className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border p-6 md:p-8 rounded-[32px] md:rounded-[48px] shadow-sm hover:shadow-2xl transition-all ${
               answers[qi] !== null ? "border-indigo-500/20" : "border-border"
             }`}
           >
@@ -289,7 +289,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
                <div className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-30 italic">Question ID: {q._id.slice(-6)}</div>
             </div>
             
-            <p className="text-xl font-bold text-text-1 tracking-tight mb-10 leading-relaxed min-h-[4rem]">
+            <p className="text-lg md:text-xl font-bold text-text-1 tracking-tight mb-8 md:mb-10 leading-relaxed min-h-[3rem] md:min-h-[4rem]">
               {q.question}
             </p>
 
@@ -304,7 +304,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
                     updated[qi] = oi;
                     setAnswers(updated);
                   }}
-                  className={`group w-full flex items-center gap-5 px-6 py-4 rounded-[28px] border transition-all duration-300 disabled:opacity-20 ${
+                  className={`group w-full flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 px-5 md:px-6 py-4 rounded-[20px] md:rounded-[28px] border transition-all duration-300 disabled:opacity-20 ${
                     answers[qi] === oi
                       ? "bg-slate-900 dark:bg-white border-slate-900 dark:border-white text-white dark:text-slate-950 shadow-xl"
                       : "bg-white dark:bg-white/5 border-border hover:border-indigo-500/40 text-text-1"
@@ -344,7 +344,7 @@ export default function QuizTaker({ quiz, videoId, onComplete }) {
         <button
           onClick={handleSubmit}
           disabled={!allAnswered || submitting || securityStatus === "locked"}
-          className="group relative w-full overflow-hidden rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-6 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-3xl disabled:opacity-50"
+          className="group relative w-full overflow-hidden rounded-[24px] md:rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 md:p-6 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-3xl disabled:opacity-50"
         >
           <div className="flex items-center gap-4">
             {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}

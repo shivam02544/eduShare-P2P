@@ -25,4 +25,11 @@ const VideoSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Explore page — filter by subject, exclude flagged, sort by date or views
+VideoSchema.index({ subject: 1, flagged: 1, createdAt: -1 });
+// Dashboard / profile — all videos by a specific uploader
+VideoSchema.index({ uploader: 1, createdAt: -1 });
+// Boosted content sorting
+VideoSchema.index({ boostedUntil: 1 });
+
 export default mongoose.models.Video || mongoose.model("Video", VideoSchema);

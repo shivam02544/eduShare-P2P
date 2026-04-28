@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/apiHandler";
-import EmailVerification from "@/models/EmailVerification";
-import User from "@/models/User";
-import { sendVerificationEmail } from "@/lib/mailer";
 import { rateLimit, getClientIp, buildKey, rateLimitResponse } from "@/lib/rateLimit";
-import crypto from "crypto";
+import { createVerificationToken, AuthError } from "@/services/auth.service";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -28,22 +25,13 @@ export const POST = apiHandler(async (ctx) => {
   const rl = rateLimit({ key: buildKey(ip, "send-verification"), limit: 5, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
-  // Delete any existing unused tokens for this email
-  await EmailVerification.deleteMany({ email, used: false });
-
-  // Generate cryptographically secure token
-  const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-  await EmailVerification.create({ email, token, expiresAt });
-  console.log("[send-verification] Token saved for:", email, "token prefix:", token.substring(0, 16));
-
   try {
-    await sendVerificationEmail({ to: email, name, token });
+    const result = await createVerificationToken(email, name);
+    return NextResponse.json(result);
   } catch (err) {
-    console.error("[mailer] Failed to send:", err.message);
-    return NextResponse.json({ error: "Failed to send email. Check your email config." }, { status: 500 });
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.statusCode });
+    }
+    throw err;
   }
-
-  return NextResponse.json({ message: "Verification email sent" });
 }, { isProtected: false, schema: verificationSchema });

@@ -59,7 +59,7 @@ function DashSkeleton() {
 export default function DashboardPage() {
   const { user, loading: authLoading, authFetch } = useAuth();
   const router = useRouter();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({ stats: {}, recentVideos: [], recentNotes: [] });
   const [loading, setLoading] = useState(true);
   const [continueWatching, setContinueWatching] = useState([]);
 
@@ -70,10 +70,12 @@ export default function DashboardPage() {
     const cached = getMemCache("dashboard");
     if (cached) {
       setData(cached); setLoading(false);
-      authFetch("/api/dashboard").then(r => r.json()).then(d => { if (!d.error) { setData(d); setMemCache("dashboard", d, 30_000); } });
+      authFetch("/api/dashboard").then(r => r.json()).then(d => { 
+        if (d && !d.error) { setData(d); setMemCache("dashboard", d, 30_000); } 
+      }).catch(() => {});
     } else {
       authFetch("/api/dashboard").then(r => r.json()).then(d => {
-        if (!d.error) { setData(d); setMemCache("dashboard", d, 30_000); }
+        if (d && !d.error) { setData(d); setMemCache("dashboard", d, 30_000); }
         setLoading(false);
       }).catch(() => setLoading(false));
     }
@@ -86,7 +88,7 @@ export default function DashboardPage() {
 
   if (authLoading || loading || !user) return <DashSkeleton />;
 
-  const { stats = {}, recentVideos = [], recentNotes = [] } = data;
+  const { stats = {}, recentVideos = [], recentNotes = [] } = data || {};
   const firstName = user.displayName?.split(" ")[0] || "there";
 
   return (

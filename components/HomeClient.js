@@ -27,33 +27,33 @@ const springConfig = { mass: 1, tension: 120, friction: 20 };
 const protocolNodes = [
   {
     icon: Video,
-    title: "Intelligence Broadcasts",
-    desc: "Materialize your expertise through high-fidelity video nodes. Earn credits through global intellectual distribution.",
-    tag: "Video Node",
+    title: "Share Video Lessons",
+    desc: "Upload high-quality video lessons on any subject. Earn credits every time a peer watches your content.",
+    tag: "Video",
     color: "text-indigo-500",
     bg: "bg-indigo-500/5",
   },
   {
     icon: FileText,
-    title: "Static Asset Matrix",
-    desc: "Synchronize PDFs, schematics, and study logs. Accrue liquidity for every node materialization by peers.",
-    tag: "Asset Node",
+    title: "Upload Study Notes",
+    desc: "Share PDFs, revision sheets, and study guides. Earn credits for every download by a fellow student.",
+    tag: "Notes",
     color: "text-emerald-500",
     bg: "bg-emerald-500/5",
   },
   {
     icon: Activity,
-    title: "Sync Seminars",
-    desc: "Host interactive real-time protocols. Forge direct neural links with agents and earn priority bonuses.",
-    tag: "Live Node",
+    title: "Host Live Classes",
+    desc: "Run interactive live sessions in real-time. Engage directly with students and earn bonus credits.",
+    tag: "Live",
     color: "text-rose-500",
     bg: "bg-rose-500/5",
   },
   {
     icon: Zap,
-    title: "Academic Liquidity",
-    desc: "A meritocratic economy where contribution equals influence. The greater the value, the higher your status.",
-    tag: "Elite Node",
+    title: "Earn Credits",
+    desc: "A merit-based economy where quality contributions are rewarded. The more you teach, the more you earn.",
+    tag: "Credits",
     color: "text-amber-500",
     bg: "bg-amber-500/5",
   },
@@ -62,22 +62,22 @@ const protocolNodes = [
 const syncSequence = [
   {
     n: "01",
-    title: "Identity Initialization",
-    desc: "Standardize your agent profile in seconds. No complex authorization required.",
+    title: "Create Your Account",
+    desc: "Sign up in seconds with no complex setup. Your profile is your academic identity on the platform.",
     icon: Users,
     color: "text-indigo-500",
   },
   {
     n: "02",
-    title: "Protocol Projection",
-    desc: "Uplink videos, asset logs, or initiate live streams. Every subject, every frequency.",
+    title: "Share Your Knowledge",
+    desc: "Upload videos, notes, or go live. Every subject, any format — your knowledge has a home here.",
     icon: Database,
     color: "text-emerald-500",
   },
   {
     n: "03",
-    title: "Merit Accumulation",
-    desc: "Acquire intelligence credits for every validation. Re-allocate resources to access elite content.",
+    title: "Earn & Grow",
+    desc: "Collect credits for every view and download. Spend them to unlock premium content from other creators.",
     icon: Zap,
     color: "text-amber-500",
   },
@@ -85,23 +85,23 @@ const syncSequence = [
 
 const agentTestimonials = [
   {
-    name: "Agent Priya S.",
-    role: "Engineering Architect",
-    text: "The EduShare protocol optimized my synchronization efficiency. The peer-contributed nodes are of elite caliber.",
+    name: "Priya S.",
+    role: "Engineering Student",
+    text: "EduShare completely changed how I study. The peer-created content is so much more relatable than textbooks.",
     avatar: "P",
     color: "bg-indigo-500",
   },
   {
-    name: "Agent Rahul M.",
-    role: "System Specialist",
-    text: "I have accrued over 2,000 intelligence credits through node projection. The reward mechanisms are highly optimized.",
+    name: "Rahul M.",
+    role: "Computer Science",
+    text: "I've earned over 2,000 credits by uploading my notes. It actually motivates me to make them better.",
     avatar: "R",
     color: "bg-emerald-500",
   },
   {
-    name: "Agent Aisha K.",
-    role: "Collective Alpha",
-    text: "Real-time sync seminars have revolutionized our group revision protocols. Direct knowledge transfer is unparalleled.",
+    name: "Aisha K.",
+    role: "Pre-Med Student",
+    text: "Live classes on EduShare are incredible. Real-time doubt clearing with peers is unmatched.",
     avatar: "A",
     color: "bg-rose-500",
   },
@@ -116,10 +116,10 @@ export default function HomeClient() {
         <div className="text-center mb-20 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Architecture</p>
+           <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">What We Offer</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Unified Intelligence Hub</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Everything You Need to Learn</h2>
           <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
             A frictionless learning ecosystem engineered for the next generation of scholars.
           </p>
@@ -170,12 +170,12 @@ export default function HomeClient() {
         <div className="text-center mb-20 space-y-4">
            <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Process</p>
+             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">How It Works</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Operational Sequence</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Getting Started is Simple</h2>
           <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
-            Transition from observer to active node participant in mere minutes.
+            From sign-up to sharing — go from zero to contributing in just minutes.
           </p>
         </div>
 
@@ -218,10 +218,10 @@ export default function HomeClient() {
         <div className="text-center mb-16 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Collective</p>
+             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Student Stories</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Acknowledged by the Network</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Loved by Students</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -268,15 +268,15 @@ export default function HomeClient() {
       <section className="px-6 text-center max-w-4xl mx-auto space-y-12">
          <div className="space-y-6">
             <Sparkles className="w-12 h-12 text-indigo-500 mx-auto animate-pulse" />
-            <h2 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter italic">Transcend Legacy Learning.</h2>
+            <h2 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter italic">Start Learning Together.</h2>
             <p className="text-lg text-text-2 font-medium italic leading-relaxed">
-              Initialize your presence in the global network and start your journey towards intellectual mastery.
+              Join thousands of students sharing and discovering knowledge on EduShare.
             </p>
          </div>
          
          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link href="/register" className="group relative w-full sm:w-auto px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-black text-[13px] uppercase tracking-[0.3em] italic hover:scale-105 active:scale-95 transition-all shadow-3xl">
-              Authorize Agent Profile
+              Get Started Free
               <ArrowRight className="w-4 h-4 ml-2 inline group-hover:translate-x-1 transition-transform" />
             </Link>
             <div className="flex items-center gap-6">
@@ -285,7 +285,7 @@ export default function HomeClient() {
                <div className="h-px w-8 bg-border" />
             </div>
             <Link href="/login" className="text-[13px] font-black uppercase tracking-[0.3em] text-text-2 hover:text-indigo-500 transition-colors italic">
-              Restore Session
+              Sign In
             </Link>
          </div>
       </section>
