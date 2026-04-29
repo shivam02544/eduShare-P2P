@@ -145,7 +145,20 @@ export default function CollectionsPage() {
     if (!user) return;
     fetch("/api/collections")
       .then((r) => r.json())
-      .then((d) => { setCollections(d); setLoading(false); });
+      .then((d) => { 
+        if (Array.isArray(d)) {
+          setCollections(d);
+        } else {
+          console.error("Failed to load collections:", d);
+          setCollections([]);
+        }
+        setLoading(false); 
+      })
+      .catch((err) => {
+        console.error("Error fetching collections:", err);
+        setCollections([]);
+        setLoading(false);
+      });
   }, [user]);
 
   const handleCreate = async (e) => {

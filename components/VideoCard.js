@@ -19,7 +19,7 @@ export default function VideoCard({ video }) {
       className="group relative"
     >
       <Link href={`/videos/${video._id}`} className="block">
-        <div className="relative overflow-hidden rounded-[48px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-sm transition-all hover:shadow-3xl hover:shadow-indigo-500/10">
+        <div className="group relative overflow-hidden rounded-[24px] md:rounded-[40px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border shadow-sm hover:shadow-2xl hover:shadow-indigo-500/5 transition-all">
           
           {/* Thumbnail */}
           <div className="relative aspect-video overflow-hidden bg-slate-100 dark:bg-white/5">
@@ -76,7 +76,7 @@ export default function VideoCard({ video }) {
           </div>
 
           {/* Details */}
-          <div className="p-8 space-y-6">
+          <div className="p-5 md:p-6 space-y-4 min-w-0">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                  <span className="text-[8px] font-black text-indigo-500 uppercase tracking-[0.4em]">Video Lesson</span>

@@ -124,10 +124,10 @@ export default function ExplorePage() {
   const isLoading = tab === "videos" ? loadingVideos : loadingNotes;
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
+    <div className="max-w-[1440px] mx-auto space-y-10 md:space-y-16 pb-32 md:pb-40 px-4 md:px-8">
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
+      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 md:gap-12">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-xl shadow-indigo-500/20">
@@ -139,10 +139,10 @@ export default function ExplorePage() {
              </div>
           </div>
           <div className="space-y-4">
-             <h1 className="text-5xl md:text-7xl font-black text-text-1 tracking-tighter leading-tight">
+             <h1 className="text-3xl md:text-5xl lg:text-7xl font-black text-text-1 tracking-tighter leading-tight">
                Find Lessons.
              </h1>
-             <p className="text-text-2 text-xl font-medium max-w-2xl opacity-80 leading-relaxed">
+             <p className="text-text-2 text-base md:text-xl font-medium max-w-2xl opacity-80 leading-relaxed">
                Find high-quality lessons and notes shared by your peers on the platform.
              </p>
           </div>
@@ -172,14 +172,14 @@ export default function ExplorePage() {
       <div className="relative py-2">
         <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-bg via-bg/80 to-transparent z-10 pointer-events-none" />
         <div className="overflow-x-auto no-scrollbar scroll-smooth">
-          <div className="flex gap-4 min-w-max px-24">
+          <div className="flex gap-3 md:gap-4 min-w-max px-4 md:px-24">
             {SUBJECTS.map((s) => {
               const isActive = subject === s;
               return (
                 <button 
                   key={s} 
                   onClick={() => setSubject(s)}
-                  className={`group relative px-10 py-5 rounded-[28px] transition-all duration-500 ${
+                  className={`group relative px-5 md:px-10 py-3 md:py-5 rounded-[20px] md:rounded-[28px] transition-all duration-500 ${
                     isActive 
                       ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-3xl scale-105" 
                       : "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border text-text-3 hover:border-indigo-500/30 hover:text-text-1"
@@ -214,12 +214,12 @@ export default function ExplorePage() {
               <button 
                 key={t.key} 
                 onClick={() => setTab(t.key)}
-                className={`relative flex items-center gap-4 px-10 py-5 rounded-[32px] transition-all group ${
+                className={`relative flex items-center gap-2 md:gap-4 px-5 md:px-10 py-3 md:py-5 rounded-[24px] md:rounded-[32px] transition-all group ${
                   isActive ? "bg-white dark:bg-slate-900 shadow-3xl ring-1 ring-border" : "text-text-3 hover:text-text-1 hover:bg-slate-100 dark:hover:bg-white/5"
                 }`}
               >
                 <t.icon className={`w-5 h-5 ${isActive ? "text-indigo-500" : "group-hover:scale-110 transition-transform"}`} />
-                <span className={`text-[11px] font-black uppercase tracking-widest ${isActive ? "text-text-1" : ""}`}>{t.label}</span>
+                <span className={`hidden sm:block text-[11px] font-black uppercase tracking-widest ${isActive ? "text-text-1" : ""}`}>{t.label}</span>
                 {isActive && (
                   <motion.div 
                     layoutId="tabCountExplore"
@@ -249,7 +249,7 @@ export default function ExplorePage() {
               variants={{
                 visible: { transition: { staggerChildren: 0.05 } }
               }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-10"
             >
               {videos.map((v) => <VideoCard key={v._id} video={v} />)}
             </motion.div>
@@ -263,7 +263,7 @@ export default function ExplorePage() {
               variants={{
                 visible: { transition: { staggerChildren: 0.05 } }
               }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-10"
             >
               {notes.map((n) => <NoteCard key={n._id} note={n} onDownload={handleDownload} />)}
             </motion.div>

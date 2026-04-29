@@ -133,22 +133,22 @@ export default function PublicProfilePage() {
   const { user: profileUser, stats, videos, notes } = profile;
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
+    <div className="max-w-[1440px] mx-auto space-y-10 md:space-y-16 pb-32 md:pb-40 px-4 md:px-8">
 
       {/* ── User Profile ── */}
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springConfig}
-        className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-12 md:p-16 rounded-[64px] shadow-3xl overflow-hidden group"
+        className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-6 md:p-12 lg:p-16 rounded-[32px] md:rounded-[64px] shadow-3xl overflow-hidden group"
       >
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:scale-110 transition-transform duration-1000" />
         <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] -z-10" />
         
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-16 items-start">
           {/* Profile Picture */}
           <div className="relative shrink-0">
-            <div className="w-32 h-32 md:w-52 md:h-52 rounded-[64px] overflow-hidden bg-slate-50 dark:bg-white/5 border border-border shadow-3xl transition-transform group-hover:rotate-1 duration-700">
+            <div className="w-24 h-24 md:w-52 md:h-52 rounded-[32px] md:rounded-[64px] overflow-hidden bg-slate-50 dark:bg-white/5 border border-border shadow-3xl transition-transform group-hover:rotate-1 duration-700">
               {profileUser.image ? (
                 <img src={profileUser.image} alt={profileUser.name} className="w-full h-full object-cover" />
               ) : (
@@ -176,7 +176,7 @@ export default function PublicProfilePage() {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4 flex-wrap">
-                    <h1 className="text-4xl md:text-7xl font-black text-text-1 tracking-tighter">
+                    <h1 className="text-3xl md:text-5xl lg:text-7xl font-black text-text-1 tracking-tighter">
                       {profileUser.name}
                     </h1>
                     {profileUser.isSuspended && (
@@ -244,7 +244,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-12 pt-10 border-t border-border/50">
+            <div className="flex items-center gap-6 md:gap-12 pt-6 md:pt-10 border-t border-border/50 flex-wrap">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
                   <Zap className="w-6 h-6 fill-current" />
@@ -277,7 +277,7 @@ export default function PublicProfilePage() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {[
           { label: "Videos", value: stats.totalVideos, icon: Video, color: "text-indigo-500", bg: "bg-indigo-500/5" },
           { label: "Notes", value: stats.totalNotes, icon: FileText, color: "text-emerald-500", bg: "bg-emerald-500/5" },
@@ -290,13 +290,13 @@ export default function PublicProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 + i * 0.05 }}
             whileHover={{ y: -8, scale: 1.02 }}
-            className="group p-10 rounded-[48px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border text-center transition-all hover:shadow-3xl relative overflow-hidden"
+            className="group p-6 md:p-10 rounded-[24px] md:rounded-[48px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border text-center transition-all hover:shadow-3xl relative overflow-hidden"
           >
             <div className={`absolute -top-10 -right-10 w-24 h-24 ${s.bg} rounded-full blur-2xl group-hover:scale-150 transition-all opacity-20`} />
             <div className={`w-14 h-14 rounded-[22px] bg-surface mx-auto flex items-center justify-center ${s.color} border border-border mb-6 group-hover:bg-slate-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-all`}>
               <s.icon className="w-7 h-7" />
             </div>
-            <p className="text-4xl font-black text-text-1 tracking-tighter">{s.value}</p>
+            <p className="text-2xl md:text-4xl font-black text-text-1 tracking-tighter">{s.value}</p>
             <p className="text-[9px] font-black text-text-3 uppercase tracking-[0.4em] mt-2 opacity-50">{s.label}</p>
           </motion.div>
         ))}
@@ -317,12 +317,12 @@ export default function PublicProfilePage() {
                 <button 
                   key={t.key} 
                   onClick={() => setTab(t.key)}
-                  className={`relative flex items-center gap-4 px-8 py-5 rounded-[32px] transition-all group ${
+                  className={`relative flex items-center gap-2 md:gap-4 px-4 md:px-8 py-3 md:py-5 rounded-[24px] md:rounded-[32px] transition-all group ${
                     isActive ? "bg-white dark:bg-slate-900 shadow-3xl ring-1 ring-border" : "text-text-3 hover:text-text-1"
                   }`}
                 >
                   <t.icon className={`w-5 h-5 ${isActive ? "text-indigo-500" : "group-hover:scale-110 transition-transform"}`} />
-                  <span className={`hidden lg:block text-[11px] font-black uppercase tracking-widest ${isActive ? "text-text-1" : ""}`}>{t.label}</span>
+                  <span className={`hidden md:block text-[11px] font-black uppercase tracking-widest ${isActive ? "text-text-1" : ""}`}>{t.label}</span>
                   {isActive && (
                     <motion.div 
                       layoutId="tabCountProfile"

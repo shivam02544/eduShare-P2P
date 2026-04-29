@@ -148,9 +148,9 @@ export default function HomePage() {
         <motion.div 
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.05, margin: "-10px" }}
           variants={containerVariants}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
         >
           {stats.map((s, i) => (
             <motion.div 
@@ -183,9 +183,9 @@ export default function HomePage() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={springConfig}
-          className="relative bg-slate-900 rounded-[64px] p-12 md:p-24 text-center overflow-hidden border border-white/10"
+          className="relative bg-slate-900 rounded-[32px] md:rounded-[64px] p-8 md:p-24 text-center overflow-hidden border border-white/10"
         >
           {/* Animated Glow */}
           <motion.div 

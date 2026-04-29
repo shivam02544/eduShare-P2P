@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLoading } from "@/context/LoadingContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -49,6 +50,7 @@ function captureVideoFrame(videoFile, atSecond = 1) {
 
 export default function UploadVideoPage() {
   const { user, loading: authLoading, authFetch } = useAuth();
+  const { withLoading } = useLoading();
   const router = useRouter();
   const [form, setForm] = useState({ title: "", description: "", subject: "Math" });
   const [file, setFile] = useState(null);
@@ -114,43 +116,46 @@ export default function UploadVideoPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return toast.error("Please select a video file");
-    setUploading(true);
     setError("");
 
-    try {
-      setUploadStep("Uploading video...");
-      const videoUrl = await uploadDirectToS3(file, "videos");
+    await withLoading(async () => {
+      setUploading(true);
+      try {
+        setUploadStep("Uploading video...");
+        const videoUrl = await uploadDirectToS3(file, "videos");
 
-      let thumbnailUrl = "";
-      if (thumbnail) {
-        setUploadStep("Uploading thumbnail...");
-        const thumbFile = thumbnail instanceof Blob && !(thumbnail instanceof File)
-          ? new File([thumbnail], "thumbnail.jpg", { type: "image/jpeg" })
-          : thumbnail;
-        thumbnailUrl = await uploadDirectToS3(thumbFile, "thumbnails");
+        let thumbnailUrl = "";
+        if (thumbnail) {
+          setUploadStep("Uploading thumbnail...");
+          const thumbFile = thumbnail instanceof Blob && !(thumbnail instanceof File)
+            ? new File([thumbnail], "thumbnail.jpg", { type: "image/jpeg" })
+            : thumbnail;
+          thumbnailUrl = await uploadDirectToS3(thumbFile, "thumbnails");
+        }
+
+        setUploadStep("Finishing up...");
+        const res = await authFetch("/api/videos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, videoUrl, thumbnailUrl }),
+        });
+
+        if (!res.ok) throw new Error("Failed to save video");
+
+        toast.success("Video uploaded successfully");
+        router.push("/dashboard");
+      } catch (err) {
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setUploading(false);
+        setUploadStep("");
       }
-
-      setUploadStep("Finishing up...");
-      const res = await authFetch("/api/videos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, videoUrl, thumbnailUrl }),
-      });
-
-      if (!res.ok) throw new Error("Failed to save video");
-
-      toast.success("Video uploaded successfully");
-      router.push("/dashboard");
-    } catch (err) {
-      setUploading(false);
-      setError(err.message);
-      setUploadStep("");
-      toast.error(err.message);
-    }
+    });
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+    <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 pb-32 px-4 md:px-6 lg:px-0">
       
       {/* ── Page Header ── */}
       <motion.div 
@@ -178,7 +183,7 @@ export default function UploadVideoPage() {
         </button>
       </motion.div>
 
-      <div className="grid lg:grid-cols-12 gap-10">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10">
         
         {/* ── Upload Form (Left) ── */}
         <div className="lg:col-span-7 space-y-8">
@@ -187,7 +192,7 @@ export default function UploadVideoPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={springConfig}
             onSubmit={handleSubmit}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-10 rounded-[32px] md:rounded-[48px] shadow-3xl space-y-8"
           >
             {/* Title Section */}
             <div className="space-y-3">
@@ -203,7 +208,7 @@ export default function UploadVideoPage() {
             </div>
 
             {/* Subject Selection */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Category</label>
                 <select 
@@ -311,7 +316,7 @@ export default function UploadVideoPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] p-8 shadow-sm space-y-6"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[32px] md:rounded-[48px] p-6 md:p-8 shadow-sm space-y-6 overflow-hidden"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -333,8 +338,8 @@ export default function UploadVideoPage() {
               </AnimatePresence>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="relative aspect-video w-48 rounded-[24px] overflow-hidden bg-slate-100 dark:bg-white/5 border border-border flex items-center justify-center group shadow-xl">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+              <div className="relative w-full md:w-40 aspect-video rounded-[24px] overflow-hidden bg-slate-100 dark:bg-white/5 border border-border flex items-center justify-center group shadow-xl shrink-0">
                  {thumbPreview ? (
                    <img src={thumbPreview} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                  ) : uploadStep === "Generating thumbnail..." ? (
@@ -345,13 +350,13 @@ export default function UploadVideoPage() {
                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors" />
               </div>
 
-              <div className="flex-1 space-y-4">
-                 <p className="text-[10px] font-medium text-text-3 leading-relaxed">
+              <div className="flex-1 min-w-0 space-y-4">
+                 <p className="text-[10px] font-medium text-text-3 leading-relaxed break-words">
                    {file 
                      ? "Automatic thumbnail generated from your video. You can override it with a custom image."
                      : "The system will automatically generate a thumbnail preview after you select a video."}
                  </p>
-                 <div className="flex gap-3">
+                 <div className="flex flex-wrap gap-3">
                     <input 
                       ref={thumbRef} 
                       type="file" 

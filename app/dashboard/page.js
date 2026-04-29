@@ -92,19 +92,19 @@ export default function DashboardPage() {
   const firstName = user.displayName?.split(" ")[0] || "there";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 pb-32 px-6 md:px-0">
+    <div className="max-w-7xl mx-auto space-y-8 md:space-y-10 pb-32 px-4 md:px-6 lg:px-0">
       
       {/* ── Welcome Stage ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-[48px] p-8 md:p-16 bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-3xl"
+        className="relative overflow-hidden rounded-[32px] md:rounded-[48px] p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-3xl"
       >
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px]" />
         
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="flex items-center gap-8">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
+          <div className="flex items-center gap-4 md:gap-8">
             <div className="relative">
               {user.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-24 h-24 rounded-[32px] object-cover ring-4 ring-white/20 dark:ring-indigo-500/10 shadow-2xl" />
@@ -122,19 +122,19 @@ export default function DashboardPage() {
                 <LayoutDashboard className="w-5 h-5 opacity-40" />
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">My Dashboard</span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tighter leading-tight">
                 Welcome back, <span className="opacity-60">{firstName}</span>
               </h1>
               <p className="text-sm font-medium opacity-50 tracking-tight">{user.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-10 px-10 py-8 rounded-[40px] bg-white/5 dark:bg-slate-500/5 border border-white/10 dark:border-slate-900/5 backdrop-blur-md shadow-inner">
+          <div className="flex items-center gap-6 md:gap-10 px-6 md:px-10 py-5 md:py-8 rounded-[28px] md:rounded-[40px] bg-white/5 dark:bg-slate-500/5 border border-white/10 dark:border-slate-900/5 backdrop-blur-md shadow-inner">
              <div className="text-center space-y-2">
                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Total Credits</p>
                <div className="flex items-center justify-center gap-3">
                  <TrendingUp className="w-6 h-6 text-emerald-400" />
-                 <p className="text-4xl font-black tracking-tighter">{stats.credits ?? 0}</p>
+                 <p className="text-2xl md:text-4xl font-black tracking-tighter">{stats.credits ?? 0}</p>
                </div>
              </div>
              <div className="w-px h-12 bg-white/10" />
@@ -149,19 +149,19 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ── Dashboard Statistics ── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
         {STATS.map((s, i) => (
           <motion.div
             key={s.key}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...springConfig, delay: i * 0.05 }}
-            className="group relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-6 rounded-[32px] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-2"
+            className="group relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-4 md:p-6 rounded-[24px] md:rounded-[32px] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-2"
           >
             <div className={`w-12 h-12 rounded-[18px] ${s.bg} ${s.color} flex items-center justify-center mb-6 transition-transform group-hover:scale-110`}>
               <s.icon className="w-6 h-6" />
             </div>
-            <p className="text-3xl font-black text-text-1 tracking-tighter leading-none mb-1">
+            <p className="text-xl md:text-3xl font-black text-text-1 tracking-tighter leading-none mb-1">
               {stats[s.key] ?? 0}
             </p>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 opacity-60">
@@ -229,43 +229,76 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
-          {/* Activity Overviews */}
+          {/* Activity Overviews — My Content */}
           <div className="grid md:grid-cols-2 gap-8">
             {[
-              { title: "Recent Videos", items: recentVideos, icon: Video, type: 'video' },
-              { title: "Recent Notes", items: recentNotes, icon: FileText, type: 'note' },
+              { title: "My Videos", items: recentVideos, icon: Video, type: 'video', uploadHref: '/upload-video' },
+              { title: "My Notes", items: recentNotes, icon: FileText, type: 'note', uploadHref: '/upload-notes' },
             ].map((s) => (
-              <div key={s.title} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[40px] p-8 shadow-sm">
-                <div className="flex items-center justify-between mb-8">
+              <div key={s.title} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[28px] md:rounded-[40px] p-5 md:p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6 md:mb-8">
                   <div className="flex items-center gap-3">
                     <s.icon className="w-5 h-5 text-text-3" />
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-text-1">{s.title}</h3>
                   </div>
-                  <Link href="/explore" className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 hover:text-indigo-500 transition-all">
-                    <ArrowUpRight className="w-4 h-4" />
+                  <Link href={`/profile/${user?.uid}`} className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-indigo-500 transition-colors">
+                    View All
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
 
                 {s.items.length === 0 ? (
-                  <div className="text-center py-10 space-y-4">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-text-3 opacity-20">
-                      <Compass className="w-6 h-6" />
+                  <div className="text-center py-10 space-y-5">
+                    <div className="w-14 h-14 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-text-3 opacity-30">
+                      <s.icon className="w-7 h-7" />
                     </div>
-                    <p className="text-[10px] font-black text-text-3 uppercase tracking-widest opacity-40">No items found</p>
+                    <div className="space-y-2">
+                      <p className="text-sm font-black text-text-1 tracking-tight">No {s.type === 'video' ? 'videos' : 'notes'} yet</p>
+                      <p className="text-[10px] font-medium text-text-3 max-w-[200px] mx-auto">Share your first {s.type === 'video' ? 'video lesson' : 'study notes'} with the community</p>
+                    </div>
+                    <Link href={s.uploadHref} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform">
+                      <Plus className="w-3.5 h-3.5" />
+                      Upload {s.type === 'video' ? 'Video' : 'Notes'}
+                    </Link>
                   </div>
                 ) : (
-                  <ul className="space-y-4">
-                    {s.items.map((item, i) => (
-                      <li key={item._id} className="group flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-border hover:bg-white dark:hover:bg-slate-800 transition-all">
-                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                               {s.type === 'video' ? <Play className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  <ul className="space-y-3">
+                    {s.items.map((item) => (
+                      <li key={item._id}>
+                        <Link 
+                          href={s.type === 'video' ? `/videos/${item._id}` : `/notes/${item._id}`}
+                          className="group flex items-center justify-between p-3 md:p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-indigo-500/20 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                            {s.type === 'video' && item.thumbnailUrl ? (
+                              <div className="w-12 h-9 md:w-14 md:h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-white/5 flex-shrink-0">
+                                <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                              </div>
+                            ) : (
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+                                s.type === 'video' 
+                                  ? 'bg-indigo-500/10 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white' 
+                                  : 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white'
+                              }`}>
+                                {s.type === 'video' ? <Play className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[13px] font-black text-text-1 truncate tracking-tight group-hover:text-indigo-500 transition-colors">{item.title}</p>
+                              <p className="text-[10px] font-medium text-text-3 mt-0.5">
+                                {item.subject && <span className="uppercase tracking-wider">{item.subject}</span>}
+                              </p>
                             </div>
-                            <span className="text-[13px] font-black text-text-1 truncate tracking-tight">{item.title}</span>
-                         </div>
-                         <div className="text-[10px] font-black text-text-3 uppercase tracking-tighter opacity-40 ml-4">
-                            {s.type === 'video' ? `${item.views} Views` : `${item.downloads} Downloads`}
-                         </div>
+                          </div>
+                          <div className="flex items-center gap-3 ml-3 shrink-0">
+                            <div className="text-right">
+                              <p className="text-[10px] font-black text-text-3 uppercase tracking-tighter opacity-60">
+                                {s.type === 'video' ? `${item.views || 0} views` : `${item.downloads || 0} dl`}
+                              </p>
+                            </div>
+                            <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ul>

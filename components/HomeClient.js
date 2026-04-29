@@ -125,7 +125,7 @@ export default function HomeClient() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-6">
           {protocolNodes.map((f, i) => {
             const Icon = f.icon;
             return (
@@ -136,7 +136,7 @@ export default function HomeClient() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 whileHover={{ y: -8, scale: 1.02 }}
-                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-[40px] shadow-sm hover:shadow-2xl transition-all"
+                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm hover:shadow-2xl transition-all"
               >
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-surface-2 rounded-full blur-2xl group-hover:scale-150 transition-all opacity-20" />
                 
@@ -189,7 +189,7 @@ export default function HomeClient() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15 }}
-                className="relative bg-white/40 dark:bg-white/[0.02] border border-border p-10 rounded-[48px] backdrop-blur-md group hover:bg-white dark:hover:bg-white/5 transition-all"
+                className="relative bg-white/40 dark:bg-white/[0.02] border border-border p-6 md:p-10 rounded-[24px] md:rounded-[48px] backdrop-blur-md group hover:bg-white dark:hover:bg-white/5 transition-all"
               >
                 <div className="absolute -top-4 -right-4 text-[120px] font-black leading-none select-none opacity-[0.03] group-hover:opacity-[0.08] transition-all text-text-1">
                   {s.n}
@@ -232,7 +232,7 @@ export default function HomeClient() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-sm relative group hover:shadow-3xl transition-all"
+              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-10 rounded-[24px] md:rounded-[48px] shadow-sm relative group hover:shadow-3xl transition-all"
             >
               <div className="flex gap-1 mb-8">
                 {[...Array(5)].map((_, i) => (

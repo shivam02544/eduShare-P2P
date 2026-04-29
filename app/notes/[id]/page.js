@@ -8,21 +8,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import LikeBookmarkBar from "@/components/LikeBookmarkBar";
 import { useLoading } from "@/context/LoadingContext";
 import ReportButton from "@/components/ReportButton";
+import FilePreview from "@/components/FilePreview";
 import { 
   FileText, 
   Download, 
   Lock, 
-  User, 
   ArrowLeft,
+  ArrowRight,
   Calendar,
   Activity,
-  Layers,
   ShieldCheck,
-  Eye,
-  ExternalLink,
-  ChevronRight,
-  Database,
-  Monitor,
   Target,
   Zap,
   Cpu,
@@ -49,7 +44,7 @@ export default function NoteDetailPage() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
-  const [previewMode, setPreviewMode] = useState("embed"); // "embed" | "iframe"
+
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
@@ -233,88 +228,11 @@ export default function NoteDetailPage() {
       </motion.div>
 
       {/* ── Note Preview ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...springConfig, delay: 0.2 }}
-        className="space-y-8"
-      >
-        <div className="flex items-center justify-between">
-           <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center text-indigo-500">
-                 <Monitor className="w-6 h-6" />
-              </div>
-              <div className="flex flex-col">
-                 <span className="text-[10px] font-black text-text-3 uppercase tracking-[0.4em] opacity-50">Preview Layer</span>
-                 <h2 className="text-2xl font-black text-text-1 uppercase tracking-tight">Note Preview.</h2>
-              </div>
-           </div>
-           
-           <div className="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-2 rounded-[32px] border border-border">
-              <button 
-                onClick={() => setPreviewMode(previewMode === "embed" ? "iframe" : "embed")}
-                className="px-6 py-3 rounded-[24px] text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 transition-all"
-              >
-                 Switch Renderer
-              </button>
-              <a href={note.fileUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2.5 px-6 py-3 rounded-[24px] bg-white dark:bg-slate-900 border border-border text-[10px] font-black uppercase tracking-widest text-text-1 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all shadow-xl"
-              >
-                External Link
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-           </div>
-        </div>
-
-        <div className="relative group rounded-[64px] border border-border bg-slate-100 dark:bg-white/5 overflow-hidden shadow-3xl">
-          {/* Dynamic Background Texture */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-             <div className="grid grid-cols-12 h-full gap-4 p-8">
-                {Array(48).fill(0).map((_, i) => (
-                   <div key={i} className="h-full border-r border-slate-900 dark:border-white" />
-                ))}
-             </div>
-          </div>
-
-          <div className="relative z-10 w-full" style={{ height: "80vh" }}>
-            {previewMode === "embed" ? (
-              <embed
-                src={`${note.fileUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                type="application/pdf"
-                className="w-full h-full"
-              />
-            ) : (
-              <iframe
-                src={`${note.fileUrl}#toolbar=0`}
-                className="w-full h-full border-0"
-                title={note.title}
-              />
-            )}
-
-            {/* Premium Fallback State */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 -z-10 space-y-8">
-               <div className="relative">
-                  <div className="w-32 h-32 rounded-[48px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
-                    <Database className="w-16 h-16" />
-                  </div>
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute -inset-6 border border-indigo-500/10 rounded-full border-dashed"
-                  />
-               </div>
-               <div className="text-center space-y-2">
-                 <p className="text-2xl font-black text-text-1">Preview Offline</p>
-                 <p className="text-[10px] font-black text-text-3 uppercase tracking-widest opacity-50">This file cannot be previewed in your browser.</p>
-               </div>
-               <button onClick={handleDownload} className="group flex items-center gap-4 px-10 py-5 bg-indigo-500 text-white rounded-[32px] font-black text-[12px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-3xl shadow-indigo-500/20">
-                 Download Manually
-                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-               </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      <FilePreview 
+        url={note.fileUrl} 
+        title={note.title} 
+        onDownload={isPremium ? undefined : handleDownload}
+      />
 
       {/* ── Control Navigation ── */}
       <div className="flex items-center justify-between pt-12 border-t border-border/50">

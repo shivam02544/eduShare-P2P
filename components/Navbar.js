@@ -281,8 +281,8 @@ export default function Navbar() {
       </header>
 
       {/* ── Floating Mobile Bottom Mission Dock ── */}
-      <nav className="fixed bottom-6 left-6 right-6 z-[100] lg:hidden">
-        <div className="flex bg-slate-900/90 dark:bg-white/95 backdrop-blur-2xl border border-white/10 dark:border-black/5 rounded-[28px] h-18 py-3 px-4 shadow-3xl shadow-indigo-500/20">
+      <nav className="fixed bottom-4 left-4 right-4 z-[100] lg:hidden">
+        <div className="flex bg-slate-900/90 dark:bg-white/95 backdrop-blur-2xl border border-white/10 dark:border-black/5 rounded-[28px] h-16 py-2 px-3 shadow-3xl shadow-indigo-500/20">
           {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].slice(0, 4).map((l) => {
             const Icon = l.icon;
             const active = isActive(l.href);

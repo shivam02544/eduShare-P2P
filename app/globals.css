@@ -92,6 +92,10 @@
     letter-spacing: -0.04em;
     line-height: 1.1;
   }
+
+  /* Fluid Typography */
+  h1 { font-size: clamp(1.75rem, 4vw + 0.5rem, 4.5rem); }
+  h2 { font-size: clamp(1.5rem, 3vw + 0.5rem, 3.5rem); }
 }
 
 @layer components {
@@ -644,18 +648,19 @@ main { animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
     display: flex;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 60px;
+    height: 64px;
     background: color-mix(in srgb, var(--surface) 92%, transparent);
     backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-top: 1px solid var(--border);
     z-index: 100;
     align-items: stretch;
     justify-content: space-around;
-    padding: 0 4px;
+    padding: 0 8px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  /* Push main content above bottom nav */
-  main { padding-bottom: 76px !important; }
+  /* Push main content above bottom nav + safe area */
+  main { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
 }
 .bottom-nav-item {
   display: flex;
@@ -678,3 +683,27 @@ main { animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .bottom-nav-item.active { color: var(--accent); }
 .bottom-nav-item:hover { color: var(--text-2); }
 .bottom-nav-item svg { width: 22px; height: 22px; }
+
+/* ── Accessibility: Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-drift,
+  .animate-pulse,
+  .animate-scan,
+  .animate-spin {
+    animation: none !important;
+  }
+}
+
+/* ── Touch Optimization ── */
+@media (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

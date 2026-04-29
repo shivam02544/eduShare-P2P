@@ -19,6 +19,7 @@ import {
   Target
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { getFileInfo, ACCEPTED_EXTENSIONS } from "@/lib/fileUtils";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
 const SUBJECTS = ["Math", "Science", "History", "Programming", "English", "Physics", "Chemistry", "Biology", "Other"];
@@ -83,7 +84,7 @@ export default function UploadNotesPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+    <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 pb-32 px-4 md:px-6 lg:px-0">
       
       {/* ── Page Header ── */}
       <motion.div 
@@ -120,7 +121,7 @@ export default function UploadNotesPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={springConfig}
             onSubmit={handleSubmit}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-10 rounded-[32px] md:rounded-[48px] shadow-3xl space-y-8"
           >
             {/* Title Section */}
             <div className="space-y-3">
@@ -236,33 +237,39 @@ export default function UploadNotesPage() {
             <input 
               ref={fileRef} 
               type="file" 
-              accept="application/pdf" 
+              accept={ACCEPTED_EXTENSIONS} 
               className="hidden"
               onChange={(e) => setFile(e.target.files[0])} 
             />
-            {file ? (
+            {file ? (() => {
+              const info = getFileInfo(file.name);
+              const TypeIcon = FileType;
+              return (
               <div className="text-center space-y-6 px-10">
                  <div className="relative">
                     <div className="w-24 h-32 rounded-2xl bg-white dark:bg-slate-800 border border-border shadow-2xl flex items-center justify-center mx-auto group-hover:-translate-y-2 transition-transform">
-                       <FileType className="w-10 h-10 text-emerald-500" />
+                       <TypeIcon className={`w-10 h-10 ${info.color}`} />
                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     </div>
-                    <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-slate-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-slate-950 shadow-xl border border-white/10">
-                       <p className="text-[10px] font-black uppercase">PDF</p>
+                    <div className={`absolute -bottom-4 -right-4 w-auto px-3 h-12 ${info.bg} border ${info.borderColor} rounded-2xl flex items-center justify-center shadow-xl`}>
+                       <p className={`text-[10px] font-black uppercase ${info.color}`}>{info.extension.toUpperCase()}</p>
                     </div>
                  </div>
                  <div className="space-y-1 pt-4">
                     <p className="text-sm font-black text-text-1 truncate">{file.name}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                  </div>
+                 <div className="flex items-center justify-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${info.bg} ${info.color} border ${info.borderColor}`}>{info.label}</span>
+                 </div>
                  <button className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-6 py-2 rounded-full border border-emerald-500/10">Replace File</button>
-              </div>
-            ) : (
+              </div>);
+            })() : (
               <>
                  <UploadCloud className="w-16 h-16 text-text-3 opacity-30 group-hover:translate-y-[-4px] transition-transform" />
                  <div className="text-center px-10">
-                    <p className="text-base font-black text-text-1 tracking-tight">Select PDF File</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 opacity-40 mt-1">Portable Document Format (PDF)</p>
+                    <p className="text-base font-black text-text-1 tracking-tight">Select a Document</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 opacity-40 mt-1">PDF, Images, Word, PPT, Excel, TXT, CSV</p>
                  </div>
               </>
             )}

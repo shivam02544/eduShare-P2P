@@ -92,9 +92,9 @@ export default function TrendingSection() {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true, amount: 0.05, margin: "-10px" }}
         variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-8"
       >
         {TRENDING.map((item, i) => {
           const Icon = item.icon;
@@ -104,7 +104,7 @@ export default function TrendingSection() {
               variants={itemVariants}
               whileHover={{ y: -10, scale: 1.02 }}
               transition={springConfig}
-              className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border rounded-[40px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-500/5 transition-shadow"
+              className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border rounded-[24px] md:rounded-[40px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-500/5 transition-shadow"
             >
               {/* Accent gradient bar at top */}
               <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.accentLine}`} />

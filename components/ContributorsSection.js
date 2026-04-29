@@ -107,9 +107,9 @@ export default function ContributorsSection() {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true, amount: 0.05, margin: "-10px" }}
         variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-8"
       >
         {CONTRIBUTORS.map((c, i) => {
           const rank = RANK_STYLES[i];
@@ -119,7 +119,7 @@ export default function ContributorsSection() {
               variants={itemVariants}
               whileHover={{ y: -10, scale: 1.02 }}
               transition={springConfig}
-              className={`group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border rounded-[40px] p-8 shadow-sm hover:shadow-2xl ${rank.glow} transition-all overflow-hidden`}
+              className={`group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border rounded-[24px] md:rounded-[40px] p-6 md:p-8 shadow-sm hover:shadow-2xl ${rank.glow} transition-all overflow-hidden`}
             >
               {/* Background texture */}
               <div className="absolute -top-16 -right-16 w-40 h-40 bg-surface-2 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity" />

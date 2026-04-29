@@ -52,7 +52,7 @@ export default function NoteCard({ note, onDownload }) {
       viewport={{ once: true }}
       transition={springConfig}
       whileHover={{ y: -10 }}
-      className={`group relative flex flex-col rounded-[48px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-8 md:p-10 transition-all hover:shadow-3xl ${theme.glow} overflow-hidden`}
+      className="group relative overflow-hidden rounded-[24px] md:rounded-[40px] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border shadow-sm hover:shadow-2xl hover:shadow-emerald-500/5 transition-all"
     >
       {/* Dynamic Scanning Overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -69,7 +69,7 @@ export default function NoteCard({ note, onDownload }) {
       <div className="relative z-10 flex flex-col h-full gap-8">
         
         {/* Header Identity */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between p-8 md:p-10 pb-0">
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-border shadow-inner transition-transform group-hover:scale-110 duration-500 ${theme.surface} ${theme.icon}`}>
             <FileText className="w-7 h-7" />
           </div>
@@ -89,14 +89,14 @@ export default function NoteCard({ note, onDownload }) {
 
         {/* Title Manifest */}
         <div className="space-y-4 flex-1">
-          <div className="space-y-1">
+          <div className="p-5 md:p-6 space-y-4 min-w-0">
              <p className="text-[9px] font-black text-text-3 uppercase tracking-[0.4em] italic opacity-50">Academic Sheet V1</p>
-             <h3 className="text-2xl font-black text-text-1 tracking-tighter leading-tight line-clamp-2 h-16 group-hover:text-indigo-500 transition-colors italic">
+             <h3 className="text-base md:text-lg font-black text-text-1 tracking-tight group-hover:text-emerald-500 transition-colors truncate">
                {note.title}
              </h3>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-4 pt-2 px-8 md:px-10">
             <Link 
               href={`/profile/${note.uploader?.firebaseUid}`}
               onClick={(e) => e.stopPropagation()}

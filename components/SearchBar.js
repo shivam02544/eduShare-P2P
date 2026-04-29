@@ -89,7 +89,8 @@ export default function SearchBar() {
           onKeyDown={handleKeyDown}
           onFocus={() => results && setOpen(true)}
           placeholder="Explore..."
-          className="w-full pl-12 pr-10 py-3.5 text-[11px] font-bold uppercase tracking-widest italic bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[24px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/30 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-xl shadow-slate-900/5 placeholder:text-text-3/50"
+          className="w-full pl-12 pr-10 py-3.5 text-[13px] font-bold tracking-wide bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[24px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/30 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-xl shadow-slate-900/5 placeholder:text-text-3/50 caret-indigo-500 text-slate-900 dark:text-white"
+          style={{ color: 'var(--text-1)', WebkitTextFillColor: 'var(--text-1)' }}
         />
         
         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-text-3 uppercase tracking-widest italic opacity-30 pointer-events-none hidden xl:block">
@@ -104,7 +105,7 @@ export default function SearchBar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={springConfig}
-            className="absolute top-full mt-4 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[32px] shadow-3xl border border-border overflow-hidden z-50 p-2"
+            className="absolute top-full mt-4 left-0 right-0 md:min-w-[360px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[24px] md:rounded-[32px] shadow-3xl border border-border overflow-hidden z-50 p-2"
           >
             {!hasResults ? (
               <div className="px-6 py-10 text-center space-y-3">
@@ -117,7 +118,7 @@ export default function SearchBar() {
                  </div>
               </div>
             ) : (
-              <div className="max-h-[70vh] overflow-y-auto no-scrollbar py-2">
+              <div className="max-h-[60vh] md:max-h-[70vh] overflow-y-auto no-scrollbar py-2">
                 {results.videos?.length > 0 && (
                   <div className="space-y-1 mb-4">
                     <div className="px-5 py-2 flex items-center gap-2">

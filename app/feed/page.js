@@ -41,14 +41,14 @@ export default function FeedPage() {
   }, [user]);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+    <div className="max-w-3xl mx-auto space-y-8 md:space-y-12 pb-32 px-4 md:px-6 lg:px-0">
       
       {/* ── Activity Header ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-[40px] p-8 md:p-12 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl text-center"
+        className="relative overflow-hidden rounded-[32px] md:rounded-[40px] p-6 md:p-8 lg:p-12 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl text-center"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
         
@@ -58,7 +58,7 @@ export default function FeedPage() {
 
         <div className="space-y-4">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Peer Network</span>
-          <h1 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-text-1 tracking-tighter leading-tight">
             Activity Stream
           </h1>
           <p className="text-sm font-medium text-text-3 max-w-sm mx-auto">
@@ -141,7 +141,7 @@ export default function FeedPage() {
                   </div>
 
                   {/* Asset Card */}
-                  <div className="pl-14">
+                  <div className="pl-0 md:pl-14">
                     {item.kind === "video" ? (
                       <VideoCard video={item} />
                     ) : (

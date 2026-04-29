@@ -54,18 +54,18 @@ export default function LeaderboardPage() {
   const myRank = users.findIndex((u) => u.firebaseUid === user?.uid) + 1;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+    <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 pb-32 px-4 md:px-6 lg:px-0">
       
       {/* ── Page Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-[48px] p-10 md:p-16 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl"
+        className="relative overflow-hidden rounded-[32px] md:rounded-[48px] p-6 md:p-10 lg:p-16 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl"
       >
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-amber-500/5 rounded-full blur-[120px] -z-10" />
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
@@ -73,7 +73,7 @@ export default function LeaderboardPage() {
               </div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Global Leaderboard</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-black text-text-1 tracking-tighter leading-tight">
               Top <span className="text-amber-500">Contributors</span>
             </h1>
             <p className="text-base font-medium text-text-3 max-w-sm">
@@ -86,7 +86,7 @@ export default function LeaderboardPage() {
             <motion.div 
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              className="px-8 py-6 rounded-[40px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-2xl space-y-4 border border-white/10"
+              className="px-6 md:px-8 py-5 md:py-6 rounded-[28px] md:rounded-[40px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-2xl space-y-3 md:space-y-4 border border-white/10"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-lg border border-white/20">
@@ -142,7 +142,7 @@ export default function LeaderboardPage() {
                     transition={{ ...springConfig, delay: i * 0.05 }}
                   >
                     <Link href={`/profile/${u.firebaseUid}`}
-                      className={`group relative flex items-center gap-6 p-5 rounded-[32px] backdrop-blur-md border transition-all duration-300 ${
+                      className={`group relative flex items-center gap-3 md:gap-6 p-4 md:p-5 rounded-[24px] md:rounded-[32px] backdrop-blur-md border transition-all duration-300 ${
                         isMe ? "bg-indigo-500/10 border-indigo-500/30 shadow-xl" : "bg-white/70 dark:bg-slate-900/70 border-border hover:bg-slate-50 dark:hover:bg-white/5"
                       }`}
                     >
@@ -156,9 +156,9 @@ export default function LeaderboardPage() {
                       {/* User Avatar */}
                       <div className="relative">
                         {u.image ? (
-                          <img src={u.image} alt="" className="w-14 h-14 rounded-[20px] object-cover ring-2 ring-border shadow-lg group-hover:scale-110 transition-transform duration-500" />
+                          <img src={u.image} alt="" className="w-10 h-10 md:w-14 md:h-14 rounded-[14px] md:rounded-[20px] object-cover ring-2 ring-border shadow-lg group-hover:scale-110 transition-transform duration-500" />
                         ) : (
-                          <div className="w-14 h-14 rounded-[20px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-2 text-xl font-black border border-border group-hover:bg-indigo-500 transition-all">
+                          <div className="w-10 h-10 md:w-14 md:h-14 rounded-[14px] md:rounded-[20px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-2 text-base md:text-xl font-black border border-border group-hover:bg-indigo-500 transition-all">
                             {u.name?.[0]?.toUpperCase()}
                           </div>
                         )}
@@ -168,11 +168,11 @@ export default function LeaderboardPage() {
                       {/* User Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3">
-                          <p className="text-lg font-black text-text-1 tracking-tight group-hover:text-amber-500 transition-colors">{u.name}</p>
+                          <p className="text-sm md:text-lg font-black text-text-1 tracking-tight group-hover:text-amber-500 transition-colors truncate">{u.name}</p>
                           {isMe && <span className="text-[8px] font-black uppercase tracking-widest bg-indigo-500 text-white px-2 py-0.5 rounded-md">Top Member</span>}
                         </div>
                         {u.skills?.length > 0 && (
-                          <div className="flex gap-2 mt-1.5 opacity-60">
+                          <div className="hidden sm:flex gap-2 mt-1.5 opacity-60">
                             {u.skills.slice(0, 3).map((s) => (
                               <span key={s} className="text-[9px] font-black uppercase tracking-tighter bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-lg border border-border">
                                 {s}
@@ -183,7 +183,7 @@ export default function LeaderboardPage() {
                       </div>
 
                       {/* Credit Score */}
-                      <div className="flex items-center gap-4 bg-slate-900 dark:bg-white px-5 py-3 rounded-2xl shadow-xl shadow-slate-900/20 group-hover:scale-105 transition-transform duration-500">
+                      <div className="flex items-center gap-2 md:gap-4 bg-slate-900 dark:bg-white px-3 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-xl shadow-slate-900/20 group-hover:scale-105 transition-transform duration-500 shrink-0">
                         <div className="text-center">
                           <p className="text-[8px] font-black uppercase tracking-widest text-white/50 dark:text-slate-400 mb-0.5">Credits</p>
                           <div className="flex items-center gap-2">
