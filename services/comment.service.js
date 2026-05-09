@@ -1,6 +1,7 @@
 import Comment from "@/models/Comment";
 import Video from "@/models/Video";
 import { createNotification } from "@/lib/notify";
+import { isContentSafe } from "@/lib/moderation";
 
 export class CommentError extends Error {
   constructor(message, statusCode) {
@@ -22,6 +23,10 @@ export async function createComment(videoId, user, text) {
   }
   if (text.length > 1000) {
     throw new CommentError("Too long", 400);
+  }
+  
+  if (!isContentSafe(text)) {
+    throw new CommentError("Comment contains prohibited content or excessive links", 400);
   }
 
   const comment = await Comment.create({

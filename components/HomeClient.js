@@ -119,7 +119,7 @@ export default function HomeClient() {
            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">What We Offer</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Everything You Need to Learn</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-text-1 tracking-tight">Everything You Need to Learn</h2>
           <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed">
             A frictionless learning ecosystem engineered for the next generation of scholars.
           </p>
@@ -172,7 +172,7 @@ export default function HomeClient() {
              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">How It Works</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Getting Started is Simple</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-text-1 tracking-tight">Getting Started is Simple</h2>
           <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed">
             From sign-up to sharing — go from zero to contributing in just minutes.
           </p>
@@ -190,7 +190,7 @@ export default function HomeClient() {
                 transition={{ delay: i * 0.15 }}
                 className="relative bg-white border border-border p-6 md:p-8 rounded-3xl group hover:bg-slate-50 dark:bg-slate-900/50 dark:hover:bg-slate-900 transition-all"
               >
-                <div className="absolute -top-2 -right-2 text-[100px] font-black leading-none select-none opacity-[0.03] text-text-1">
+                <div className="absolute -top-2 -right-2 text-[100px] font-bold leading-none select-none opacity-[0.03] text-text-1">
                   {s.n}
                 </div>
                 
@@ -220,7 +220,7 @@ export default function HomeClient() {
              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Student Stories</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Loved by Students</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-text-1 tracking-tight">Loved by Students</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -266,7 +266,7 @@ export default function HomeClient() {
       <section className="px-6 text-center max-w-4xl mx-auto space-y-12">
          <div className="space-y-4">
             <Sparkles className="w-10 h-10 text-indigo-500 mx-auto" />
-            <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Start Learning Together.</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-text-1 tracking-tight">Start Learning Together.</h2>
             <p className="text-base text-text-2 font-medium leading-relaxed">
               Join thousands of students sharing and discovering knowledge on EduShare.
             </p>

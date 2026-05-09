@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
@@ -23,19 +23,19 @@ const springConfig = { mass: 1, tension: 120, friction: 20 };
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
-  if (s < 60) return "Just Sync'd";
+  if (s < 60) return "Just now";
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
 }
 
 const N_ICONS = {
-  follow: <User className="w-3.5 h-3.5 text-indigo-500" />,
-  like_video: <Heart className="w-3.5 h-3.5 text-rose-500 fill-current" />,
-  like_note: <Heart className="w-3.5 h-3.5 text-rose-500 fill-current" />,
-  comment: <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />,
-  credit: <Zap className="w-3.5 h-3.5 text-amber-500 fill-current" />,
-  system: <Activity className="w-3.5 h-3.5 text-slate-500" />,
+  follow: <User className="w-4 h-4 text-indigo-500" />,
+  like_video: <Heart className="w-4 h-4 text-rose-500 fill-current" />,
+  like_note: <Heart className="w-4 h-4 text-rose-500 fill-current" />,
+  comment: <MessageSquare className="w-4 h-4 text-emerald-500" />,
+  credit: <Zap className="w-4 h-4 text-amber-500 fill-current" />,
+  system: <Activity className="w-4 h-4 text-gray-500" />,
 };
 
 export default function NotificationBell() {
@@ -45,6 +45,7 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const lastSeenIdRef = useRef(null);
   const ref = useRef(null);
+  const triggerRef = useRef(null);
 
   // Poll unread count every 15s
   useEffect(() => {
@@ -62,17 +63,14 @@ export default function NotificationBell() {
             const latest = d.notifications[0];
             if (lastSeenIdRef.current && latest._id !== lastSeenIdRef.current && !latest.read) {
               toast(latest.message, { 
-                icon: latest.type === "credit" ? "⚡" : "🛰️",
+                icon: latest.type === "credit" ? "⚡" : "🔔",
                 style: {
-                  borderRadius: '24px',
-                  background: '#0f172a',
+                  borderRadius: '12px',
+                  background: '#1e293b',
                   color: '#fff',
                   border: '1px solid rgba(255,255,255,0.1)',
-                  fontSize: '11px',
-                  fontWeight: '900',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  fontStyle: 'italic'
+                  fontSize: '13px',
+                  fontWeight: '500',
                 }
               });
             }
@@ -81,7 +79,7 @@ export default function NotificationBell() {
           setNotifications(d.notifications || []);
         }
       } catch (err) {
-        console.error("Communication sync failure", err);
+        console.error("Failed to fetch notifications", err);
       }
     };
 
@@ -97,6 +95,18 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   const handleOpen = async () => {
     setOpen(!open);
@@ -115,35 +125,42 @@ export default function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={handleOpen}
-        className={`group relative p-2.5 rounded-[18px] transition-all duration-500 overflow-hidden ${open ? 'bg-indigo-500 text-white shadow-xl shadow-indigo-500/20' : 'bg-slate-50 dark:bg-white/5 border border-border hover:bg-white dark:hover:bg-white/10 hover:border-indigo-500/30'}`}
+      <button
+        ref={triggerRef}
+        onClick={handleOpen}
+        aria-label={unread > 0 ? `${unread} unread notifications – open notifications` : "Notifications – no new notifications"}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        className={`group relative p-2 rounded-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${open ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' : 'bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-gray-500'}`}
       >
-        <Bell className={`w-5 h-5 transition-transform group-active:scale-90 ${unread > 0 ? 'animate-[pulse_2s_infinite]' : ''}`} />
+        <Bell className={`w-5 h-5 transition-transform group-active:scale-95 ${unread > 0 ? 'animate-[pulse_2s_infinite]' : ''}`} aria-hidden="true" />
         
         {unread > 0 && (
-          <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-indigo-500 group-hover:bg-white border-2 border-white dark:border-slate-900 rounded-full animate-ping" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full" aria-hidden="true" />
         )}
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div 
-            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            initial={{ opacity: 0, y: 4, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={springConfig}
-            className="absolute right-0 mt-5 w-[360px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl rounded-[40px] shadow-3xl border border-border overflow-hidden z-50 p-2"
+            role="dialog"
+            aria-label="Notifications"
+            aria-modal="false"
+            className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-border overflow-hidden z-50 flex flex-col"
           >
-            {/* Hub Header */}
-            <div className="px-6 py-5 flex items-center justify-between border-b border-border/50">
-               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-                     <Radio className="w-4 h-4" />
-                  </div>
-                  <div>
-                     <p className="text-[10px] font-bold text-text-1 uppercase tracking-widest italic">Intelligence Hub</p>
-                     <p className="text-[8px] font-bold text-text-3 uppercase tracking-widest italic opacity-50">Sync Active</p>
-                  </div>
+            {/* Header */}
+            <div className="px-4 py-3 flex items-center justify-between border-b border-border bg-slate-50/50 dark:bg-slate-800/50">
+               <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Notifications</span>
+                  {unread > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
+                      {unread} new
+                    </span>
+                  )}
                </div>
                {notifications.length > 0 && (
                  <button
@@ -151,74 +168,70 @@ export default function NotificationBell() {
                      setNotifications([]);
                      authFetch("/api/notifications", { method: "PATCH" });
                    }}
-                   className="p-2 rounded-xl text-text-3 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-                   <CheckCircle2 className="w-4 h-4" />
+                   aria-label="Mark all notifications as read"
+                   className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                   <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
                  </button>
                )}
             </div>
 
-            {/* Sync Logs */}
-            <div className="max-h-[70vh] overflow-y-auto no-scrollbar py-2 px-1">
+            {/* List */}
+            <div className="max-h-[400px] overflow-y-auto" style={{ scrollbarWidth: "none" }} aria-live="polite" aria-atomic="false">
               {notifications.length === 0 ? (
-                <div className="text-center py-16 px-8 space-y-4">
-                  <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-[24px] flex items-center justify-center mx-auto border border-border text-text-3 opacity-20">
-                     <Inbox className="w-8 h-8" />
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
+                     <Bell className="w-6 h-6 text-gray-400" />
                   </div>
-                  <div className="space-y-1">
-                     <p className="text-[11px] font-bold text-text-1 uppercase tracking-widest italic">Zero Input Detected</p>
-                     <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest italic opacity-50">Intelligence registry is currently clear.</p>
-                  </div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">No notifications</p>
+                  <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
                 </div>
               ) : (
-                notifications.map((n, idx) => (
-                  <motion.div
-                    key={n._id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
+                <div className="divide-y divide-border">
+                  {notifications.map((n) => (
                     <Link href={getLink(n)}
+                      key={n._id}
                       onClick={() => setOpen(false)}
-                      className={`group flex items-start gap-4 p-4 rounded-[24px] hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent hover:border-border/50 ${
-                        !n.read ? "bg-indigo-500/5" : ""
+                      className={`flex items-start gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
+                        !n.read ? "bg-indigo-50/50 dark:bg-indigo-500/5" : ""
                       }`}>
-                      <div className="relative flex-shrink-0">
+                      <div className="relative shrink-0 mt-0.5">
                         {n.sender?.image ? (
-                          <img src={n.sender.image} alt="" className="w-11 h-11 rounded-2xl object-cover border border-border group-hover:scale-105 transition-transform" />
+                          <img src={n.sender.image} alt="" className="w-10 h-10 rounded-full object-cover border border-border" />
                         ) : (
-                          <div className="w-11 h-11 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-[14px] font-bold italic shadow-inner">
-                            {n.sender?.name?.[0]}
+                          <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold border border-indigo-200 dark:border-indigo-800">
+                            {n.sender?.name?.[0] || <User className="w-4 h-4" />}
                           </div>
                         )}
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-border flex items-center justify-center shadow-sm">
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white dark:bg-slate-900 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
                           {N_ICONS[n.type]}
                         </div>
                       </div>
 
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <p className="text-[12px] font-bold text-text-1 italic leading-tight group-hover:text-indigo-500 transition-colors">{n.message}</p>
-                        <div className="flex items-center gap-2 italic">
-                           <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">{timeAgo(n.createdAt)}</span>
-                           <div className="w-1 h-1 rounded-full bg-border" />
-                           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest">Protocol Sync</span>
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${!n.read ? "font-semibold text-slate-900 dark:text-white" : "font-medium text-gray-700 dark:text-gray-300"}`}>
+                          {n.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
                       </div>
 
                       {!n.read && (
-                        <div className="w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0 mt-4 animate-pulse" />
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full shrink-0 mt-1.5" />
                       )}
                     </Link>
-                  </motion.div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Hub Footer */}
-            <div className="p-4 border-t border-border/50">
-               <div className="text-center">
-                  <p className="text-[8px] font-bold text-text-3 uppercase tracking-widest italic opacity-30">Synapse Network Active</p>
-               </div>
-            </div>
+            {/* Footer */}
+            {notifications.length > 0 && (
+              <div className="p-2 border-t border-border bg-slate-50/50 dark:bg-slate-800/50">
+                <Link href="/notifications" onClick={() => setOpen(false)}
+                  className="block w-full py-2 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+                  View all notifications
+                </Link>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

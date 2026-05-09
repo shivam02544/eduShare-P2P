@@ -15,7 +15,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 20 unlocks per hour per IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "note-unlock"), limit: 20, windowMs: 60 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "note-unlock"), limit: 20, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

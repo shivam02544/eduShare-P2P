@@ -34,7 +34,8 @@ const errorMap = {
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  
+  const formId = React.useId();
+
   // Auto-redirect if already logged in
   useEffect(() => {
     if (!authLoading && user) {
@@ -138,25 +139,27 @@ export default function LoginPage() {
           <motion.div 
             initial={{ scale: 0.8, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
-            className="w-16 h-16 rounded-[24px] bg-slate-900 dark:bg-white flex items-center justify-center mx-auto shadow-2xl border border-white/10"
+            className="w-16 h-16 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center mx-auto shadow-2xl border border-white/10"
           >
             <Fingerprint className="w-8 h-8 text-white dark:text-slate-900" />
           </motion.div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-text-1 tracking-tight uppercase">Account <span className="text-indigo-500">Login</span></h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-3">Secure access to EduShare</p>
+            <h1 className="text-3xl font-bold text-text-1 tracking-tight uppercase">Account <span className="text-indigo-500">Login</span></h1>
+            <p className="text-xs font-bold uppercase tracking-wider text-text-3">Secure access to EduShare</p>
           </div>
         </div>
 
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8 relative overflow-hidden group">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-3xl shadow-3xl space-y-8 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
-          {/* Social Protocol */}
+          {/* Social login */}
           <div className="space-y-4">
-            <button 
-              onClick={handleGoogle} 
+            <button
+              onClick={handleGoogle}
               disabled={gLoading}
-              className="group w-full flex items-center justify-center gap-4 py-4 rounded-3xl bg-slate-50 dark:bg-white/5 border border-border text-[11px] font-black uppercase tracking-widest text-text-1 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              aria-label="Continue with Google"
+              aria-busy={gLoading}
+              className="group w-full flex items-center justify-center gap-4 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-1 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {gLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" viewBox="0 0 24 24">
@@ -171,7 +174,7 @@ export default function LoginPage() {
 
             <div className="flex items-center gap-4 px-2">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-text-3">or use email credentials</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-text-3">or use email credentials</span>
               <div className="flex-1 h-px bg-border" />
             </div>
           </div>
@@ -187,8 +190,8 @@ export default function LoginPage() {
                 <div className="flex items-start gap-4">
                   <ShieldAlert className="w-6 h-6 text-amber-500 shrink-0" />
                    <div className="space-y-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-amber-500">Verification Required</p>
-                    <p className="text-[10px] font-medium text-amber-500/80 leading-relaxed">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Verification Required</p>
+                    <p className="text-xs font-medium text-amber-500/80 leading-relaxed">
                       Check your email inbox and confirm your account before signing in.
                     </p>
                   </div>
@@ -196,7 +199,7 @@ export default function LoginPage() {
                 <button 
                   onClick={handleResend} 
                   disabled={resending || resent}
-                  className={`w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                  className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
                     resent 
                       ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
                       : "bg-amber-500/10 text-amber-500 border-amber-500/20"
@@ -208,54 +211,71 @@ export default function LoginPage() {
             )}
 
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-rose-500/5 border border-rose-500/20 rounded-2xl px-5 py-4 flex items-center gap-3 shadow-inner"
+                role="alert"
+                aria-live="assertive"
+                className="bg-rose-500/5 border border-rose-500/20 rounded-2xl px-5 py-4 flex items-center gap-3"
               >
-                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">{error}</p>
+                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" aria-hidden="true" />
+                <p id={`${formId}-error`} className="text-xs font-semibold text-rose-500">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Login Protocol */}
-          <form onSubmit={handleEmail} className="space-y-4">
+          {/* Login form */}
+          <form onSubmit={handleEmail} className="space-y-4" aria-label="Sign in with email and password" noValidate>
             <div className="space-y-4">
               <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" />
-                <input 
-                  type="email" 
-                  placeholder="Email Address" 
+                <label htmlFor={`${formId}-email`} className="sr-only">Email address</label>
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" aria-hidden="true" />
+                <input
+                  id={`${formId}-email`}
+                  type="email"
+                  placeholder="Email address"
                   required
-                  value={form.email} 
+                  autoComplete="email"
+                  aria-required="true"
+                  aria-describedby={error ? `${formId}-error` : undefined}
+                  value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-medium text-text-1 placeholder:opacity-40 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
                 />
               </div>
               <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" />
-                <input 
-                  type="password" 
-                  placeholder="Password" 
+                <label htmlFor={`${formId}-password`} className="sr-only">Password</label>
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" aria-hidden="true" />
+                <input
+                  id={`${formId}-password`}
+                  type="password"
+                  placeholder="Password"
                   required
-                  value={form.password} 
+                  autoComplete="current-password"
+                  aria-required="true"
+                  aria-describedby={error ? `${formId}-error` : undefined}
+                  value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-medium text-text-1 placeholder:opacity-40 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="group relative w-full overflow-hidden rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50"
+            <button
+              type="submit"
+              disabled={loading}
+              aria-disabled={loading}
+              aria-busy={loading}
+              aria-label={loading ? "Signing in, please wait" : "Sign in"}
+              className="group relative w-full overflow-hidden rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
             >
               <div className="flex items-center gap-3">
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 group-hover:scale-125 transition-transform" />}
-                <span className="text-[11px] font-black uppercase tracking-[0.4em]">Sign In</span>
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Zap className="w-5 h-5" aria-hidden="true" />}
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  {loading ? "Signing in…" : "Sign In"}
+                </span>
               </div>
-              <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[40px] -z-0" />
+              <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[40px] -z-0" aria-hidden="true" />
             </button>
           </form>
         </div>
@@ -266,7 +286,7 @@ export default function LoginPage() {
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-3">
             New user?{" "}
             <Link href="/register" className="text-text-1 border-b border-text-1 hover:text-indigo-500 hover:border-indigo-500 transition-all ml-2 pb-0.5">Create Account</Link>
           </p>
@@ -276,12 +296,12 @@ export default function LoginPage() {
         <div className="pt-10 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
            <div className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
-              <span className="text-[8px] font-black uppercase tracking-widest">System Online</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">System Online</span>
            </div>
            <span className="w-1 h-1 rounded-full bg-border" />
            <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className="text-[8px] font-black uppercase tracking-widest">Secure Connection</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Secure Connection</span>
            </div>
         </div>
 

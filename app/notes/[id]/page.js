@@ -29,8 +29,8 @@ const springConfig = { mass: 1, tension: 120, friction: 20 };
 function NoteSkeleton() {
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-40 px-8 animate-pulse">
-      <div className="h-40 rounded-[48px] bg-slate-200 dark:bg-white/5 border border-border/50" />
-      <div className="h-[70vh] rounded-[64px] bg-slate-200 dark:bg-white/5 border border-border/50" />
+      <div className="h-40 rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
+      <div className="h-[70vh] rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
     </div>
   );
 }
@@ -42,13 +42,13 @@ export default function NoteDetailPage() {
   const router = useRouter();
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
 
-
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [user, authLoading]);
+    if (!authLoading && !user) router.replace("/login");
+  }, [user, authLoading, router]);
 
   // SEO: Update page title
   useEffect(() => {
@@ -60,9 +60,14 @@ export default function NoteDetailPage() {
 
   useEffect(() => {
     if (!user) return;
+    setFetchError(null);
     fetch(`/api/notes/${id}`)
-      .then((r) => r.json())
-      .then((d) => { setNote(d); setLoading(false); });
+      .then((r) => {
+        if (!r.ok) throw new Error(`Failed to load note (${r.status})`);
+        return r.json();
+      })
+      .then((d) => { setNote(d); setLoading(false); })
+      .catch((err) => { setFetchError(err.message); setLoading(false); });
   }, [id, user]);
 
   const isOwnNote = note?.uploader?.firebaseUid === user?.uid;
@@ -92,11 +97,30 @@ export default function NoteDetailPage() {
   };
 
   if (authLoading || loading) return <NoteSkeleton />;
+
+  if (fetchError) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center space-y-6">
+      <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+        <RefreshCw className="w-9 h-9" aria-hidden="true" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-xl font-bold text-text-1">Could Not Load Note</h2>
+        <p className="text-sm text-text-3">{fetchError}</p>
+      </div>
+      <button
+        onClick={() => { setLoading(true); setFetchError(null); }}
+        className="px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
   if (!note || note.error) return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center space-y-10">
       <div className="relative">
-         <div className="w-40 h-40 rounded-[48px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
-           <FileText className="w-20 h-20" />
+         <div className="w-40 h-40 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
+           <FileText className="w-20 h-20" aria-hidden="true" />
          </div>
          <motion.div 
            animate={{ rotate: -360 }}
@@ -105,10 +129,10 @@ export default function NoteDetailPage() {
          />
       </div>
       <div className="space-y-4">
-        <h2 className="text-4xl font-black text-text-1 tracking-tighter">Note Not Found</h2>
-        <p className="text-text-3 font-black uppercase tracking-[0.3em] text-[10px]">This note could not be retrieved.</p>
+        <h2 className="text-4xl font-bold text-text-1 tracking-tight">Note Not Found</h2>
+        <p className="text-text-3 font-bold uppercase tracking-wider text-xs">This note could not be retrieved.</p>
       </div>
-      <Link href="/explore" className="group flex items-center gap-4 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-black text-[12px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all">
+      <Link href="/explore" className="group flex items-center gap-4 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-sm uppercase tracking-wider hover:scale-105 active:scale-95 transition-all">
         Back to Explore
       </Link>
     </div>
@@ -122,30 +146,30 @@ export default function NoteDetailPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springConfig}
-        className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-12 md:p-16 rounded-[64px] shadow-3xl overflow-hidden group"
+        className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-12 md:p-16 rounded-3xl shadow-2xl overflow-hidden group"
       >
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:scale-110 transition-transform duration-1000" />
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
           <div className="space-y-8 flex-1">
              <div className="flex flex-wrap items-center gap-4">
-                <div className="px-5 py-2 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-xl shadow-indigo-500/20">
+                <div className="px-5 py-2 rounded-xl bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-indigo-500/20">
                    {note.subject || "General Note"}
                 </div>
                 {note.isPremium && (
-                  <div className="px-5 py-2 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 shadow-xl shadow-amber-500/20">
+                  <div className="px-5 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-500/20">
                      <Lock className="w-3.5 h-3.5" />
                      Premium Content
                   </div>
                 )}
-                <div className="px-5 py-2 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-3">
+                <div className="px-5 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-3">
                    ID: {id.slice(0, 8)}
                 </div>
              </div>
 
              <div className="space-y-2">
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.6em] opacity-50">Educational Document</p>
-                <h1 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter leading-tight">
+                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider opacity-50">Educational Document</p>
+                <h1 className="text-4xl md:text-6xl font-bold text-text-1 tracking-tight leading-tight">
                   {note.title}
                 </h1>
              </div>
@@ -154,17 +178,17 @@ export default function NoteDetailPage() {
                 <Link href={`/profile/${note.uploader?.firebaseUid}`} className="group/u flex items-center gap-4">
                    <div className="relative">
                       {note.uploader?.image ? (
-                        <img src={note.uploader.image} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border group-hover/u:rotate-6 transition-transform" />
+                        <img src={note.uploader.image} alt="" className="w-14 h-14 rounded-xl object-cover border border-border group-hover/u:rotate-6 transition-transform" />
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-xl font-black">
+                        <div className="w-14 h-14 rounded-xl bg-indigo-500 text-white flex items-center justify-center text-xl font-bold">
                            {note.uploader?.name?.[0]}
                         </div>
                       )}
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-text-3 uppercase tracking-[0.3em] opacity-50">Instructor</span>
-                      <span className="text-lg font-black text-text-1 group-hover/u:text-indigo-500 transition-colors uppercase tracking-tight">{note.uploader?.name}</span>
+                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Instructor</span>
+                      <span className="text-lg font-bold text-text-1 group-hover/u:text-indigo-500 transition-colors uppercase tracking-tight">{note.uploader?.name}</span>
                    </div>
                 </Link>
 
@@ -172,17 +196,17 @@ export default function NoteDetailPage() {
 
                 <div className="flex items-center gap-10">
                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-text-3 uppercase tracking-[0.3em] opacity-50">Downloads</span>
+                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Downloads</span>
                       <div className="flex items-center gap-2">
                          <Activity className="w-4 h-4 text-indigo-500" />
-                         <span className="text-xl font-black text-text-1 uppercase tracking-tight">{note.downloads}</span>
+                         <span className="text-xl font-bold text-text-1 uppercase tracking-tight">{note.downloads}</span>
                       </div>
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-text-3 uppercase tracking-[0.3em] opacity-50">Released</span>
+                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Released</span>
                       <div className="flex items-center gap-2">
                          <Calendar className="w-4 h-4 text-indigo-500" />
-                         <span className="text-xl font-black text-text-1 uppercase tracking-tight">
+                         <span className="text-xl font-bold text-text-1 uppercase tracking-tight">
                             {new Date(note.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                          </span>
                       </div>
@@ -193,7 +217,7 @@ export default function NoteDetailPage() {
 
           {/* Action Section */}
           <div className="flex flex-col gap-6 shrink-0 lg:w-80">
-             <div className="p-4 rounded-[40px] bg-slate-50 dark:bg-white/5 border border-border space-y-4">
+             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border space-y-4">
                 <div className="flex items-center justify-between px-4">
                    <LikeBookmarkBar item={note} type="note" />
                    <ReportButton contentType="note" contentId={id} compact />
@@ -201,7 +225,7 @@ export default function NoteDetailPage() {
                 
                 {note.isPremium && !isOwnNote ? (
                   <button onClick={handleUnlock} disabled={unlocking}
-                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-[32px] bg-amber-500 text-white text-[11px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-3xl shadow-amber-500/20 disabled:opacity-50"
+                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-xl bg-amber-500 text-white text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 disabled:opacity-50"
                   >
                     {unlocking ? (
                       <RefreshCw className="w-5 h-5 animate-spin" />
@@ -212,7 +236,7 @@ export default function NoteDetailPage() {
                   </button>
                 ) : (
                   <button onClick={handleDownload} disabled={downloading}
-                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-3xl disabled:opacity-50"
+                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-50"
                   >
                     {downloading ? (
                       <RefreshCw className="w-5 h-5 animate-spin" />
@@ -237,19 +261,19 @@ export default function NoteDetailPage() {
       {/* ── Control Navigation ── */}
       <div className="flex items-center justify-between pt-12 border-t border-border/50">
         <button onClick={() => router.back()}
-          className="group flex items-center gap-3 px-8 py-4 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border text-[11px] font-black uppercase tracking-[0.3em] text-text-3 hover:text-text-1 transition-all"
+          className="group flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-3 hover:text-text-1 transition-all"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Go Back
         </button>
         
         <div className="flex items-center gap-8 opacity-30">
-           <div className="flex items-center gap-3 text-[10px] font-black text-text-3 uppercase tracking-[0.4em] leading-none">
+           <div className="flex items-center gap-3 text-xs font-bold text-text-3 uppercase tracking-wider leading-none">
               <Cpu className="w-4 h-4" />
               Safe Delivery Active
            </div>
            <div className="w-1.5 h-1.5 rounded-full bg-border" />
-           <div className="flex items-center gap-3 text-[10px] font-black text-text-3 uppercase tracking-[0.4em] leading-none">
+           <div className="flex items-center gap-3 text-xs font-bold text-text-3 uppercase tracking-wider leading-none">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               Verified Content
            </div>

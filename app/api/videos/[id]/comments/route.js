@@ -15,7 +15,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 20 comments per 10 minutes per IP — prevents comment spam
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "comment"), limit: 20, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "comment"), limit: 20, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

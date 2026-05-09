@@ -10,4 +10,7 @@ const CommentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+CommentSchema.index({ video: 1, createdAt: -1 });
+CommentSchema.index({ author: 1, createdAt: -1 });
+
 export default mongoose.models.Comment || mongoose.model("Comment", CommentSchema);

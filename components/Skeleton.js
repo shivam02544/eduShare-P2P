@@ -1,15 +1,15 @@
-// Reusable skeleton loading components — matches project's glassmorphic card style
+// Reusable skeleton loading components
 
 export function SkeletonCard() {
   return (
-    <div className="rounded-[40px] overflow-hidden bg-white/70 dark:bg-slate-900/70 border border-border backdrop-blur-xl">
+    <div className="rounded-3xl overflow-hidden bg-white/70 dark:bg-slate-900/70 border border-border" aria-hidden="true" role="presentation">
       <div className="h-44 w-full bg-slate-200 dark:bg-white/5 animate-pulse" />
       <div className="p-7 space-y-4">
         <div className="h-3 w-16 rounded-full bg-slate-200 dark:bg-white/5 animate-pulse" />
         <div className="h-5 w-full rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse" />
         <div className="h-4 w-3/4 rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse" />
         <div className="h-3 w-1/2 rounded-xl bg-slate-200 dark:bg-white/5 animate-pulse" />
-        <div className="h-12 w-full mt-2 rounded-[20px] bg-slate-200 dark:bg-white/5 animate-pulse" />
+        <div className="h-12 w-full mt-2 rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse" />
       </div>
     </div>
   );
@@ -17,7 +17,7 @@ export function SkeletonCard() {
 
 export function SkeletonStatCard() {
   return (
-    <div className="rounded-[32px] p-6 bg-white/70 dark:bg-slate-900/70 border border-border backdrop-blur-xl flex items-center gap-4">
+    <div className="rounded-3xl p-6 bg-white/70 dark:bg-slate-900/70 border border-border flex items-center gap-4" aria-hidden="true" role="presentation">
       <div className="h-12 w-12 rounded-2xl flex-shrink-0 bg-slate-200 dark:bg-white/5 animate-pulse" />
       <div className="flex-1 space-y-2.5">
         <div className="h-3 w-20 rounded-xl bg-slate-200 dark:bg-white/5 animate-pulse" />
@@ -29,7 +29,7 @@ export function SkeletonStatCard() {
 
 export function SkeletonRow() {
   return (
-    <div className="rounded-2xl px-5 py-4 bg-slate-50 dark:bg-white/5 border border-border flex justify-between items-center">
+    <div className="rounded-2xl px-5 py-4 bg-slate-50 dark:bg-white/5 border border-border flex justify-between items-center" aria-hidden="true" role="presentation">
       <div className="h-4 w-48 rounded-xl bg-slate-200 dark:bg-white/5 animate-pulse" />
       <div className="h-3 w-16 rounded-xl bg-slate-200 dark:bg-white/5 animate-pulse" />
     </div>
@@ -38,7 +38,7 @@ export function SkeletonRow() {
 
 export function SkeletonText({ lines = 3 }) {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2.5" aria-hidden="true" role="presentation">
       {Array.from({ length: lines }).map((_, i) => (
         <div
           key={i}
@@ -56,22 +56,23 @@ export function SkeletonAvatar({ size = "md" }) {
   return (
     <div
       className={`rounded-full bg-slate-200 dark:bg-white/5 animate-pulse ${sizes[size]}`}
+      aria-hidden="true"
+      role="presentation"
     />
   );
 }
 
 export function SkeletonContentGrid({ count = 8 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" aria-hidden="true" role="presentation">
       {Array(count)
         .fill(0)
         .map((_, i) => (
           <div
             key={i}
-            className="h-[420px] rounded-[48px] bg-slate-200 dark:bg-white/5 animate-pulse border border-border/50"
+            className="h-[420px] rounded-3xl bg-slate-200 dark:bg-white/5 animate-pulse border border-border/50"
           />
         ))}
     </div>
   );
 }
-

@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import VideoCard from "@/components/VideoCard";
 import { SkeletonCard } from "@/components/Skeleton";
 import { Bookmark, Compass, Sparkles, AlertCircle } from "lucide-react";
+import PageContainer from "@/components/layouts/PageContainer";
+import SectionHeader from "@/components/layouts/SectionHeader";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
 
@@ -14,70 +16,62 @@ export default function BookmarksPage() {
   const router = useRouter();
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [user, authLoading]);
+    if (!authLoading && !user) router.replace("/login");
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!user) return;
     authFetch("/api/bookmarks")
-      .then((r) => r.json())
-      .then((d) => { setVideos(d); setLoading(false); });
+      .then((r) => {
+        if (!r.ok) throw new Error(`Failed to load bookmarks (${r.status})`);
+        return r.json();
+      })
+      .then((d) => { setVideos(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch((err) => { setFetchError(err.message); setLoading(false); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 pb-24 px-6 md:px-0">
-      
-      {/* ── Repository Header ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={springConfig}
-        className="relative overflow-hidden rounded-[40px] p-8 md:p-12 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl"
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
-                <Bookmark className="w-6 h-6" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Saved Resources</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter leading-tight">
-              Bookmarked Lessons
-            </h1>
-            <p className="text-sm font-medium text-text-3 max-w-lg">
-              A curated collection of your bookmarked lessons for quick reference and learning.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-6 px-8 py-6 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border shadow-inner">
+    <PageContainer>
+      <SectionHeader 
+        title="Bookmarked Lessons"
+        badge="Saved Resources"
+        action={
+          <div className="flex items-center gap-6 px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-border">
              <div className="text-center">
-               <p className="text-[20px] font-black text-text-1 leading-none mb-1">{videos.length}</p>
-               <p className="text-[9px] font-black uppercase tracking-widest text-text-3">Saved Items</p>
+               <p className="text-lg font-bold text-text-1 leading-none mb-1">{videos.length}</p>
+               <p className="text-xs font-medium text-text-3">Saved Items</p>
              </div>
              <div className="w-px h-8 bg-border" />
-             <div className="text-center">
-               <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500 mx-auto mb-1">
-                 <Sparkles className="w-4 h-4" />
+             <div className="text-center flex flex-col items-center">
+               <div className="w-6 h-6 rounded-md bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-1">
+                 <Sparkles className="w-3 h-3" />
                </div>
-               <p className="text-[9px] font-black uppercase tracking-widest text-text-3">Sync Active</p>
+               <p className="text-[10px] font-bold uppercase tracking-wider text-text-3">Sync Active</p>
              </div>
           </div>
-        </div>
-      </motion.div>
+        }
+      />
 
-      {/* ── Resource Matrix ── */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border/50 pb-6 mb-4">
-          <h2 className="text-sm font-black text-text-1 uppercase tracking-widest">My Bookmarks</h2>
-          <div className="text-[10px] font-black text-text-3 uppercase">Priority Sort</div>
+        <div className="flex items-center justify-between border-b border-border/50 pb-4">
+          <h2 className="text-sm font-bold text-text-1">My Bookmarks</h2>
         </div>
 
-        {loading ? (
+        {fetchError ? (
+          <div className="flex flex-col items-center justify-center py-32 space-y-4 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border">
+            <AlertCircle className="w-10 h-10 text-rose-400" aria-hidden="true" />
+            <p className="text-sm font-bold text-text-1">Could Not Load Bookmarks</p>
+            <p className="text-xs text-text-3">{fetchError}</p>
+            <button
+              onClick={() => { setFetchError(null); setLoading(true); }}
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >Retry</button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {Array(8).fill(0).map((_, i) => <SkeletonCard key={i} />)}
           </div>
@@ -85,18 +79,18 @@ export default function BookmarksPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-32 space-y-6 bg-white/50 dark:bg-slate-900/50 rounded-[48px] border border-dashed border-border"
+            className="text-center py-32 space-y-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border"
           >
-            <div className="w-24 h-24 rounded-[32px] bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3 opacity-30 shadow-inner">
-               <Compass className="w-10 h-10" />
+            <div className="w-20 h-20 rounded-2xl bg-slate-200 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3">
+               <Compass className="w-8 h-8" />
             </div>
             <div className="space-y-2">
-              <p className="text-xl font-black text-text-1 tracking-tight">No Bookmarks Yet</p>
-              <p className="text-sm text-text-3 font-medium">Explore the platform to find and save educational resources.</p>
+              <p className="text-lg font-bold text-text-1">No Bookmarks Yet</p>
+              <p className="text-sm text-text-3">Explore the platform to find and save educational resources.</p>
             </div>
             <button 
               onClick={() => router.push('/explore')}
-              className="px-8 py-3 rounded-2xl bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform"
+              className="px-6 py-3 rounded-xl bg-indigo-500 text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity"
             >
               Explore Lessons
             </button>
@@ -118,7 +112,7 @@ export default function BookmarksPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

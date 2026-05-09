@@ -43,7 +43,7 @@ export default function VerifyCertificatePage() {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ ...springConfig, delay: 0.1 }}
-            className={`w-24 h-24 rounded-[32px] flex items-center justify-center mx-auto shadow-2xl relative ${
+            className={`w-24 h-24 rounded-3xl flex items-center justify-center mx-auto shadow-2xl relative ${
               isValid ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
             }`}
           >
@@ -54,7 +54,7 @@ export default function VerifyCertificatePage() {
           </motion.div>
           
           <div className="space-y-3">
-            <h1 className={`text-4xl font-black tracking-tighter ${isValid ? "text-emerald-500" : "text-rose-500"}`}>
+            <h1 className={`text-4xl font-bold tracking-tighter ${isValid ? "text-emerald-500" : "text-rose-500"}`}>
               {isValid ? "Verified Successfully" : "Verification Failed"}
             </h1>
             <p className="text-sm font-medium text-text-3 max-w-sm mx-auto">
@@ -70,7 +70,7 @@ export default function VerifyCertificatePage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl"
+            className="relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-3xl shadow-3xl"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
             
@@ -86,9 +86,9 @@ export default function VerifyCertificatePage() {
                 <div key={item.label} className="space-y-3">
                   <div className="flex items-center gap-2 opacity-40">
                     <item.icon className="w-3.5 h-3.5 text-text-1" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-text-1">{item.label}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-1">{item.label}</p>
                   </div>
-                  <p className={`text-sm font-black text-text-1 tracking-tight leading-snug ${item.mono ? 'font-mono' : ''}`}>
+                  <p className={`text-sm font-bold text-text-1 tracking-tight leading-snug ${item.mono ? 'font-mono' : ''}`}>
                     {item.value}
                   </p>
                 </div>
@@ -97,12 +97,12 @@ export default function VerifyCertificatePage() {
 
             <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row gap-4">
               <Link href={`/certificates/${result.certId}`} 
-                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[11px] font-black uppercase tracking-widest shadow-xl shadow-slate-900/20 hover:scale-[1.02] transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-slate-900/20 hover:scale-[1.02] transition-all"
               >
                 View Certificate
               </Link>
               <Link href={`/profile/${result.recipient?.firebaseUid}`} 
-                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[11px] font-black uppercase tracking-widest text-text-1 hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[11px] font-bold uppercase tracking-widest text-text-1 hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
               >
                 Recipient Profile
               </Link>
@@ -113,7 +113,7 @@ export default function VerifyCertificatePage() {
         <div className="flex justify-center pt-8">
           <button 
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-[10px] font-black text-text-3 uppercase tracking-widest hover:text-text-1 transition-colors"
+            className="flex items-center gap-2 text-[10px] font-bold text-text-3 uppercase tracking-widest hover:text-text-1 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Go Back

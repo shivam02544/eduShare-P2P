@@ -51,10 +51,38 @@ import ResponsiveGrid from "@/components/layouts/ResponsiveGrid";
 
 function DashSkeleton() {
   return (
-    <PageContainer className="animate-pulse">
-      <div className="h-64 rounded-3xl bg-slate-200 dark:bg-white/5" />
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {Array(6).fill(0).map((_, i) => <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-white/5" />)}
+    <PageContainer aria-label="Loading dashboard" aria-busy="true">
+      {/* Welcome banner skeleton — matches real h ~240px */}
+      <div className="h-[200px] md:h-[220px] rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse" />
+
+      {/* Stats grid skeleton — 6 cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6 animate-pulse">
+        {Array(6).fill(0).map((_, i) => (
+          <div key={i} className="rounded-2xl bg-slate-200 dark:bg-white/5 p-5 space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-300 dark:bg-white/10" />
+            <div className="h-6 w-16 rounded bg-slate-300 dark:bg-white/10" />
+            <div className="h-3 w-12 rounded bg-slate-300 dark:bg-white/10" />
+          </div>
+        ))}
+      </div>
+
+      {/* Quick actions skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+        {Array(4).fill(0).map((_, i) => (
+          <div key={i} className="h-24 rounded-2xl bg-slate-200 dark:bg-white/5" />
+        ))}
+      </div>
+
+      {/* Content rows skeleton */}
+      <div className="grid md:grid-cols-2 gap-6 animate-pulse">
+        <div className="space-y-3">
+          <div className="h-6 w-40 rounded bg-slate-200 dark:bg-white/5" />
+          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-xl bg-slate-200 dark:bg-white/5" />)}
+        </div>
+        <div className="space-y-3">
+          <div className="h-6 w-40 rounded bg-slate-200 dark:bg-white/5" />
+          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-xl bg-slate-200 dark:bg-white/5" />)}
+        </div>
       </div>
     </PageContainer>
   );
@@ -69,13 +97,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { router.push("/login"); return; }
+    if (!user) { router.replace("/login"); return; }
 
     const cached = getMemCache("dashboard");
     if (cached) {
-      setData(cached); setLoading(false);
-      authFetch("/api/dashboard").then(r => r.json()).then(d => { 
-        if (d && !d.error) { setData(d); setMemCache("dashboard", d, 30_000); } 
+      setData(cached);
+      setLoading(false);
+      // Background revalidation
+      authFetch("/api/dashboard").then(r => r.json()).then(d => {
+        if (d && !d.error) { setData(d); setMemCache("dashboard", d, 30_000); }
       }).catch(() => {});
     } else {
       authFetch("/api/dashboard").then(r => r.json()).then(d => {
@@ -88,7 +118,9 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(d => setContinueWatching(Array.isArray(d) ? d.slice(0, 6) : []))
       .catch(() => {});
-  }, [user, authLoading]);
+  // authFetch is stable (defined outside render), safe to omit
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading, router]);
 
   if (authLoading || loading || !user) return <DashSkeleton />;
 
@@ -103,7 +135,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-3xl p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-slate-800 text-white shadow-xl"
+        className="relative overflow-hidden rounded-2xl p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-slate-800 text-white shadow-xl"
       >
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
@@ -146,7 +178,7 @@ export default function DashboardPage() {
                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white mx-auto mb-1 transition-transform group-hover:scale-110">
                  <Sparkles className="w-5 h-5" />
                </div>
-               <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">Level 4</p>
+               <p className="text-xs font-bold uppercase tracking-wider opacity-70">Level 4</p>
              </div>
           </div>
         </div>
@@ -236,7 +268,7 @@ export default function DashboardPage() {
               { title: "My Videos", items: recentVideos, icon: Video, type: 'video', uploadHref: '/upload-video' },
               { title: "My Notes", items: recentNotes, icon: FileText, type: 'note', uploadHref: '/upload-notes' },
             ].map((s) => (
-              <div key={s.title} className="bg-white dark:bg-slate-900 border border-border rounded-3xl p-6 shadow-sm flex flex-col">
+              <div key={s.title} className="bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2 text-text-1">
                     <s.icon className="w-5 h-5 text-indigo-500" />
@@ -308,7 +340,7 @@ export default function DashboardPage() {
         {/* ── Quick Actions (Right) ── */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-white dark:bg-slate-900 border border-border rounded-3xl p-6 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm">
             <h3 className="text-sm font-bold uppercase tracking-wider text-text-1 mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4 text-amber-500" />
               Quick Actions
@@ -331,7 +363,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-indigo-600 dark:bg-indigo-500 p-8 rounded-3xl text-white shadow-lg relative overflow-hidden">
+          <div className="bg-indigo-600 dark:bg-indigo-500 p-8 rounded-2xl text-white shadow-lg relative overflow-hidden">
              <div className="relative z-10 space-y-4">
                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
                    <Users className="w-5 h-5" />

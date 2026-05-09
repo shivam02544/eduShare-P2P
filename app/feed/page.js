@@ -24,20 +24,26 @@ export default function FeedPage() {
   const [feed, setFeed] = useState([]);
   const [empty, setEmpty] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [user, authLoading]);
+    if (!authLoading && !user) router.replace("/login");
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!user) return;
     authFetch("/api/feed")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Could not load feed (${r.status})`);
+        return r.json();
+      })
       .then((d) => {
         setFeed(d.items || []);
         setEmpty(d.empty);
         setLoading(false);
-      });
+      })
+      .catch((err) => { setFetchError(err.message); setLoading(false); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
@@ -48,17 +54,17 @@ export default function FeedPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-[32px] md:rounded-[40px] p-6 md:p-8 lg:p-12 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl text-center"
+        className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-12 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl text-center"
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -z-10" />
         
-        <div className="mx-auto w-16 h-16 rounded-[24px] bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 mb-6">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 mb-6">
           <Activity className="w-8 h-8" />
         </div>
 
         <div className="space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Peer Network</span>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-text-1 tracking-tighter leading-tight">
+          <span className="text-xs font-bold uppercase tracking-wider text-text-3">Peer Network</span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text-1 tracking-tight leading-tight">
             Activity Stream
           </h1>
           <p className="text-sm font-medium text-text-3 max-w-sm mx-auto">
@@ -72,15 +78,27 @@ export default function FeedPage() {
         <div className="flex items-center justify-between border-b border-border/50 pb-6">
           <div className="flex items-center gap-3">
             <Users className="w-4 h-4 text-text-3" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Network Updates</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-text-3">Network Updates</h2>
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-black text-indigo-500 bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20">
+          <div className="flex items-center gap-2 text-xs font-bold text-indigo-500 bg-indigo-500/10 px-3 py-1.5 rounded-xl border border-indigo-500/20">
             <Zap className="w-3 h-3" />
             Live Updates
           </div>
         </div>
 
-        {loading ? (
+        {fetchError ? (
+          <div className="flex flex-col items-center justify-center py-32 space-y-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+              <Activity className="w-8 h-8" aria-hidden="true" />
+            </div>
+            <p className="text-base font-bold text-text-1">Could Not Load Feed</p>
+            <p className="text-sm text-text-3">{fetchError}</p>
+            <button
+              onClick={() => { setFetchError(null); setLoading(true); }}
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >Retry</button>
+          </div>
+        ) : loading ? (
           <div className="space-y-8">
              {Array(4).fill(0).map((_, i) => <SkeletonCard key={i} />)}
           </div>
@@ -90,14 +108,14 @@ export default function FeedPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-32 space-y-8"
           >
-            <div className="w-24 h-24 rounded-[32px] bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3 opacity-30 shadow-inner">
+            <div className="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3 opacity-30 shadow-inner">
                <Users className="w-10 h-10" />
             </div>
             <div className="space-y-3">
-              <p className="text-2xl font-black text-text-1 tracking-tighter">No Activity Yet</p>
+              <p className="text-2xl font-bold text-text-1 tracking-tight">No Activity Yet</p>
               <p className="text-sm text-text-3 font-medium max-w-xs mx-auto">Your feed is empty. Follow other users to see their activity here.</p>
             </div>
-            <Link href="/explore" className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 transition-transform hover:scale-105">
+            <Link href="/explore" className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-indigo-500/20 transition-transform hover:scale-105">
               Find People
             </Link>
           </motion.div>
@@ -117,24 +135,24 @@ export default function FeedPage() {
                     <Link href={`/profile/${item.uploader?.firebaseUid}`} className="flex items-center gap-4 group">
                       <div className="relative">
                         {item.uploader?.image ? (
-                          <img src={item.uploader.image} alt="" className="w-10 h-10 rounded-[14px] object-cover ring-2 ring-border shadow-lg transition-transform group-hover:scale-110" />
+                          <img src={item.uploader.image} alt="" className="w-10 h-10 rounded-xl object-cover ring-2 ring-border shadow-lg transition-transform group-hover:scale-110" />
                         ) : (
-                          <div className="w-10 h-10 rounded-[14px] bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
                             <User className="w-5 h-5" />
                           </div>
                         )}
                         <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-md bg-emerald-500 border-2 border-white dark:border-slate-900" />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-text-1 group-hover:text-indigo-500 transition-colors">
+                        <p className="text-sm font-bold text-text-1 group-hover:text-indigo-500 transition-colors">
                           {item.uploader?.name}
                         </p>
-                        <p className="text-[10px] font-black text-text-3 uppercase tracking-tighter mt-0.5">
+                        <p className="text-xs font-medium text-text-3 uppercase tracking-wider mt-0.5">
                           Shared a new {item.kind}
                         </p>
                       </div>
                     </Link>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-text-3 uppercase tracking-tighter bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-xl">
+                    <div className="flex items-center gap-2 text-xs font-bold text-text-3 uppercase tracking-wider bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-xl">
                       <Clock className="w-3.5 h-3.5" />
                       {timeAgo(item.createdAt)}
                     </div>

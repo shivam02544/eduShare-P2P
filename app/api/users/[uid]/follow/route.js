@@ -16,7 +16,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 30 follow/unfollow per 10 minutes per IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "follow"), limit: 30, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "follow"), limit: 30, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

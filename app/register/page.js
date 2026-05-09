@@ -147,35 +147,35 @@ export default function RegisterPage() {
               animate={{ scale: 1, rotate: 0 }}
               className="relative w-16 h-16 mx-auto"
             >
-              <div className="w-16 h-16 rounded-[24px] bg-emerald-500 flex items-center justify-center mx-auto shadow-2xl border border-emerald-400/20">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center mx-auto shadow-2xl border border-emerald-400/20">
                 <MailCheck className="w-8 h-8 text-white" />
               </div>
               <motion.div 
                 animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute inset-0 rounded-[24px] bg-emerald-500/30 blur-md"
+                className="absolute inset-0 rounded-2xl bg-emerald-500/30 blur-md"
               />
             </motion.div>
             <div className="space-y-1">
-              <h1 className="text-3xl font-black text-text-1 tracking-tight uppercase">Check Your <span className="text-emerald-500">Inbox</span></h1>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-3">Verification link sent</p>
+              <h1 className="text-3xl font-bold text-text-1 tracking-tight uppercase">Check Your <span className="text-emerald-500">Inbox</span></h1>
+              <p className="text-xs font-bold uppercase tracking-wider text-text-3">Verification link sent</p>
             </div>
           </div>
 
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8 relative overflow-hidden group">
+          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-3xl shadow-3xl space-y-8 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Sent-to info */}
             <div className="text-center space-y-2">
               <p className="text-sm font-medium text-text-2">We sent a verification link to</p>
-              <p className="text-base font-black text-text-1 bg-slate-50 dark:bg-white/5 border border-border px-6 py-3 rounded-2xl inline-block">{pendingEmail}</p>
+              <p className="text-base font-bold text-text-1 bg-slate-50 dark:bg-white/5 border border-border px-6 py-3 rounded-2xl inline-block">{pendingEmail}</p>
             </div>
 
             {/* Steps */}
             <div className="space-y-4 bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-border/50">
               {["Open the email from EduShare", "Click the verification link", "Come back and sign in"].map((s, i) => (
                 <div key={i} className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-lg shadow-indigo-500/20">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-lg shadow-indigo-500/20">
                     {i + 1}
                   </div>
                   <p className="text-sm font-bold text-text-2">{s}</p>
@@ -187,10 +187,10 @@ export default function RegisterPage() {
             <Link 
               href="/login" 
               onClick={() => savePending(null)}
-              className="group/btn relative w-full overflow-hidden rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
+              className="group/btn relative w-full overflow-hidden rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
             >
               <Zap className="w-5 h-5 group-hover/btn:scale-125 transition-transform" />
-              <span className="text-[11px] font-black uppercase tracking-[0.4em]">Go to Sign In</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Go to Sign In</span>
               <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[40px] -z-0" />
             </Link>
 
@@ -199,7 +199,7 @@ export default function RegisterPage() {
               <button 
                 onClick={handleResend} 
                 disabled={resending || resent}
-                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
+                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
                   resent 
                     ? "text-emerald-500" 
                     : "text-text-3 hover:text-indigo-500"
@@ -253,17 +253,17 @@ export default function RegisterPage() {
           <motion.div 
             initial={{ scale: 0.8, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
-            className="w-16 h-16 rounded-[24px] bg-slate-900 dark:bg-white flex items-center justify-center mx-auto shadow-2xl border border-white/10"
+            className="w-16 h-16 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center mx-auto shadow-2xl border border-white/10"
           >
             <Sparkles className="w-8 h-8 text-white dark:text-slate-900" />
           </motion.div>
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-text-1 tracking-tight uppercase">Create <span className="text-indigo-500">Account</span></h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-3">Join EduShare and start sharing</p>
+            <h1 className="text-3xl font-bold text-text-1 tracking-tight uppercase">Create <span className="text-indigo-500">Account</span></h1>
+            <p className="text-xs font-bold uppercase tracking-wider text-text-3">Join EduShare and start sharing</p>
           </div>
         </div>
 
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8 relative overflow-hidden group">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-3xl shadow-3xl space-y-8 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
           {/* Social Protocol */}
@@ -271,7 +271,7 @@ export default function RegisterPage() {
             <button 
               onClick={handleGoogle} 
               disabled={gLoading}
-              className="group/g w-full flex items-center justify-center gap-4 py-4 rounded-3xl bg-slate-50 dark:bg-white/5 border border-border text-[11px] font-black uppercase tracking-widest text-text-1 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              className="group/g w-full flex items-center justify-center gap-4 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-1 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
             >
               {gLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                 <svg className="w-5 h-5 group-hover/g:rotate-12 transition-transform" viewBox="0 0 24 24">
@@ -286,7 +286,7 @@ export default function RegisterPage() {
 
             <div className="flex items-center gap-4 px-2">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-text-3">or use email</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-text-3">or use email</span>
               <div className="flex-1 h-px bg-border" />
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function RegisterPage() {
                 className="bg-rose-500/5 border border-rose-500/20 rounded-2xl px-5 py-4 flex items-center gap-3 shadow-inner"
               >
                 <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">{error}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-rose-500">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -315,7 +315,7 @@ export default function RegisterPage() {
                   required
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
                 />
               </div>
               <div className="relative group/input">
@@ -326,7 +326,7 @@ export default function RegisterPage() {
                   required
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
                 />
               </div>
               <div className="relative group/input">
@@ -338,23 +338,23 @@ export default function RegisterPage() {
                   minLength={6}
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
                 />
               </div>
             </div>
 
-            <p className="text-[10px] font-medium text-text-3 px-2 opacity-60">
+            <p className="text-xs font-medium text-text-3 px-2 opacity-60">
               A verification link will be sent to your email before you can sign in.
             </p>
 
             <button 
               type="submit" 
               disabled={loading} 
-              className="group/btn relative w-full overflow-hidden rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50"
+              className="group/btn relative w-full overflow-hidden rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 group-hover/btn:scale-125 transition-transform" />}
-                <span className="text-[11px] font-black uppercase tracking-[0.4em]">{loading ? "Creating Account..." : "Create Account"}</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{loading ? "Creating Account..." : "Create Account"}</span>
               </div>
               <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[40px] -z-0" />
             </button>
@@ -367,7 +367,7 @@ export default function RegisterPage() {
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-3">
             Already have an account?{" "}
             <Link href="/login" className="text-text-1 border-b border-text-1 hover:text-indigo-500 hover:border-indigo-500 transition-all ml-2 pb-0.5">Sign In</Link>
           </p>
@@ -377,12 +377,12 @@ export default function RegisterPage() {
         <div className="pt-10 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
            <div className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
-              <span className="text-[8px] font-black uppercase tracking-widest">System Online</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">System Online</span>
            </div>
            <span className="w-1 h-1 rounded-full bg-border" />
            <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className="text-[8px] font-black uppercase tracking-widest">Secure Connection</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Secure Connection</span>
            </div>
         </div>
 

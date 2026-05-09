@@ -16,7 +16,7 @@ export const GET = apiHandler(async (ctx) => {
 
   // 60 reads per minute per IP — dashboard + history page
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "watch-history-get"), limit: 60, windowMs: 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "watch-history-get"), limit: 60, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   const { searchParams } = new URL(req.url);
@@ -40,7 +40,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 120 saves per hour per IP — fires every 10s while watching, so 120/hr = 2 videos watched continuously
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "watch-history-post"), limit: 120, windowMs: 60 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "watch-history-post"), limit: 120, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   const result = await saveWatchHistory(me._id, videoId, progressSeconds, durationSeconds);

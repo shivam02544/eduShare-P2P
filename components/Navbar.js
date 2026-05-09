@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -28,14 +28,8 @@ import {
   Moon,
   ShieldCheck,
   Command,
-  Activity,
-  Cpu,
-  Monitor,
   Menu,
   X,
-  Target,
-  Sparkles,
-  ArrowRight
 } from "lucide-react";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
@@ -69,7 +63,9 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const dropRef = useRef(null);
+  const dropTriggerRef = useRef(null);
 
+  // Close on outside click
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
@@ -78,7 +74,21 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  // Close dropdown on route change
   useEffect(() => { setDropOpen(false); }, [pathname]);
+
+  // Keyboard: Escape closes dropdown and returns focus to trigger
+  useEffect(() => {
+    if (!dropOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setDropOpen(false);
+        dropTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [dropOpen]);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -92,45 +102,51 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ── Desktop Global Protocol Bridge ── */}
-      <header className="sticky top-0 z-[100] hidden lg:block select-none">
-        <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-border/50 shadow-sm transition-colors duration-500" />
+      {/* ── Desktop Global Navigation ── */}
+      <header className="sticky top-0 z-[100] hidden lg:block select-none" role="banner">
+        <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/80 backdrop-blur-md border-b border-border/50 shadow-sm transition-colors duration-500" aria-hidden="true" />
         
         <div className="relative max-w-[1440px] mx-auto px-4 xl:px-8 h-[72px] flex items-center justify-between gap-3 xl:gap-6">
-          {/* Logo: Mission Control Brand */}
-          <Link href="/" className="flex items-center gap-2 xl:gap-4 shrink-0">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 xl:gap-3 shrink-0" aria-label="EduShare – Go to homepage">
             <motion.div 
-              whileHover={{ scale: 1.05, rotate: -5 }}
+              whileHover={{ scale: 1.05 }}
               transition={springConfig}
-              className="w-10 h-10 xl:w-11 xl:h-11 rounded-[12px] xl:rounded-[14px] flex items-center justify-center shadow-2xl shadow-indigo-500/30 bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+              className="w-10 h-10 xl:w-11 xl:h-11 rounded-xl flex items-center justify-center shadow-lg bg-indigo-600 dark:bg-indigo-500 text-white"
+              aria-hidden="true"
             >
-              <Command className="w-4 h-4 xl:w-5 xl:h-5" />
+              <Command className="w-5 h-5 xl:w-6 xl:h-6" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-bold text-base xl:text-lg tracking-tight text-text-1 leading-none">EduShare</span>
-              <span className="text-[7px] xl:text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1 pl-0.5">Peer Learning</span>
+              <span className="font-bold text-lg xl:text-xl tracking-tight text-slate-900 dark:text-white leading-none">EduShare</span>
+              <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mt-1">Peer Learning</span>
             </div>
           </Link>
 
           {/* Primary Navigation */}
-          <nav className="flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border/50 shrink-0">
+          <nav className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-border/50 shrink-0" aria-label="Primary navigation">
             {/* Desktop (xl) - Show All */}
             <div className="hidden xl:flex items-center gap-1">
               {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].map((l) => {
                 const Icon = l.icon;
                 const active = isActive(l.href);
                 return (
-                  <Link key={l.href} href={l.href} className="relative px-3 py-1.5 group shrink-0 rounded-xl overflow-hidden">
-                    <div className={`flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors ${
-                      active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    aria-current={active ? "page" : undefined}
+                    className="relative px-3 py-1.5 group shrink-0 rounded-lg overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+                  >
+                    <div className={`flex items-center gap-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                      active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
                     }`}>
-                      <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
+                      <Icon className={`w-4 h-4 ${active ? "opacity-100" : "opacity-50"}`} aria-hidden="true" />
                       {l.label}
                     </div>
                     {active && (
                       <motion.div 
                         layoutId="nav-glow-xl"
-                        className="absolute inset-0 bg-white dark:bg-slate-900 shadow-sm border border-border/30 rounded-xl -z-10"
+                        className="absolute inset-0 bg-white dark:bg-slate-700 shadow-sm border border-border/50 rounded-lg -z-10"
                         transition={springConfig}
                       />
                     )}
@@ -145,17 +161,22 @@ export default function Navbar() {
                 const Icon = l.icon;
                 const active = isActive(l.href);
                 return (
-                  <Link key={l.href} href={l.href} className="relative px-3 py-1.5 group shrink-0 rounded-xl overflow-hidden">
-                    <div className={`flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors ${
-                      active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    aria-current={active ? "page" : undefined}
+                    className="relative px-3 py-1.5 group shrink-0 rounded-lg overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
+                  >
+                    <div className={`flex items-center gap-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                      active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
                     }`}>
-                      <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
+                      <Icon className={`w-4 h-4 ${active ? "opacity-100" : "opacity-50"}`} aria-hidden="true" />
                       {l.label}
                     </div>
                     {active && (
                       <motion.div 
                         layoutId="nav-glow-lg"
-                        className="absolute inset-0 bg-white dark:bg-slate-900 shadow-sm border border-border/30 rounded-xl -z-10"
+                        className="absolute inset-0 bg-white dark:bg-slate-700 shadow-sm border border-border/50 rounded-lg -z-10"
                         transition={springConfig}
                       />
                     )}
@@ -165,17 +186,30 @@ export default function Navbar() {
               
               {/* "More" Dropdown for remaining items on lg */}
               <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-text-3 hover:text-text-1 transition-colors">
-                  <Menu className="w-3.5 h-3.5 opacity-50" />
+                <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  aria-haspopup="true"
+                  aria-label="More navigation items"
+                >
+                  <Menu className="w-4 h-4 opacity-50" aria-hidden="true" />
                   More
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-48 py-2 rounded-xl bg-white dark:bg-slate-900 border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div
+                  className="absolute top-full left-0 mt-2 w-48 py-2 rounded-xl bg-white dark:bg-slate-900 border border-border shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
+                  role="menu"
+                >
                    {[...MISSION_NAV.slice(3), ...(user ? AUTH_ALIGNED : [])].map((l) => {
                       const Icon = l.icon;
                       const active = isActive(l.href);
                       return (
-                        <Link key={l.href} href={l.href} className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${active ? "text-indigo-600" : "text-text-2"}`}>
-                           <Icon className="w-3.5 h-3.5 opacity-50" />
+                        <Link
+                          key={l.href}
+                          href={l.href}
+                          role="menuitem"
+                          aria-current={active ? "page" : undefined}
+                          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300"}`}
+                        >
+                           <Icon className="w-4 h-4 opacity-50" aria-hidden="true" />
                            {l.label}
                         </Link>
                       )
@@ -187,101 +221,118 @@ export default function Navbar() {
 
           <div className="flex-1 min-w-[24px]" />
 
-          {/* Actions & Core Interfacing */}
+          {/* Actions */}
           <div className="flex items-center gap-2 xl:gap-4 min-w-0 shrink-0">
             {user && (
-              <div className="flex-none w-[150px] xl:flex-1 xl:max-w-[320px] transition-all duration-500">
+              <div className="flex-none w-[200px] xl:flex-1 xl:max-w-[320px] transition-all duration-500">
                 <SearchBar />
               </div>
             )}
 
-            <div className="h-8 w-px bg-border/50 mx-2" />
+            <div className="h-6 w-px bg-border mx-1" aria-hidden="true" />
 
             <motion.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={toggle}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 text-text-2 hover:text-indigo-500 transition-all"
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 border border-border text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {isDark ? <Sun className="w-4 h-4" aria-hidden="true" /> : <Moon className="w-4 h-4" aria-hidden="true" />}
             </motion.button>
 
             {loading ? (
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse border border-border/50" />
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse border border-border" aria-hidden="true" />
             ) : user ? (
               <div className="flex items-center gap-3">
                 <NotificationBell />
                 <div className="relative" ref={dropRef}>
                   <motion.button 
+                    ref={dropTriggerRef}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setDropOpen(!dropOpen)}
-                    className={`flex items-center gap-3 pl-2 pr-4 py-2 rounded-2xl border transition-all ${
+                    aria-expanded={dropOpen}
+                    aria-haspopup="true"
+                    aria-label={`${user.displayName || "Account"} – User menu`}
+                    className={`flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                       dropOpen 
-                        ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-slate-900 dark:border-white shadow-xl" 
-                        : "bg-white dark:bg-white/5 border-border/50 hover:bg-slate-50 dark:hover:bg-white/10"
+                        ? "bg-slate-100 dark:bg-slate-800 border-border shadow-sm" 
+                        : "bg-white dark:bg-transparent border-border hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <div className="relative shrink-0">
                        {user.photoURL ? (
-                         <img src={user.photoURL} alt="" className="w-7 h-7 xl:w-8 xl:h-8 rounded-xl object-cover ring-2 ring-indigo-500/20" />
+                         <img src={user.photoURL} alt="" className="w-7 h-7 xl:w-8 xl:h-8 rounded-md object-cover ring-1 ring-border" />
                        ) : (
-                         <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-[10px] font-black text-white">
+                         <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-md bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white" aria-hidden="true">
                            {initials}
                          </div>
                        )}
-                       <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                       <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" aria-hidden="true" />
                     </div>
-                    <span className="text-[9px] xl:text-[10px] font-bold uppercase tracking-widest hidden xl:block whitespace-nowrap">User Account</span>
-                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-500 ${dropOpen ? "rotate-180" : ""}`} />
+                    <span className="text-sm font-medium hidden xl:block whitespace-nowrap text-slate-900 dark:text-white px-1" aria-hidden="true">
+                      {user.displayName?.split(' ')[0] || "Account"}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 shrink-0 transition-transform duration-300 ${dropOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                   </motion.button>
 
                   <AnimatePresence>
                     {dropOpen && (
                       <motion.div 
-                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 4, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.98 }}
                         transition={springConfig}
-                        className="absolute right-0 mt-4 w-72 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-border shadow-2xl overflow-hidden z-[100] p-3 ring-1 ring-border/50"
+                        role="menu"
+                        aria-label="User account menu"
+                        className="absolute right-0 mt-2 w-64 rounded-xl bg-white dark:bg-slate-900 border border-border shadow-lg overflow-hidden z-[100] p-2"
                       >
-                        <div className="px-5 py-6 mb-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-border/50 relative overflow-hidden group/profile">
-                          <p className="text-[11px] font-bold text-text-3 uppercase tracking-widest mb-1">User Profile</p>
-                          <p className="text-sm font-bold text-text-1 truncate tracking-tight">{user.displayName || "Student"}</p>
-                          <p className="text-[9px] text-text-3 truncate font-bold uppercase tracking-widest mt-2 opacity-50">{user.email}</p>
+                        <div className="px-4 py-4 mb-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-border">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.displayName || "Student"}</p>
+                          <p className="text-xs text-gray-500 truncate mt-1">{user.email}</p>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-1" role="none">
                           {IDENTITY_PROTOCOLS.map((item) => {
                             const Icon = item.icon;
                             return (
                               <Link 
                                 key={item.href}
                                 href={item.dynamic ? `/profile/${user.uid}` : item.href}
-                                className="flex items-center gap-4 px-5 py-3 rounded-xl text-[11px] font-semibold uppercase tracking-widest text-text-2 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all group"
+                                role="menuitem"
+                                onClick={() => setDropOpen(false)}
+                                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800"
                               >
-                                <Icon className="w-3.5 h-3.5 text-text-3 group-hover:text-indigo-500 transition-all" />
+                                <Icon className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" aria-hidden="true" />
                                 {item.label}
-                                <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-indigo-500" />
                               </Link>
                             );
                           })}
 
-                          <div className="h-px bg-border/50 mx-4 my-2" />
+                          <div className="h-px bg-border mx-2 my-2" aria-hidden="true" />
 
-                          <Link href="/admin" className="flex items-center gap-4 px-5 py-4 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white dark:text-slate-900 bg-slate-900 dark:bg-white shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
-                            <ShieldCheck className="w-4 h-4" />
+                          <Link
+                            href="/admin"
+                            role="menuitem"
+                            onClick={() => setDropOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors focus-visible:outline-none focus-visible:bg-indigo-50 dark:focus-visible:bg-indigo-500/10"
+                          >
+                            <ShieldCheck className="w-4 h-4" aria-hidden="true" />
                             Admin Panel
                           </Link>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-border/50 px-2">
+                        <div className="mt-2 pt-2 border-t border-border">
                           <button 
+                            role="menuitem"
                             onClick={handleSignOut}
                             disabled={signingOut}
-                            className="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-500/5 transition-all"
+                            aria-disabled={signingOut}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:bg-rose-50 dark:focus-visible:bg-rose-500/10"
                           >
-                            <LogOut className="w-3.5 h-3.5" />
-                            {signingOut ? "Signing Out..." : "Sign Out"}
+                            <LogOut className="w-4 h-4" aria-hidden="true" />
+                            {signingOut ? "Signing out…" : "Sign Out"}
                           </button>
                         </div>
                       </motion.div>
@@ -290,13 +341,10 @@ export default function Navbar() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-1 xl:gap-2 pl-2 xl:pl-4 shrink-0">
-                <Link href="/login" className="text-[9px] xl:text-[11px] font-black uppercase tracking-[0.2em] xl:tracking-[0.3em] text-text-2 hover:text-text-1 px-3 xl:px-6 py-2 xl:py-3 transition-colors whitespace-nowrap">Log in</Link>
-                <Link href="/register" className="relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 xl:px-8 py-2.5 xl:py-3.5 rounded-[12px] xl:rounded-2xl text-[9px] xl:text-[11px] font-black uppercase tracking-[0.2em] xl:tracking-[0.3em] hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl xl:shadow-2xl whitespace-nowrap">
-                  <span className="relative z-10 flex items-center gap-1.5 xl:gap-2">
-                    <Zap className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                    Join Now
-                  </span>
+              <div className="flex items-center gap-3 pl-2 xl:pl-4 shrink-0">
+                <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-slate-900 dark:text-gray-300 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:underline">Log in</Link>
+                <Link href="/register" className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                  Join Now
                 </Link>
               </div>
             )}
@@ -304,60 +352,77 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* ── Mobile Mission Dock Transitions ── */}
-      <header className="sticky top-0 z-[100] lg:hidden bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border-b border-border/50 h-[64px] flex items-center px-6">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xl">
+      {/* ── Mobile Header ── */}
+      <header className="sticky top-0 z-[100] lg:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-border h-16 flex items-center px-4" role="banner">
+        <Link href="/" className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg" aria-label="EduShare – Go to homepage">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-600 text-white shadow-sm" aria-hidden="true">
             <Command className="w-4 h-4" />
           </div>
-          <span className="font-black text-sm tracking-tighter">EduShare</span>
+          <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">EduShare</span>
         </Link>
         <div className="flex-1" />
         <div className="flex items-center gap-3">
-          <button onClick={toggle} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 border border-border/50 text-text-2 transition-transform active:rotate-12">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <button
+            onClick={toggle}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 border border-border text-gray-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          >
+            {isDark ? <Sun className="w-4 h-4" aria-hidden="true" /> : <Moon className="w-4 h-4" aria-hidden="true" />}
           </button>
           {user ? (
-            <Link href={`/profile/${user.uid}`} className="w-9 h-9 rounded-xl overflow-hidden border border-border shadow-sm active:scale-90 transition-transform">
-               {user.photoURL ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-indigo-500" />}
+            <Link
+              href={`/profile/${user.uid}`}
+              aria-label={`View profile of ${user.displayName || "Account"}`}
+              className="w-9 h-9 rounded-lg overflow-hidden border border-border shadow-sm active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+               {user.photoURL ? (
+                 <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+               ) : (
+                 <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold" aria-hidden="true">{initials}</div>
+               )}
             </Link>
           ) : (
-            <Link href="/login" className="text-[10px] font-black uppercase tracking-widest px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl shadow-lg">Login</Link>
+            <Link href="/login" className="text-sm font-semibold px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Login</Link>
           )}
         </div>
       </header>
 
-      {/* ── Floating Mobile Bottom Mission Dock ── */}
-      <nav className="fixed bottom-4 left-4 right-4 z-[100] lg:hidden">
-        <div className="flex bg-slate-900/90 dark:bg-white/95 backdrop-blur-2xl border border-white/10 dark:border-black/5 rounded-[28px] h-16 py-2 px-3 shadow-3xl shadow-indigo-500/20">
-          {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].slice(0, 4).map((l) => {
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white dark:bg-slate-900 border-t border-border pb-safe"
+        aria-label="Mobile navigation"
+      >
+        <div className="flex h-16">
+          {[...MISSION_NAV.slice(0, 4)].map((l) => {
             const Icon = l.icon;
             const active = isActive(l.href);
             return (
-              <Link key={l.href} href={l.href} className="flex-1 flex flex-col items-center justify-center gap-1.5 transition-all">
-                <motion.div 
-                  animate={{ scale: active ? 1.2 : 1, y: active ? -4 : 0 }}
-                  className={`${active ? "text-indigo-400 dark:text-indigo-600" : "text-white/40 dark:text-slate-900/40"}`}
-                >
-                  <Icon className="w-5 h-5" />
-                </motion.div>
-                <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${active ? "text-indigo-400 dark:text-indigo-600" : "text-white/20 dark:text-slate-900/20"}`}>
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                aria-label={l.label}
+                className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800"
+              >
+                <Icon className={`w-5 h-5 ${active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400"}`} aria-hidden="true" />
+                <span className={`text-[10px] font-medium ${active ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500"}`}>
                   {l.label.split(' ')[0]}
                 </span>
               </Link>
             );
           })}
-          <div className="w-px h-8 bg-white/10 dark:bg-black/10 my-auto mx-2" />
-          <Link href={user ? "/dashboard" : "/register"} className="flex-1 flex flex-col items-center justify-center gap-1.5 group">
-             <motion.div 
-               animate={{ scale: isActive("/dashboard") ? 1.2 : 1, y: isActive("/dashboard") ? -4 : 0 }}
-               className="relative"
-             >
-                <LayoutDashboard className={`w-5 h-5 ${isActive("/dashboard") ? "text-indigo-400 dark:text-indigo-600" : "text-white/40 dark:text-slate-900/40"}`} />
-                {user && <Activity className="absolute -top-1 -right-1 w-2.5 h-2.5 text-emerald-400 animate-pulse" />}
-             </motion.div>
-             <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isActive("/dashboard") ? "text-indigo-400 dark:text-indigo-600" : "text-white/20 dark:text-slate-900/20"}`}>
-               {user ? "DASH" : "JOIN"}
+          <Link
+            href={user ? "/dashboard" : "/register"}
+            aria-current={isActive("/dashboard") ? "page" : undefined}
+            aria-label={user ? "My Dashboard" : "Join EduShare"}
+            className="flex-1 flex flex-col items-center justify-center gap-1 border-l border-border/50 focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800"
+          >
+             <div className="relative">
+                <LayoutDashboard className={`w-5 h-5 ${isActive("/dashboard") ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400"}`} aria-hidden="true" />
+                {user && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" aria-hidden="true" />}
+             </div>
+             <span className={`text-[10px] font-medium ${isActive("/dashboard") ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500"}`}>
+               {user ? "Dash" : "Join"}
              </span>
           </Link>
         </div>
@@ -365,5 +430,3 @@ export default function Navbar() {
     </>
   );
 }
-
-

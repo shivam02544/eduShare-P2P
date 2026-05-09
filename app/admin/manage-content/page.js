@@ -76,18 +76,18 @@ export default function ManageContentPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-indigo-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Admin Dashboard</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Admin Dashboard</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Content Moderation</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3">Content Moderation</span>
           </div>
-          <h1 className="text-3xl font-black text-text-1 tracking-tight">
+          <h1 className="text-3xl font-bold text-text-1 tracking-tight">
             Content <span className="text-indigo-500">Management</span>
           </h1>
         </div>
 
         <div className="bg-slate-50 dark:bg-white/5 border border-border px-4 py-2 rounded-2xl flex items-center gap-3">
            <Database className="w-4 h-4 text-text-3" />
-           <p className="text-[10px] font-black uppercase tracking-widest text-text-2">
+           <p className="text-[10px] font-bold uppercase tracking-widest text-text-2">
              System Content
            </p>
         </div>
@@ -97,7 +97,7 @@ export default function ManageContentPage() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 rounded-[32px] shadow-sm flex flex-col lg:flex-row gap-4"
+        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 rounded-3xl shadow-sm flex flex-col lg:flex-row gap-4"
       >
         <div className="flex-1 relative group">
           <Search className="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-text-3 group-focus-within:text-indigo-500 transition-colors" />
@@ -107,7 +107,7 @@ export default function ManageContentPage() {
             value={q} 
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchContent()}
-            className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+            className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-xs font-bold text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
           />
         </div>
         
@@ -115,7 +115,7 @@ export default function ManageContentPage() {
           <select 
             value={type} 
             onChange={(e) => { setType(e.target.value); setPage(1); }}
-            className="bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-1 outline-none cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-all appearance-none min-w-[160px]"
+            className="bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text-1 outline-none cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-all appearance-none min-w-[160px]"
           >
             <option value="all" className="bg-slate-900">All Content</option>
             <option value="video" className="bg-slate-900">Videos</option>
@@ -124,7 +124,7 @@ export default function ManageContentPage() {
           
           <button 
             onClick={fetchContent}
-            className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+            className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
           >
             Search
           </button>
@@ -140,17 +140,17 @@ export default function ManageContentPage() {
                 key={`skeleton-${i}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="h-28 bg-white/30 dark:bg-white/5 backdrop-blur-sm border border-border rounded-[32px] animate-pulse" 
+                className="h-28 bg-white/30 dark:bg-white/5 backdrop-blur-sm border border-border rounded-3xl animate-pulse" 
               />
             ))
           ) : items.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-40 bg-white/30 dark:bg-white/5 backdrop-blur-md border border-dashed border-border rounded-[48px] flex flex-col items-center justify-center text-center gap-4"
+              className="py-40 bg-white/30 dark:bg-white/5 backdrop-blur-md border border-dashed border-border rounded-3xl flex flex-col items-center justify-center text-center gap-4"
             >
                <Target className="w-12 h-12 text-text-3 opacity-20" />
-               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">No content found matches your search.</p>
+               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3">No content found matches your search.</p>
             </motion.div>
           ) : (
             items.map((item, i) => (
@@ -159,10 +159,10 @@ export default function ManageContentPage() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 pr-10 rounded-[40px] flex items-center gap-6 transition-all hover:scale-[1.01] hover:border-indigo-500/30 hover:shadow-2xl shadow-sm"
+                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 pr-10 rounded-3xl flex items-center gap-6 transition-all hover:scale-[1.01] hover:border-indigo-500/30 hover:shadow-2xl shadow-sm"
               >
                 {/* Visual HUD */}
-                <div className="w-40 h-24 rounded-[28px] overflow-hidden bg-slate-900 flex-shrink-0 relative shadow-lg">
+                <div className="w-40 h-24 rounded-2xl overflow-hidden bg-slate-900 flex-shrink-0 relative shadow-lg">
                   {item.thumbnailUrl ? (
                     <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 pb-0" />
                   ) : (
@@ -171,7 +171,7 @@ export default function ManageContentPage() {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
-                  <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-white backdrop-blur-md border border-white/20 flex items-center gap-1.5 ${
+                  <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur-md border border-white/20 flex items-center gap-1.5 ${
                     item.contentType === 'video' ? 'bg-rose-500/40' : 'bg-indigo-500/40'
                   }`}>
                     {item.contentType === 'video' ? <Film className="w-2.5 h-2.5" /> : <FileText className="w-2.5 h-2.5" />}
@@ -187,11 +187,11 @@ export default function ManageContentPage() {
                 {/* Registry Info */}
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-base font-black text-text-1 tracking-tight truncate group-hover:text-indigo-500 transition-colors">{item.title}</h3>
+                    <h3 className="text-base font-bold text-text-1 tracking-tight truncate group-hover:text-indigo-500 transition-colors">{item.title}</h3>
                     <ShieldCheck className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-4 text-[9px] font-black uppercase tracking-[0.15em] text-text-3">
+                  <div className="flex flex-wrap items-center gap-4 text-[9px] font-bold uppercase tracking-[0.15em] text-text-3">
                     <div className="flex items-center gap-2">
                        <Target className="w-3 h-3 text-indigo-500" />
                        <span className="text-text-1">{item.subject}</span>
@@ -245,20 +245,20 @@ export default function ManageContentPage() {
           <button 
             onClick={() => setPage(p => Math.max(1, p-1))} 
             disabled={page === 1}
-            className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-border text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-30 transition-all font-geist"
+            className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-border text-[10px] font-bold uppercase tracking-widest text-text-3 hover:text-text-1 hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-30 transition-all font-geist"
           >
             <ChevronLeft className="w-4 h-4" />
             Previous
           </button>
           
           <div className="bg-white/50 dark:bg-white/5 backdrop-blur-md border border-border px-6 py-3 rounded-2xl">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-1">Page {page} <span className="text-text-3">/</span> {totalPages}</span>
+             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-text-1">Page {page} <span className="text-text-3">/</span> {totalPages}</span>
           </div>
 
           <button 
             onClick={() => setPage(p => Math.min(totalPages, p+1))} 
             disabled={page === totalPages}
-            className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-border text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-30 transition-all font-geist"
+            className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-border text-[10px] font-bold uppercase tracking-widest text-text-3 hover:text-text-1 hover:bg-slate-50 dark:hover:bg-white/5 disabled:opacity-30 transition-all font-geist"
           >
             Next
             <ChevronRight className="w-4 h-4" />

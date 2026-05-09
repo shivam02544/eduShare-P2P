@@ -9,7 +9,7 @@ export const POST = apiHandler(async (ctx) => {
   const { req, params, user } = ctx;
 
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "like"), limit: 60, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "like"), limit: 60, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

@@ -70,18 +70,18 @@ export default function AdminUsersPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-indigo-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Admin Portal</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Admin Portal</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">User Management</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3">User Management</span>
           </div>
-          <h1 className="text-3xl font-black text-text-1 tracking-tight">
+          <h1 className="text-3xl font-bold text-text-1 tracking-tight">
             User <span className="text-indigo-500">Accounts</span>
           </h1>
         </div>
 
         <div className="bg-slate-50 dark:bg-white/5 border border-border px-4 py-2 rounded-2xl flex items-center gap-3">
            <Users className="w-4 h-4 text-text-3" />
-           <p className="text-[10px] font-black uppercase tracking-widest text-text-2">
+           <p className="text-[10px] font-bold uppercase tracking-widest text-text-2">
              {data.total} Total Users
            </p>
         </div>
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 rounded-[32px] shadow-sm flex flex-col lg:flex-row gap-4"
+        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-4 rounded-3xl shadow-sm flex flex-col lg:flex-row gap-4"
       >
         <div className="flex-1 relative group">
           <Search className="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-text-3 group-focus-within:text-indigo-500 transition-colors" />
@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
             value={q} 
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchUsers()}
-            className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-xs font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
+            className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-14 pr-6 py-4 text-xs font-bold text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none" 
           />
         </div>
         
@@ -109,7 +109,7 @@ export default function AdminUsersPage() {
           <select 
             value={role} 
             onChange={(e) => setRole(e.target.value)} 
-            className="bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-1 outline-none cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-all appearance-none min-w-[160px]"
+            className="bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text-1 outline-none cursor-pointer hover:bg-white dark:hover:bg-white/10 transition-all appearance-none min-w-[160px]"
           >
             <option value="" className="bg-slate-900">All Roles</option>
             <option value="user" className="bg-slate-900">Tier: User</option>
@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
           
           <button 
             onClick={fetchUsers}
-            className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+            className="bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
           >
             Search
           </button>
@@ -130,17 +130,17 @@ export default function AdminUsersPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] overflow-hidden shadow-2xl"
+        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-3xl overflow-hidden shadow-2xl"
       >
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 dark:bg-white/5 border-b border-border">
-                <th className="px-10 py-6 text-[10px] font-black text-text-3 uppercase tracking-[0.3em]">User</th>
-                <th className="px-10 py-6 text-[10px] font-black text-text-3 uppercase tracking-[0.3em]">Role</th>
-                <th className="px-10 py-6 text-[10px] font-black text-text-3 uppercase tracking-[0.3em]">Status</th>
-                <th className="px-10 py-6 text-[10px] font-black text-text-3 uppercase tracking-[0.3em]">Credits</th>
-                <th className="px-10 py-6 text-[10px] font-black text-text-3 uppercase tracking-[0.3em] text-right">Actions</th>
+                <th className="px-10 py-6 text-[10px] font-bold text-text-3 uppercase tracking-[0.3em]">User</th>
+                <th className="px-10 py-6 text-[10px] font-bold text-text-3 uppercase tracking-[0.3em]">Role</th>
+                <th className="px-10 py-6 text-[10px] font-bold text-text-3 uppercase tracking-[0.3em]">Status</th>
+                <th className="px-10 py-6 text-[10px] font-bold text-text-3 uppercase tracking-[0.3em]">Credits</th>
+                <th className="px-10 py-6 text-[10px] font-bold text-text-3 uppercase tracking-[0.3em] text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -163,7 +163,7 @@ export default function AdminUsersPage() {
                   <tr>
                     <td colSpan={5} className="px-10 py-32 text-center text-text-3">
                        <ShieldAlert className="w-12 h-12 mx-auto mb-4 opacity-10" />
-                       <p className="text-[10px] font-black uppercase tracking-[0.2em]">No Users Found.</p>
+                       <p className="text-[10px] font-bold uppercase tracking-[0.2em]">No Users Found.</p>
                     </td>
                   </tr>
                 ) : (
@@ -182,7 +182,7 @@ export default function AdminUsersPage() {
                               {u.image ? (
                                 <img src={u.image} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-text-3 font-black text-xl uppercase">
+                                <div className="w-full h-full flex items-center justify-center text-text-3 font-bold text-xl uppercase">
                                   {u.name?.[0]}
                                 </div>
                               )}
@@ -194,10 +194,10 @@ export default function AdminUsersPage() {
                             )}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-text-1 tracking-tight flex items-center gap-2">
+                            <p className="text-sm font-bold text-text-1 tracking-tight flex items-center gap-2">
                               {u.name}
                               {u.isSuperAdmin && (
-                                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[8px] font-black bg-indigo-500 text-white uppercase tracking-widest shadow-lg shadow-indigo-500/20">
+                                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[8px] font-bold bg-indigo-500 text-white uppercase tracking-widest shadow-lg shadow-indigo-500/20">
                                   <Shield className="w-2.5 h-2.5" />
                                   Super Admin
                                 </span>
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
                             value={u.role} 
                             disabled={updating === u._id || u.isSuperAdmin}
                             onChange={(e) => handleUpdate(u._id, { role: e.target.value })}
-                            className={`w-full bg-slate-100/50 dark:bg-white/5 border border-border px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-text-1 focus:border-indigo-500 transition-all outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`w-full bg-slate-100/50 dark:bg-white/5 border border-border px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest text-text-1 focus:border-indigo-500 transition-all outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
                           >
                             <option value="user" className="bg-slate-900">Tier: User</option>
                             <option value="moderator" className="bg-slate-900">Tier: Moderator</option>
@@ -228,20 +228,20 @@ export default function AdminUsersPage() {
                         {u.isSuspended ? (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit">
                              <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                             <span className="text-[9px] font-black uppercase tracking-widest text-rose-500">Suspended</span>
+                             <span className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Suspended</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 w-fit">
                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Active</span>
+                             <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Active</span>
                           </div>
                         )}
                       </td>
                       <td className="px-10 py-6">
                         <div className="flex items-center gap-2 text-text-1">
                            <Zap className="w-4 h-4 text-amber-500" />
-                           <span className="text-sm font-black tabular-nums">{u.credits}</span>
-                           <span className="text-[9px] font-black uppercase tracking-widest text-text-3 ml-1">Credits</span>
+                           <span className="text-sm font-bold tabular-nums">{u.credits}</span>
+                           <span className="text-[9px] font-bold uppercase tracking-widest text-text-3 ml-1">Credits</span>
                         </div>
                       </td>
                       <td className="px-10 py-6 text-right">
@@ -259,7 +259,7 @@ export default function AdminUsersPage() {
                               <button 
                                 onClick={() => handleUpdate(u._id, { isSuspended: false })}
                                 disabled={updating === u._id}
-                                className="px-6 py-2.5 rounded-xl bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
+                                className="px-6 py-2.5 rounded-xl bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
                               >
                                 Unsuspend
                               </button>
@@ -270,7 +270,7 @@ export default function AdminUsersPage() {
                                   if (reason !== null) handleUpdate(u._id, { isSuspended: true, suspensionReason: reason });
                                 }}
                                 disabled={updating === u._id}
-                                className="px-6 py-2.5 rounded-xl bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                                className="px-6 py-2.5 rounded-xl bg-rose-500 text-white text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
                               >
                                 Suspend
                               </button>
@@ -298,20 +298,20 @@ export default function AdminUsersPage() {
             <button 
               onClick={() => setPage(p => Math.max(1, p-1))} 
               disabled={page === 1}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-border text-[9px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 disabled:opacity-30 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-border text-[9px] font-bold uppercase tracking-widest text-text-3 hover:text-text-1 disabled:opacity-30 transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
               Previous
             </button>
             
             <div className="flex items-center gap-4">
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-1">Page {page} <span className="text-text-3">/</span> {data.pages}</span>
+               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-1">Page {page} <span className="text-text-3">/</span> {data.pages}</span>
             </div>
 
             <button 
               onClick={() => setPage(p => Math.min(data.pages, p+1))} 
               disabled={page === data.pages}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-border text-[9px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 disabled:opacity-30 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-border text-[9px] font-bold uppercase tracking-widest text-text-3 hover:text-text-1 disabled:opacity-30 transition-all"
             >
               Next
               <ChevronRight className="w-4 h-4" />

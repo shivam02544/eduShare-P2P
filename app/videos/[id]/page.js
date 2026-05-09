@@ -15,6 +15,7 @@ import ChapterEditor from "@/components/ChapterEditor";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import ReportButton from "@/components/ReportButton";
 import { getCdnUrl } from "@/lib/cdn";
+import PageContainer from "@/components/layouts/PageContainer";
 import { 
   Play, 
   User, 
@@ -47,13 +48,13 @@ const springConfig = { mass: 1, tension: 120, friction: 20 };
 function VideoSkeleton() {
   return (
     <div className="max-w-[1440px] mx-auto space-y-12 animate-pulse pb-32 px-8">
-      <div className="aspect-video w-full rounded-[64px] bg-slate-200 dark:bg-white/5 border border-border/50" />
+      <div className="aspect-video w-full rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-8">
           <div className="h-16 w-3/4 bg-slate-200 dark:bg-white/5 rounded-3xl" />
           <div className="h-8 w-1/4 bg-slate-200 dark:bg-white/5 rounded-xl" />
         </div>
-        <div className="h-96 bg-slate-200 dark:bg-white/5 rounded-[48px]" />
+        <div className="h-96 bg-slate-200 dark:bg-white/5 rounded-2xl" />
       </div>
     </div>
   );
@@ -68,12 +69,13 @@ export default function VideoPage() {
   const [video, setVideo] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [duration, setDuration] = useState(0);
   const [adminMode, setAdminMode] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [user, authLoading]);
+    if (!authLoading && !user) router.replace("/login");
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (video?.title) {
@@ -83,18 +85,25 @@ export default function VideoPage() {
 
   useEffect(() => {
     if (!user) return;
+    setFetchError(null);
     Promise.all([
       fetch(`/api/videos/${id}`).then((r) => r.json()),
       authFetch(`/api/videos/${id}/quiz`).then((r) => r.json()),
       authFetch(`/api/watch-history`).then((r) => r.json()),
-    ]).then(([videoData, quizData, historyData]) => {
-      const myProgress = Array.isArray(historyData)
-        ? historyData.find((h) => h.video?._id === id || h.video === id)
-        : null;
-      setVideo({ ...videoData, watchProgress: myProgress });
-      setQuiz(quizData);
-      setLoading(false);
-    });
+    ])
+      .then(([videoData, quizData, historyData]) => {
+        const myProgress = Array.isArray(historyData)
+          ? historyData.find((h) => h.video?._id === id || h.video === id)
+          : null;
+        setVideo({ ...videoData, watchProgress: myProgress });
+        setQuiz(quizData);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setFetchError(err.message || "Failed to load video");
+        setLoading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user]);
 
   useWatchProgress({
@@ -121,44 +130,59 @@ export default function VideoPage() {
   }, [video, user, id, authFetch]);
 
   if (authLoading || loading) return <VideoSkeleton />;
+
+  if (fetchError) return (
+    <PageContainer>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6">
+        <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+          <AlertCircle className="w-10 h-10" aria-hidden="true" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-text-1">Could Not Load Video</h2>
+          <p className="text-sm text-text-3">{fetchError}</p>
+        </div>
+        <button
+          onClick={() => { setLoading(true); setFetchError(null); }}
+          className="px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        >
+          Retry
+        </button>
+      </div>
+    </PageContainer>
+  );
+
   if (!video || video.error) return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center space-y-10">
-      <div className="relative">
-         <div className="w-40 h-40 rounded-[48px] bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
-           <AlertCircle className="w-20 h-20" />
-         </div>
-         <motion.div 
-           animate={{ rotate: 360 }}
-           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-           className="absolute -inset-4 border border-indigo-500/20 rounded-full border-dashed"
-         />
+    <PageContainer>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-8">
+        <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3">
+          <AlertCircle className="w-10 h-10" aria-hidden="true" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-text-1">Video Not Found</h2>
+          <p className="text-sm font-medium text-text-3">Access Denied or Video Offline</p>
+        </div>
+        <Link href="/explore" className="flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
+          Browse Content
+        </Link>
       </div>
-      <div className="space-y-4">
-        <h2 className="text-4xl font-bold text-text-1 tracking-tighter">Video Not Found</h2>
-        <p className="text-text-3 font-bold uppercase tracking-widest text-[10px]">Access Denied or Video Offline</p>
-      </div>
-      <Link href="/explore" className="group flex items-center gap-4 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-bold text-[12px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
-        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        Go Back
-      </Link>
-    </div>
+    </PageContainer>
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8">
-
+    <PageContainer>
       {/* ── Video Player ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
         transition={springConfig}
-        className="relative aspect-video w-full rounded-[64px] overflow-hidden bg-slate-950 shadow-3xl ring-1 ring-white/10"
+        className="relative aspect-video w-full rounded-3xl overflow-hidden bg-slate-950 border border-border"
       >
         <video
           ref={videoRef}
           src={getCdnUrl(video.videoUrl)}
           controls
-          className="w-full h-full shadow-inner"
+          className="w-full h-full"
           preload="metadata"
           poster={getCdnUrl(video.thumbnailUrl || "")}
           onLoadedMetadata={(e) => {
@@ -168,77 +192,71 @@ export default function VideoPage() {
             }
           }}
         />
-        <div className="absolute top-8 left-8 p-1.5 px-4 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white text-[9px] font-bold uppercase tracking-widest pointer-events-none">
-           Video Player
-        </div>
       </motion.div>
 
       {/* ── Lesson Content ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-16">
-        <div className="xl:col-span-2 space-y-12">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 mt-8">
+        <div className="xl:col-span-2 space-y-10">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-3">
-                 <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20">
-                    <Database className="w-3.5 h-3.5" />
+                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-500/20">
+                    <Database className="w-4 h-4" />
                     {video.subject || "Lesson"}
                  </div>
                  {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
-                   <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] border border-amber-500/20 animate-pulse">
-                      <Zap className="w-3.5 h-3.5 fill-current" />
+                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-100 dark:border-amber-500/20">
+                      <Zap className="w-4 h-4" />
                       Featured
                    </div>
                  )}
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-text-1 tracking-tighter leading-tight">
+              <h1 className="text-3xl md:text-4xl font-bold text-text-1 leading-tight">
                 {video.title}
               </h1>
             </div>
 
-            <div className="flex items-center gap-6 justify-between border-b border-border/50 pb-10 pt-4">
-              <Link href={`/profile/${video.uploader?.firebaseUid}`} className="flex items-center gap-5 group">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-y border-border py-6">
+              <Link href={`/profile/${video.uploader?.firebaseUid}`} className="flex items-center gap-4 group">
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-[28px] overflow-hidden border border-border shadow-2xl transition-transform group-hover:scale-105 active:scale-95">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-border">
                     {video.uploader?.image ? (
                       <img src={video.uploader.image} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 font-bold text-lg">
+                      <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-text-2 font-bold text-lg">
                         {video.uploader?.name?.[0]}
                       </div>
                     )}
                   </div>
-                  <div className="absolute -bottom-1 -right-1">
-                     <ShieldCheck className="w-5 h-5 text-indigo-500 fill-white dark:fill-slate-950" />
-                  </div>
                 </div>
                 <div>
-                  <p className="text-[15px] font-bold text-text-1 group-hover:text-indigo-500 transition-colors tracking-tight">
+                  <p className="text-sm font-bold text-text-1 group-hover:text-indigo-500 transition-colors">
                     {video.uploader?.name}
                   </p>
-                  <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">Course Instructor</p>
+                  <p className="text-xs text-text-3 font-medium mt-0.5">Course Instructor</p>
                 </div>
               </Link>
 
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-xl leading-none">
+                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-lg">
                     <Activity className="w-4 h-4 text-emerald-500" />
                     {video.views} 
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-text-3 opacity-40">Views</span>
+                  <span className="text-xs font-medium text-text-3">Views</span>
                 </div>
-                <div className="w-px h-10 bg-border/50" />
+                <div className="w-px h-8 bg-border" />
                 <div className="text-right">
-                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-xl leading-none">
+                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-lg">
                     <Calendar className="w-4 h-4 text-indigo-500" />
                     {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-text-3 opacity-40">Posted On</span>
+                  <span className="text-xs font-medium text-text-3">Posted On</span>
                 </div>
               </div>
             </div>
@@ -251,13 +269,13 @@ export default function VideoPage() {
             transition={{ delay: 0.2 }}
             className="flex items-center gap-4 flex-wrap"
           >
-            <div className="p-2 px-6 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border flex items-center gap-4 shadow-sm hover:border-indigo-500/30 transition-all group">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-text-3 group-hover:text-indigo-500 transition-colors">Likes</span>
-              <div className="w-px h-6 bg-border/50" />
+            <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-border flex items-center gap-4">
+              <span className="text-xs font-bold text-text-2">Likes</span>
+              <div className="w-px h-4 bg-border" />
               <LikeBookmarkBar item={video} type="video" />
             </div>
             
-            <div className="p-1 px-2 rounded-[32px] bg-slate-50 dark:bg-white/5 border border-border shadow-sm hover:border-indigo-500/30 transition-all">
+            <div className="px-2 py-1 rounded-xl bg-white dark:bg-slate-900 border border-border">
                <AddToCollection videoId={id} />
             </div>
 
@@ -271,10 +289,10 @@ export default function VideoPage() {
                 />
                 <button 
                   onClick={() => setAdminMode(!adminMode)}
-                  className={`px-6 py-2.5 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                     adminMode 
-                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xl" 
-                      : "bg-white dark:bg-white/5 border-border text-text-3 hover:text-indigo-500 hover:border-indigo-500/50"
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent" 
+                      : "bg-white dark:bg-slate-900 border-border text-text-2 hover:bg-slate-50 dark:hover:bg-white/5"
                   }`}
                 >
                   {adminMode ? "Close Settings" : "Edit Video"}
@@ -293,21 +311,17 @@ export default function VideoPage() {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[56px] shadow-2xl relative group overflow-hidden"
+              className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
             >
-              <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all">
-                 <Terminal className="w-24 h-24" />
-              </div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                    <Archive className="w-5 h-5" />
                 </div>
-                <div className="flex flex-col">
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Information</span>
-                   <span className="text-lg font-bold text-text-1">Description</span>
+                <div>
+                   <h2 className="text-lg font-bold text-text-1">Description</h2>
                 </div>
               </div>
-              <p className="text-[16px] font-medium text-text-2 leading-relaxed whitespace-pre-line opacity-90">{video.description}</p>
+              <p className="text-sm font-medium text-text-2 leading-relaxed whitespace-pre-line">{video.description}</p>
             </motion.div>
           )}
 
@@ -317,16 +331,14 @@ export default function VideoPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[56px] shadow-2xl relative overflow-hidden"
+              className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
             >
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-[80px]" />
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-14 h-14 rounded-[28px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-xl">
-                  <Target className="w-7 h-7" />
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-text-1 flex items-center justify-center">
+                  <Target className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-text-1 tracking-tighter">Video Chapters</h2>
-                  <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">Video Sections</p>
+                  <h2 className="text-lg font-bold text-text-1">Video Chapters</h2>
                 </div>
               </div>
               <ChapterList
@@ -344,17 +356,15 @@ export default function VideoPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-indigo-500/20 p-8 md:p-12 rounded-[40px] md:rounded-[56px] shadow-2l relative group overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-8"
+                className="bg-indigo-50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/20 p-6 md:p-8 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-6"
               >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -z-10 transition-transform duration-1000 group-hover:scale-150" />
-                
-                <div className="flex items-center gap-5 md:gap-6">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-[24px] md:rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30 shrink-0">
-                    <Zap className="w-7 h-7 md:w-8 md:h-8 fill-current" />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500 text-white flex items-center justify-center shrink-0">
+                    <Zap className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-text-1 tracking-tighter">Video Knowledge Quiz</h2>
-                    <p className="text-[10px] md:text-[11px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-70">
+                    <h2 className="text-lg font-bold text-text-1">Video Knowledge Quiz</h2>
+                    <p className="text-sm font-medium text-text-3 mt-1">
                       {quiz?.exists 
                         ? (quiz.attempted ? "Review your performance" : "Test your knowledge & earn credits") 
                         : "No quiz available currently"}
@@ -365,10 +375,10 @@ export default function VideoPage() {
                 <div className="flex items-center">
                   <Link 
                     href={`/videos/${id}/quiz`} 
-                    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 md:px-10 py-4 md:py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[20px] md:rounded-[28px] font-black text-[11px] uppercase tracking-widest shadow-2xl hover:scale-[1.03] active:scale-[0.97] transition-all group/btn"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
                   >
                     {quiz?.exists ? (quiz.attempted ? "View Results" : "Take the Quiz") : (video?.uploader?.firebaseUid === user?.uid ? "Create Quiz Module" : "View Quiz Portal")}
-                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
               </motion.div>
@@ -380,23 +390,21 @@ export default function VideoPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-[64px] shadow-3xl"
+            className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
           >
-            <div className="flex items-center justify-between mb-10 px-4">
-               <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-3">
                   <Activity className="w-5 h-5 text-indigo-500" />
-                  <span className="text-xl font-bold text-text-1 tracking-tight">Comments</span>
+                  <span className="text-lg font-bold text-text-1">Comments</span>
                </div>
-               <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-40">Real-time</span>
             </div>
             <Comments videoId={id} />
           </motion.div>
         </div>
 
         {/* Sidebar Space: Settings & Management */}
-        <div className="space-y-12">
+        <div className="space-y-8">
           
-
           {/* Chapter Manager (Admin Only) */}
           <AnimatePresence>
             {adminMode && video?.uploader?.firebaseUid === user?.uid && (
@@ -404,16 +412,15 @@ export default function VideoPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-indigo-500/30 p-10 rounded-[56px] shadow-2xl relative group overflow-hidden"
+                className="bg-white dark:bg-slate-900 border border-indigo-500/30 p-6 rounded-3xl"
               >
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl group-hover:scale-150 transition-transform" />
-                <div className="flex items-center gap-5 mb-10">
-                  <div className="w-14 h-14 rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-xl">
-                    <Monitor className="w-7 h-7" />
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                    <Monitor className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-text-1 tracking-tighter">Dashboard</h2>
-                    <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">
+                    <h2 className="text-base font-bold text-text-1">Dashboard</h2>
+                    <p className="text-xs font-medium text-text-3">
                       Manage Chapters
                     </p>
                   </div>
@@ -426,24 +433,8 @@ export default function VideoPage() {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Navigation Controls */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="flex justify-center"
-          >
-            <button 
-              onClick={() => router.back()}
-              className="group flex items-center gap-5 px-10 py-5 rounded-[32px] bg-slate-50 dark:bg-white/5 text-text-2 border border-border text-[11px] font-bold uppercase tracking-widest hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 transition-all active:scale-95 shadow-xl"
-            >
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              Go Back
-            </button>
-          </motion.div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -64,15 +64,20 @@ export default function CreditsPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/login");
-  }, [user, authLoading]);
+    if (!authLoading && !user) router.replace("/login");
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!user) return;
     setLoading(true);
     authFetch(`/api/credits?page=${page}`)
-      .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); });
+      .then((r) => {
+        if (!r.ok) throw new Error(`Failed to load credits (${r.status})`);
+        return r.json();
+      })
+      .then((d) => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, page]);
 
   return (
@@ -87,13 +92,13 @@ export default function CreditsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
              <Trophy className="w-4 h-4 text-amber-500" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Account History</span>
+             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500">Account History</span>
           </div>
-          <h1 className="text-4xl font-black text-text-1 tracking-tighter sm:text-5xl">Credit History</h1>
+          <h1 className="text-4xl font-bold text-text-1 tracking-tighter sm:text-5xl">Credit History</h1>
           <p className="text-text-2 text-lg font-medium">A record of your earnings and spending.</p>
         </div>
         
-        <div className="w-16 h-16 rounded-[24px] bg-slate-100 dark:bg-white/5 border border-border flex items-center justify-center text-text-1">
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border border-border flex items-center justify-center text-text-1">
            <History className="w-8 h-8 opacity-20" />
         </div>
       </div>
@@ -102,12 +107,12 @@ export default function CreditsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <motion.div 
           whileHover={{ scale: 1.02 }}
-          className="relative bg-text-1 text-bg p-8 rounded-[40px] shadow-2xl overflow-hidden group"
+          className="relative bg-text-1 text-bg p-8 rounded-3xl shadow-2xl overflow-hidden group"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -translate-y-12 translate-x-12" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 mb-2">Total Credits Earned</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-60 mb-2">Total Credits Earned</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-black tracking-tighter">{data?.totalEarned || 0}</span>
+            <span className="text-5xl font-bold tracking-tighter">{data?.totalEarned || 0}</span>
             <span className="text-sm font-bold opacity-60 uppercase tracking-widest text-indigo-400">Credits</span>
           </div>
           <div className="mt-8 flex items-center gap-2 text-[11px] font-bold text-indigo-400">
@@ -118,11 +123,11 @@ export default function CreditsPage() {
 
         <motion.div 
           whileHover={{ scale: 1.02 }}
-          className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-8 rounded-[40px] shadow-lg shadow-slate-900/5 group"
+          className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-8 rounded-3xl shadow-lg shadow-slate-900/5 group"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-3 mb-2">Total Transactions</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-text-3 mb-2">Total Transactions</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-black tracking-tighter text-text-1">{data?.total || 0}</span>
+            <span className="text-5xl font-bold tracking-tighter text-text-1">{data?.total || 0}</span>
             <span className="text-sm font-bold text-text-3 uppercase tracking-widest">Transactions</span>
           </div>
           <div className="mt-8 flex items-center gap-2 text-[11px] font-bold text-text-2">
@@ -134,10 +139,10 @@ export default function CreditsPage() {
 
       {/* Transaction Feed */}
       <div className="space-y-6">
-        <h3 className="text-sm font-black text-text-1 uppercase tracking-[0.2em] ml-2">Recent Transactions</h3>
+        <h3 className="text-sm font-bold text-text-1 uppercase tracking-[0.2em] ml-2">Recent Transactions</h3>
         
         {loading ? <SkeletonRows /> : data?.transactions.length === 0 ? (
-          <div className="text-center py-32 rounded-[48px] border border-dashed border-border bg-slate-50/50 dark:bg-white/5">
+          <div className="text-center py-32 rounded-3xl border border-dashed border-border bg-slate-50/50 dark:bg-white/5">
             <Gem className="w-16 h-16 text-text-3 mx-auto mb-6 opacity-20" />
             <h2 className="text-xl font-bold text-text-1">No Transactions Yet</h2>
             <p className="text-text-3 mt-2 font-medium">Start learning and sharing to earn your first credits.</p>
@@ -163,20 +168,20 @@ export default function CreditsPage() {
                     visible: { opacity: 1, x: 0 }
                   }}
                   whileHover={{ x: 5, backgroundColor: "var(--surface-2)" }}
-                  className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border border-border px-6 py-5 rounded-[28px] flex items-center gap-5 transition-all group"
+                  className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm border border-border px-6 py-5 rounded-2xl flex items-center gap-5 transition-all group"
                 >
                   {/* Category Visual */}
-                  <div className={`w-12 h-12 rounded-[20px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 ${meta.color}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 ${meta.color}`}>
                     <Icon className="w-6 h-6" />
                   </div>
 
                   {/* Core Intel */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-text-1 truncate tracking-tight uppercase">
+                    <p className="text-sm font-bold text-text-1 truncate tracking-tight uppercase">
                       {t.description || meta.label}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-text-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-text-3">
                         {meta.label}
                       </span>
                       <div className="w-1 h-1 rounded-full bg-border" />
@@ -185,7 +190,7 @@ export default function CreditsPage() {
                   </div>
 
                   {/* Quantitative Metric */}
-                  <div className={`text-lg font-black tracking-tighter shrink-0 ${t.amount > 0 ? "text-emerald-500" : "text-red-500"}`}>
+                  <div className={`text-lg font-bold tracking-tighter shrink-0 ${t.amount > 0 ? "text-emerald-500" : "text-red-500"}`}>
                     <span className="text-xs uppercase mr-0.5 tracking-tighter">{t.amount > 0 ? "+" : ""}</span>
                     {t.amount}
                     <span className="text-[10px] ml-1 opacity-60 tracking-wider">CR</span>
@@ -202,16 +207,16 @@ export default function CreditsPage() {
             <button 
               onClick={() => setPage((p) => Math.max(1, p - 1))} 
               disabled={page === 1}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border text-[13px] font-black text-text-2 disabled:opacity-30 hover:bg-surface-2 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border text-[13px] font-bold text-text-2 disabled:opacity-30 hover:bg-surface-2 transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
               Previous
             </button>
-            <span className="text-[11px] font-black text-text-3 uppercase tracking-[0.2em]">Page {page} / {data.pages}</span>
+            <span className="text-[11px] font-bold text-text-3 uppercase tracking-[0.2em]">Page {page} / {data.pages}</span>
             <button 
               onClick={() => setPage((p) => Math.min(data.pages, p + 1))} 
               disabled={page === data.pages}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border text-[13px] font-black text-text-2 disabled:opacity-30 hover:bg-surface-2 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border text-[13px] font-bold text-text-2 disabled:opacity-30 hover:bg-surface-2 transition-all"
             >
               Next
               <ChevronRight className="w-4 h-4" />

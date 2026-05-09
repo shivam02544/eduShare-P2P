@@ -21,7 +21,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 5 boosts per hour per IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "boost"), limit: 5, windowMs: 60 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "boost"), limit: 5, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

@@ -82,18 +82,18 @@ export default function CreateSessionPage() {
       >
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500">Live Session</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Live Session</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">Status: Ready</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-text-3">Status: Ready</span>
           </div>
-          <h1 className="text-2xl font-black text-text-1 tracking-tight">
+          <h1 className="text-2xl font-bold text-text-1 tracking-tight">
             Schedule <span className="text-rose-500">Session</span>
           </h1>
         </div>
 
         <button 
           onClick={() => router.back()}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-text-1 transition-all"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[10px] font-bold uppercase tracking-widest text-text-3 hover:text-text-1 transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
           Cancel
@@ -109,45 +109,45 @@ export default function CreateSessionPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={springConfig}
             onSubmit={handleSubmit}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-[48px] shadow-3xl space-y-8"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-10 rounded-3xl shadow-3xl space-y-8"
           >
             {/* Session Identity */}
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Session Title</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-text-3 ml-1">Session Title</label>
               <input 
                 type="text" 
                 placeholder="Enter session title..." 
                 required
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-base font-black text-text-1 placeholder:opacity-30 focus:border-rose-500 transition-all outline-none"
+                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-sm font-bold text-text-1 placeholder:opacity-30 focus:border-rose-500 transition-all outline-none"
               />
             </div>
 
             {/* Config Matrix */}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Subject Area</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-text-3 ml-1">Subject Area</label>
                 <select 
                   value={form.subject} 
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-sm font-black text-text-1 focus:border-rose-500 transition-all outline-none cursor-pointer appearance-none"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-sm font-bold text-text-1 focus:border-rose-500 transition-all outline-none cursor-pointer appearance-none"
                 >
                   {SUBJECTS.map((s) => <option key={s} className="bg-slate-900 text-white">{s}</option>)}
                 </select>
               </div>
               <div className="space-y-3">
-                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Stream Status</label>
+                 <label className="text-[10px] font-bold uppercase tracking-widest text-text-3 ml-1">Stream Status</label>
                  <div className="w-full bg-rose-500/5 border border-rose-500/10 rounded-3xl px-6 py-4 flex items-center gap-3">
                     <Signal className="w-5 h-5 text-rose-500 animate-pulse" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Live Stream</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Live Stream</span>
                  </div>
               </div>
             </div>
 
             {/* Intelligence Summary */}
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1">Session Description</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-text-3 ml-1">Session Description</label>
               <textarea 
                 placeholder="Describe what students will learn..." 
                 rows={3}
@@ -161,7 +161,7 @@ export default function CreateSessionPage() {
             {/* Temporal Matrix */}
             <div className="grid grid-cols-2 gap-4 pt-2">
                <div className="space-y-2">
-                  <div className="flex items-center gap-2 ml-1 text-[9px] font-black uppercase tracking-widest text-text-3">
+                  <div className="flex items-center gap-2 ml-1 text-[10px] font-bold uppercase tracking-widest text-text-3">
                      <Calendar className="w-3 h-3" />
                      Session Date
                   </div>
@@ -170,11 +170,11 @@ export default function CreateSessionPage() {
                     required
                     value={form.date}
                     onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-5 py-3 text-sm font-black text-text-1 outline-none"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-5 py-3 text-sm font-bold text-text-1 outline-none"
                   />
                </div>
                <div className="space-y-2">
-                  <div className="flex items-center gap-2 ml-1 text-[9px] font-black uppercase tracking-widest text-text-3">
+                  <div className="flex items-center gap-2 ml-1 text-[10px] font-bold uppercase tracking-widest text-text-3">
                      <Clock className="w-3 h-3" />
                      Session Time
                   </div>
@@ -183,14 +183,14 @@ export default function CreateSessionPage() {
                     required
                     value={form.time}
                     onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-5 py-3 text-sm font-black text-text-1 outline-none"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-5 py-3 text-sm font-bold text-text-1 outline-none"
                   />
                </div>
             </div>
 
             {/* Launch Path */}
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 ml-1 flex items-center gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-text-3 ml-1 flex items-center gap-2">
                 <LinkIcon className="w-3 h-3 text-rose-500" />
                 Meeting Link (URL)
               </label>
@@ -200,7 +200,7 @@ export default function CreateSessionPage() {
                 required
                 value={form.meetingLink}
                 onChange={(e) => setForm({ ...form, meetingLink: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-base font-black text-text-1 placeholder:opacity-30 focus:border-rose-500 transition-all outline-none"
+                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-4 text-sm font-bold text-text-1 placeholder:opacity-30 focus:border-rose-500 transition-all outline-none"
               />
             </div>
 
@@ -209,17 +209,17 @@ export default function CreateSessionPage() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="group relative w-full overflow-hidden rounded-[32px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-6 flex flex-col items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                className="group relative w-full overflow-hidden rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-6 flex flex-col items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-8 h-8 animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">Starting Session...</p>
+                    <p className="text-xs font-bold uppercase tracking-wider">Starting Session...</p>
                   </>
                 ) : (
                   <>
                     <Radio className="w-8 h-8 group-hover:scale-125 transition-transform" />
-                    <p className="text-[11px] font-black uppercase tracking-[0.4em] mt-1">Start Session</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mt-1">Start Session</p>
                   </>
                 )}
                 <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-rose-500/10 rounded-full blur-[60px] -z-0" />
@@ -236,27 +236,27 @@ export default function CreateSessionPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] p-10 shadow-3xl space-y-8"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-3xl p-10 shadow-3xl space-y-8"
           >
              <div className="flex items-center gap-4">
-               <div className="w-16 h-16 rounded-[24px] bg-rose-500 flex items-center justify-center text-white shadow-2xl">
+               <div className="w-16 h-16 rounded-2xl bg-rose-500 flex items-center justify-center text-white shadow-2xl">
                   <Zap className="w-8 h-8" />
                </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-black text-text-1">Session Rewards</h3>
+                  <h3 className="text-sm font-bold text-text-1">Session Rewards</h3>
                   <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit">
                     <Sparkles className="w-3 h-3 text-rose-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-rose-500">Tier 1: Global</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Tier 1: Global</span>
                   </div>
                </div>
              </div>
 
-             <div className="bg-slate-50 dark:bg-white/5 border border-border rounded-[32px] p-6 space-y-4">
+             <div className="bg-slate-50 dark:bg-white/5 border border-border rounded-3xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-text-3">Reward Per Student</p>
-                   <p className="text-sm font-black text-emerald-500">+10 Credits</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-text-3">Reward Per Student</p>
+                   <p className="text-sm font-bold text-emerald-500">+10 Credits</p>
                 </div>
-                <p className="text-[11px] font-medium text-text-3 leading-relaxed">
+                <p className="text-xs font-medium text-text-3 leading-relaxed">
                    You will earn 10 credits for every student that joins your session live.
                 </p>
              </div>
@@ -264,7 +264,7 @@ export default function CreateSessionPage() {
              <div className="pt-2">
                 <div className="flex items-center gap-3 text-text-3">
                    <Info className="w-4 h-4 text-rose-500" />
-                   <p className="text-[10px] font-black uppercase tracking-widest">Active Verification Required</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest">Active Verification Required</p>
                 </div>
              </div>
           </motion.div>
@@ -274,7 +274,7 @@ export default function CreateSessionPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="group relative aspect-video rounded-[48px] border border-border bg-slate-900 overflow-hidden shadow-2xl"
+            className="group relative aspect-video rounded-3xl border border-border bg-slate-900 overflow-hidden shadow-2xl"
           >
              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-40 group-hover:scale-110 transition-transform duration-700" />
              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
@@ -283,14 +283,14 @@ export default function CreateSessionPage() {
                    <Video className="w-6 h-6" />
                 </div>
                 <div className="text-center">
-                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Camera Preview</p>
-                   <p className="text-[8px] font-medium text-white/60 uppercase tracking-widest mt-1">Camera Offline</p>
+                   <p className="text-xs font-bold uppercase tracking-wider text-white">Camera Preview</p>
+                   <p className="text-[10px] font-medium text-white/60 uppercase tracking-widest mt-1">Camera Offline</p>
                 </div>
              </div>
              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                   <span className="text-[8px] font-black uppercase tracking-widest text-white/80">System: Online</span>
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">System: Online</span>
                 </div>
              </div>
           </motion.div>

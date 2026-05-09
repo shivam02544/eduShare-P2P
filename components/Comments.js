@@ -50,7 +50,7 @@ function CommentItem({ comment, currentUserId, authFetch, onDelete, index }) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Protocol Confirmation: Purge this interaction node?")) return;
+    if (!window.confirm("Delete this comment? This action cannot be undone.")) return;
     setDeleting(true);
     await authFetch(`/api/comments/${comment._id}`, { method: "DELETE" });
     onDelete(comment._id);
@@ -105,11 +105,13 @@ function CommentItem({ comment, currentUserId, authFetch, onDelete, index }) {
         <div className="flex items-center gap-5 px-2">
           <button 
             onClick={handleLike}
-            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all italic ${
+            aria-pressed={liked}
+            aria-label={liked ? `Unlike comment – ${likes} likes` : `Like comment – ${likes} likes`}
+            className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${
               liked ? "text-rose-500" : "text-text-3 hover:text-rose-500"
-            }`}
+            } focus-visible:outline-none focus-visible:underline`}
           >
-            <Heart className={`w-3.5 h-3.5 ${liked ? "fill-current scale-110" : ""}`} />
+            <Heart className={`w-3.5 h-3.5 ${liked ? "fill-current scale-110" : ""}`} aria-hidden="true" />
             {likes > 0 && <span>{likes} Reactions</span>}
           </button>
 
@@ -117,9 +119,11 @@ function CommentItem({ comment, currentUserId, authFetch, onDelete, index }) {
             <button 
               onClick={handleDelete} 
               disabled={deleting}
-              className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 hover:text-rose-500 transition-colors disabled:opacity-50 italic"
+              aria-label="Delete comment"
+              aria-busy={deleting}
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3 hover:text-rose-500 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:underline"
             >
-              {deleting ? "Purging..." : "Purge node"}
+              {deleting ? "Deleting…" : "Delete"}
             </button>
           ) : (
             <ReportButton contentType="comment" contentId={comment._id} compact />
@@ -176,14 +180,14 @@ export default function Comments({ videoId }) {
   return (
     <div className="space-y-10">
       
-      {/* HUD Header */}
+      {/* Comments Header */}
       <div className="flex items-center justify-between px-2">
-        <h2 className="text-xl font-black text-text-1 tracking-tight italic flex items-center gap-3">
-          <MessageSquare className="w-5 h-5 text-indigo-500" />
-          Pulse Interaction
-          <span className="text-[10px] font-black text-text-3 uppercase tracking-[0.3em] ml-2 italic">({comments.length} Nodes)</span>
+        <h2 className="text-xl font-bold text-text-1 tracking-tight flex items-center gap-3">
+          <MessageSquare className="w-5 h-5 text-indigo-500" aria-hidden="true" />
+          Comments
+          <span className="text-[10px] font-bold text-text-3 uppercase tracking-[0.3em] ml-2">({comments.length})</span>
         </h2>
-        <div className="h-px flex-1 mx-6 bg-border opacity-50" />
+        <div className="h-px flex-1 mx-6 bg-border opacity-50" aria-hidden="true" />
       </div>
 
       {/* Input Hub */}
@@ -203,44 +207,50 @@ export default function Comments({ videoId }) {
              )}
           </div>
           <div className="flex-1 space-y-4">
+            <label htmlFor="comment-input" className="sr-only">Write a comment</label>
             <textarea
+              id="comment-input"
               ref={textareaRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handlePost(e); }}}
-              placeholder="Materialize your perspective... (Shift+Enter for newline)"
+              placeholder="Share your thoughts… (Shift+Enter for new line)"
               rows={2}
               maxLength={1000}
-              className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-sm font-black text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none italic resize-none"
+              aria-label="Write a comment"
+              aria-describedby="comment-char-count"
+              className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl px-6 py-4 text-sm font-medium text-text-1 placeholder:opacity-30 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none"
             />
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-widest text-text-3 italic">{text.length} / 1000 Symbols</span>
+              <span id="comment-char-count" className="text-[10px] font-medium uppercase tracking-widest text-text-3" aria-live="polite" aria-atomic="true">{text.length} / 1000</span>
               <button 
                 onClick={handlePost}
                 disabled={!text.trim() || posting}
-                className="group flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl italic disabled:opacity-30"
+                aria-disabled={!text.trim() || posting}
+                aria-busy={posting}
+                aria-label={posting ? "Posting comment…" : "Post comment"}
+                className="group flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-8 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
-                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
-                Project Perspective
+                {posting ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" aria-hidden="true" />}
+                {posting ? "Posting…" : "Post"}
               </button>
             </div>
           </div>
         </motion.div>
       ) : (
-        <div className="bg-slate-50 dark:bg-white/5 border border-dashed border-border rounded-[32px] p-8 text-center space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 italic">Identify yourself to join the pulse stream</p>
+        <div className="bg-slate-50 dark:bg-white/5 border border-dashed border-border rounded-3xl p-8 text-center space-y-4">
+          <p className="text-sm font-medium text-text-3">Sign in to join the discussion</p>
           <Link 
             href="/login" 
-            className="inline-flex items-center gap-3 bg-indigo-500 text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:shadow-lg shadow-indigo-500/30 transition-all italic"
+            className="inline-flex items-center gap-3 bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold text-sm hover:bg-indigo-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
-            Authenticate Profile
-            <ChevronRight className="w-4 h-4 font-black" />
+            Sign In
           </Link>
         </div>
       )}
 
-      {/* interaction Stream */}
-      <div className="space-y-8 relative">
+      {/* Comment Stream */}
+      <div className="space-y-8 relative" aria-live="polite" aria-label="Comments">
         <div className="absolute left-5 top-0 bottom-0 w-px bg-border group-hover:bg-indigo-500/20 transition-colors" />
         
         <AnimatePresence mode="popLayout">

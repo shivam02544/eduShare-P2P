@@ -43,7 +43,7 @@ export default function QuizPage() {
   if (authLoading || loading) return (
     <div className="max-w-[1440px] mx-auto space-y-12 animate-pulse pb-32 px-5 md:px-8 mt-10">
       <div className="h-12 w-1/3 bg-slate-200 dark:bg-white/5 rounded-3xl" />
-      <div className="h-96 w-full bg-slate-200 dark:bg-white/5 rounded-[48px]" />
+      <div className="h-96 w-full bg-slate-200 dark:bg-white/5 rounded-3xl" />
     </div>
   );
 
@@ -68,12 +68,12 @@ export default function QuizPage() {
           <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/10 group-hover:scale-105 transition-all">
              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
           </div>
-          <span className="text-sm font-black uppercase tracking-widest italic">Back to Lesson</span>
+          <span className="text-sm font-bold uppercase tracking-widest italic">Back to Lesson</span>
         </Link>
         <div className="flex items-center gap-4">
            <div className="h-10 px-4 rounded-xl border border-border flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
              <Target className="w-4 h-4 text-indigo-500" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-text-2 truncate max-w-[150px] md:max-w-[300px]">
+             <span className="text-[10px] font-bold uppercase tracking-widest text-text-2 truncate max-w-[150px] md:max-w-[300px]">
                {video.title}
              </span>
            </div>
@@ -85,14 +85,14 @@ export default function QuizPage() {
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-6 md:p-14 rounded-[32px] md:rounded-[56px] shadow-2l relative group overflow-hidden"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-6 md:p-14 rounded-3xl shadow-sm relative group overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -z-10 transition-transform duration-1000 group-hover:scale-150" />
             
             <div className="space-y-10 md:space-y-12">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                 <div className="flex items-center gap-5 md:gap-6">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-[24px] md:rounded-[28px] bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/30">
                     <Zap className="w-7 h-7 md:w-8 md:h-8 fill-current" />
                   </div>
                   <div>
@@ -120,7 +120,7 @@ export default function QuizPage() {
                   {video?.uploader?.firebaseUid === user?.uid && (
                     <button 
                       onClick={() => setAdminMode(!adminMode)}
-                      className={`px-6 py-3 rounded-2xl border text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all ${
+                      className={`px-6 py-3 rounded-2xl border text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-all ${
                         adminMode 
                           ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent shadow-xl" 
                           : "bg-white dark:bg-white/5 border-border text-text-3 hover:text-indigo-500 hover:border-indigo-500/50"
@@ -160,7 +160,7 @@ export default function QuizPage() {
                   >
                       <div className="flex items-center gap-3 mb-6 md:mb-8 text-text-3 opacity-60 bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-border w-fit">
                         <Cpu className="w-4 h-4 text-indigo-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">Instructor Build Mode Active</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Instructor Build Mode Active</span>
                       </div>
                       <QuizBuilder
                       videoId={id}

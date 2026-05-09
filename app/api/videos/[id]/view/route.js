@@ -10,7 +10,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 30 video views per hour per IP — prevents bot inflation
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "video-view"), limit: 30, windowMs: 60 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "video-view"), limit: 30, windowMs: 60 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

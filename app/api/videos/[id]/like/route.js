@@ -10,7 +10,7 @@ export const POST = apiHandler(async (ctx) => {
 
   // 60 likes per 10 minutes per IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "like"), limit: 60, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "like"), limit: 60, windowMs: 10 * 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
 
   try {

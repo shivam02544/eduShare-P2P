@@ -16,7 +16,7 @@ export const GET = apiHandler(async (ctx) => {
   
   // 20 searches per minute per IP — search is expensive (regex on DB)
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: buildKey(ip, "search"), limit: 20, windowMs: 60_000 });
+  const rl = await rateLimit({ key: buildKey(ip, "search"), limit: 20, windowMs: 60_000 });
   if (!rl.allowed) return rateLimitResponse(rl.resetIn);
   
   const { searchParams } = new URL(req.url);
