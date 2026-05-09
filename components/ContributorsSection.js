@@ -72,34 +72,29 @@ const CONTRIBUTORS = [
   },
 ];
 
+import SectionHeader from "./layouts/SectionHeader";
+import ResponsiveGrid from "./layouts/ResponsiveGrid";
+
+// ... [RANK_STYLES and CONTRIBUTORS constants remain] ...
+
 export default function ContributorsSection() {
   return (
     <section className="max-w-7xl mx-auto px-6">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-12 h-px bg-amber-500/30" />
-            <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em]">
-              Community
-            </p>
-            <div className="w-12 h-px bg-amber-500/30" />
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter">
-            Top Contributors
-          </h2>
-          <p className="text-sm text-text-2 font-medium max-w-md leading-relaxed">
-            Meet the students powering the EduShare community — earning credits by sharing knowledge.
-          </p>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+        <SectionHeader 
+          title="Top Contributors"
+          description="Meet the students powering the EduShare community — earning credits by sharing knowledge."
+          badge="Community"
+        />
 
         <Link
           href="/leaderboard"
-          className="group inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-[11px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all shrink-0"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-amber-500/20 bg-amber-500/5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors shrink-0"
         >
-          <Trophy className="w-3.5 h-3.5" />
+          <Trophy className="w-4 h-4" />
           Full Leaderboard
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
 
@@ -109,94 +104,95 @@ export default function ContributorsSection() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.05, margin: "-10px" }}
         variants={containerVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-8"
       >
-        {CONTRIBUTORS.map((c, i) => {
-          const rank = RANK_STYLES[i];
-          return (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              whileHover={{ y: -10, scale: 1.02 }}
-              transition={springConfig}
-              className={`group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border rounded-[24px] md:rounded-[40px] p-6 md:p-8 shadow-sm hover:shadow-2xl ${rank.glow} transition-all overflow-hidden`}
-            >
-              {/* Background texture */}
-              <div className="absolute -top-16 -right-16 w-40 h-40 bg-surface-2 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity" />
+        <ResponsiveGrid columns={3}>
+          {CONTRIBUTORS.map((c, i) => {
+            const rank = RANK_STYLES[i];
+            return (
+              <motion.div
+                key={i}
+                variants={itemVariants}
+                whileHover={{ y: -4 }}
+                transition={springConfig}
+                className={`group relative bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg ${rank.glow} transition-all overflow-hidden`}
+              >
+                {/* Background texture */}
+                <div className="absolute -top-16 -right-16 w-32 h-32 bg-slate-50 dark:bg-slate-800 rounded-full opacity-50 transition-opacity" />
 
-              {/* Rank badge */}
-              <div className="relative z-10 space-y-7">
-                <div className="flex items-start justify-between">
-                  {/* Avatar */}
-                  <div className="relative">
+                {/* Rank badge */}
+                <div className="relative z-10 space-y-6">
+                  <div className="flex items-start justify-between">
+                    {/* Avatar */}
+                    <div className="relative">
+                      <div
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-md ring-2 ${rank.ringColor} ${c.avatarBg} transition-transform group-hover:scale-105 duration-300`}
+                      >
+                        {c.avatar}
+                      </div>
+                      {/* Online dot */}
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
+                        <ShieldCheck className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    </div>
+
+                    {/* Rank pill */}
                     <div
-                      className={`w-16 h-16 rounded-[20px] flex items-center justify-center text-xl font-black text-white shadow-xl ring-4 ${rank.ringColor} ${c.avatarBg} transition-transform group-hover:scale-110 duration-500`}
+                      className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-sm ${rank.badgeBg} ${rank.badgeText}`}
                     >
-                      {c.avatar}
-                    </div>
-                    {/* Online dot */}
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
-                      <ShieldCheck className="w-2.5 h-2.5 text-white" />
+                      {rank.label}
                     </div>
                   </div>
 
-                  {/* Rank pill */}
-                  <div
-                    className={`px-3 py-1.5 rounded-2xl text-[11px] font-black tracking-wider shadow-lg ${rank.badgeBg} ${rank.badgeText}`}
-                  >
-                    {rank.label}
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="space-y-1">
-                  <p className="text-lg font-black text-text-1 tracking-tight group-hover:text-indigo-500 transition-colors">
-                    {c.name}
-                  </p>
-                  <p className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em] opacity-70">
-                    {c.role}
-                  </p>
-                </div>
-
-                {/* Quote */}
-                <p className="text-sm font-semibold text-text-2 leading-relaxed italic opacity-80 line-clamp-2">
-                  "{c.quote}"
-                </p>
-
-                {/* Subjects */}
-                <div className="flex flex-wrap gap-2">
-                  {c.subjects.map((s) => (
-                    <span
-                      key={s}
-                      className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-white/5 border border-border text-[9px] font-black uppercase tracking-widest text-text-3"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Stats row */}
-                <div className="flex items-center justify-between pt-5 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                    <span className="text-lg font-black text-text-1 tracking-tighter">
-                      {c.credits.toLocaleString()}
-                    </span>
-                    <span className="text-[9px] font-black text-text-3 uppercase tracking-widest">
-                      Credits
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-black text-text-1 tracking-tighter">{c.uploads}</p>
-                    <p className="text-[9px] font-black text-text-3 uppercase tracking-widest">
-                      Uploads
+                  {/* Info */}
+                  <div className="space-y-1">
+                    <p className="text-base font-bold text-text-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {c.name}
+                    </p>
+                    <p className="text-xs font-semibold text-text-3">
+                      {c.role}
                     </p>
                   </div>
+
+                  {/* Quote */}
+                  <p className="text-sm font-medium text-text-2 leading-relaxed opacity-80 line-clamp-2">
+                    "{c.quote}"
+                  </p>
+
+                  {/* Subjects */}
+                  <div className="flex flex-wrap gap-2">
+                    {c.subjects.map((s) => (
+                      <span
+                        key={s}
+                        className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-border text-xs font-semibold text-text-3"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="flex items-center justify-between pt-5 border-t border-border/50">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="text-base font-bold text-text-1">
+                        {c.credits.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] font-semibold text-text-3 uppercase tracking-wider">
+                        Credits
+                      </span>
+                    </div>
+                    <div className="text-right flex items-center gap-2">
+                      <p className="text-base font-bold text-text-1">{c.uploads}</p>
+                      <p className="text-[10px] font-semibold text-text-3 uppercase tracking-wider">
+                        Uploads
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
+        </ResponsiveGrid>
       </motion.div>
     </section>
   );

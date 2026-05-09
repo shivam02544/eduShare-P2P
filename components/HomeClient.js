@@ -116,11 +116,11 @@ export default function HomeClient() {
         <div className="text-center mb-20 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-           <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">What We Offer</p>
+           <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">What We Offer</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Everything You Need to Learn</h2>
-          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Everything You Need to Learn</h2>
+          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed">
             A frictionless learning ecosystem engineered for the next generation of scholars.
           </p>
         </div>
@@ -135,22 +135,21 @@ export default function HomeClient() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm hover:shadow-2xl transition-all"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="group relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-8 rounded-3xl shadow-sm hover:shadow-lg transition-all"
               >
-                <div className="absolute -top-10 -right-10 w-24 h-24 bg-surface-2 rounded-full blur-2xl group-hover:scale-150 transition-all opacity-20" />
                 
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border border-border/50 ${f.bg} ${f.color} shadow-inner`}>
-                  <Icon className="w-6 h-6 stroke-[2.5px]" />
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border border-border/50 ${f.bg} ${f.color}`}>
+                  <Icon className="w-6 h-6 stroke-[2px]" />
                 </div>
                 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 text-[9px] font-black uppercase tracking-widest text-text-3 mb-4 italic">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-border/50 text-[9px] font-bold uppercase tracking-widest text-text-3 mb-4">
                   <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
                   {f.tag}
                 </div>
                 
-                <h3 className="text-lg font-black text-text-1 tracking-tight mb-3 italic group-hover:text-indigo-500 transition-colors">{f.title}</h3>
-                <p className="text-xs font-semibold text-text-2 leading-relaxed italic opacity-80">{f.desc}</p>
+                <h3 className="text-lg font-bold text-text-1 tracking-tight mb-3 group-hover:text-indigo-500 transition-colors">{f.title}</h3>
+                <p className="text-sm text-text-2 leading-relaxed">{f.desc}</p>
                 
                 <div className="pt-6 flex justify-end">
                    <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 border border-border flex items-center justify-center text-text-3 group-hover:bg-indigo-500 group-hover:text-white transition-all">
@@ -165,16 +164,16 @@ export default function HomeClient() {
 
       {/* ── Synchronization Sequence: How it works ── */}
       <section className="relative overflow-hidden py-10">
-        <div className="absolute top-1/2 left-0 w-full h-[500px] bg-indigo-500/5 -translate-y-1/2 blur-[120px] -z-10" />
+        <div className="absolute top-0 left-0 w-full h-full bg-slate-50/50 dark:bg-white/[0.02] -z-10" />
         
-        <div className="text-center mb-20 space-y-4">
+        <div className="text-center mb-16 space-y-4">
            <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">How It Works</p>
+             <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">How It Works</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Getting Started is Simple</h2>
-          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed italic">
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Getting Started is Simple</h2>
+          <p className="text-sm md:text-base text-text-2 font-medium max-w-xl mx-auto leading-relaxed">
             From sign-up to sharing — go from zero to contributing in just minutes.
           </p>
         </div>
@@ -189,18 +188,18 @@ export default function HomeClient() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15 }}
-                className="relative bg-white/40 dark:bg-white/[0.02] border border-border p-6 md:p-10 rounded-[24px] md:rounded-[48px] backdrop-blur-md group hover:bg-white dark:hover:bg-white/5 transition-all"
+                className="relative bg-white border border-border p-6 md:p-8 rounded-3xl group hover:bg-slate-50 dark:bg-slate-900/50 dark:hover:bg-slate-900 transition-all"
               >
-                <div className="absolute -top-4 -right-4 text-[120px] font-black leading-none select-none opacity-[0.03] group-hover:opacity-[0.08] transition-all text-text-1">
+                <div className="absolute -top-2 -right-2 text-[100px] font-black leading-none select-none opacity-[0.03] text-text-1">
                   {s.n}
                 </div>
                 
-                <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center mb-8 border border-border bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/5 ${s.color}`}>
-                  <Icon className="w-7 h-7" />
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 border border-border bg-slate-50 dark:bg-slate-800 ${s.color}`}>
+                  <Icon className="w-6 h-6" />
                 </div>
                 
-                <h3 className="text-xl font-black text-text-1 tracking-tight mb-4 italic">{s.title}</h3>
-                <p className="text-sm font-semibold text-text-2 leading-relaxed italic opacity-70 italic">{s.desc}</p>
+                <h3 className="text-xl font-bold text-text-1 tracking-tight mb-3">{s.title}</h3>
+                <p className="text-sm text-text-2 leading-relaxed opacity-90">{s.desc}</p>
                 
                 {i < syncSequence.length - 1 && (
                   <div className="absolute top-1/2 -right-4 translate-x-full hidden md:block opacity-20 group-hover:opacity-100 group-hover:-translate-x-1 transition-all">
@@ -218,10 +217,10 @@ export default function HomeClient() {
         <div className="text-center mb-16 space-y-4">
           <div className="flex items-center justify-center gap-2 mb-2">
              <div className="w-12 h-px bg-indigo-500/20" />
-             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] italic">Student Stories</p>
+             <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Student Stories</p>
              <div className="w-12 h-px bg-indigo-500/20" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tighter italic">Loved by Students</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Loved by Students</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
@@ -232,28 +231,27 @@ export default function HomeClient() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-10 rounded-[24px] md:rounded-[48px] shadow-sm relative group hover:shadow-3xl transition-all"
+              className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-8 rounded-3xl shadow-sm relative group hover:shadow-md transition-all"
             >
-              <div className="flex gap-1 mb-8">
+              <div className="flex gap-1 mb-6">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 text-amber-500 fill-current" />
                 ))}
               </div>
               
               <div className="relative mb-8">
-                <p className="text-lg font-black text-text-1 leading-relaxed italic relative z-10 line-clamp-4">
+                <p className="text-base font-medium text-text-1 leading-relaxed relative z-10 line-clamp-4">
                   "{t.text}"
                 </p>
-                <div className="absolute -top-4 -left-4 w-12 h-12 bg-indigo-500/10 rounded-full blur-xl group-hover:scale-150 transition-all" />
               </div>
               
               <div className="flex items-center gap-4 pt-6 border-t border-border/50">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-black text-white shrink-0 shadow-lg ${t.color}`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm ${t.color}`}>
                   {t.avatar}
                 </div>
                 <div>
-                  <p className="text-sm font-black text-text-1 italic">{t.name}</p>
-                  <p className="text-[10px] font-black text-text-3 uppercase tracking-widest italic opacity-60">{t.role}</p>
+                  <p className="text-sm font-bold text-text-1">{t.name}</p>
+                  <p className="text-[10px] font-bold text-text-3 uppercase tracking-widest opacity-80">{t.role}</p>
                 </div>
                 <div className="ml-auto">
                    <ShieldCheck className="w-5 h-5 text-indigo-500 opacity-30" />
@@ -266,25 +264,25 @@ export default function HomeClient() {
 
       {/* ── Global Call to Action: Final Polish ── */}
       <section className="px-6 text-center max-w-4xl mx-auto space-y-12">
-         <div className="space-y-6">
-            <Sparkles className="w-12 h-12 text-indigo-500 mx-auto animate-pulse" />
-            <h2 className="text-4xl md:text-6xl font-black text-text-1 tracking-tighter italic">Start Learning Together.</h2>
-            <p className="text-lg text-text-2 font-medium italic leading-relaxed">
+         <div className="space-y-4">
+            <Sparkles className="w-10 h-10 text-indigo-500 mx-auto" />
+            <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight">Start Learning Together.</h2>
+            <p className="text-base text-text-2 font-medium leading-relaxed">
               Join thousands of students sharing and discovering knowledge on EduShare.
             </p>
          </div>
          
          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link href="/register" className="group relative w-full sm:w-auto px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[32px] font-black text-[13px] uppercase tracking-[0.3em] italic hover:scale-105 active:scale-95 transition-all shadow-3xl">
+            <Link href="/register" className="group relative w-full sm:w-auto px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-[13px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg">
               Get Started Free
               <ArrowRight className="w-4 h-4 ml-2 inline group-hover:translate-x-1 transition-transform" />
             </Link>
             <div className="flex items-center gap-6">
                <div className="h-px w-8 bg-border" />
-               <span className="text-[10px] font-black text-text-3 uppercase tracking-[0.2em] italic">or</span>
+               <span className="text-[10px] font-bold text-text-3 uppercase tracking-widest">or</span>
                <div className="h-px w-8 bg-border" />
             </div>
-            <Link href="/login" className="text-[13px] font-black uppercase tracking-[0.3em] text-text-2 hover:text-indigo-500 transition-colors italic">
+            <Link href="/login" className="text-[13px] font-bold uppercase tracking-widest text-text-2 hover:text-indigo-500 transition-colors">
               Sign In
             </Link>
          </div>

@@ -96,53 +96,101 @@ export default function Navbar() {
       <header className="sticky top-0 z-[100] hidden lg:block select-none">
         <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-border/50 shadow-sm transition-colors duration-500" />
         
-        <div className="relative max-w-[1440px] mx-auto px-8 h-[72px] flex items-center gap-6">
+        <div className="relative max-w-[1440px] mx-auto px-4 xl:px-8 h-[72px] flex items-center justify-between gap-3 xl:gap-6">
           {/* Logo: Mission Control Brand */}
-          <Link href="/" className="flex items-center gap-4 mr-8 group">
+          <Link href="/" className="flex items-center gap-2 xl:gap-4 shrink-0">
             <motion.div 
               whileHover={{ scale: 1.05, rotate: -5 }}
               transition={springConfig}
-              className="w-11 h-11 rounded-[14px] flex items-center justify-center shadow-2xl shadow-indigo-500/30 bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+              className="w-10 h-10 xl:w-11 xl:h-11 rounded-[12px] xl:rounded-[14px] flex items-center justify-center shadow-2xl shadow-indigo-500/30 bg-slate-900 dark:bg-white text-white dark:text-slate-900"
             >
-              <Command className="w-5 h-5" />
+              <Command className="w-4 h-4 xl:w-5 xl:h-5" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight text-text-1 leading-none">EduShare</span>
-              <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1 pl-0.5">Peer Learning</span>
+              <span className="font-bold text-base xl:text-lg tracking-tight text-text-1 leading-none">EduShare</span>
+              <span className="text-[7px] xl:text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-1 pl-0.5">Peer Learning</span>
             </div>
           </Link>
 
           {/* Primary Navigation */}
-          <nav className="flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border/50">
-            {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].map((l) => {
-              const Icon = l.icon;
-              const active = isActive(l.href);
-              return (
-                <Link key={l.href} href={l.href} className="relative px-5 py-2 group overflow-hidden">
-                  <div className={`flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${
-                    active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
-                  }`}>
-                    <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
-                    {l.label}
-                  </div>
-                  {active && (
-                    <motion.div 
-                      layoutId="nav-glow"
-                      className="absolute inset-0 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-border/30 -z-10"
-                      transition={springConfig}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+          <nav className="flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border/50 shrink-0">
+            {/* Desktop (xl) - Show All */}
+            <div className="hidden xl:flex items-center gap-1">
+              {[...MISSION_NAV, ...(user ? AUTH_ALIGNED : [])].map((l) => {
+                const Icon = l.icon;
+                const active = isActive(l.href);
+                return (
+                  <Link key={l.href} href={l.href} className="relative px-3 py-1.5 group shrink-0 rounded-xl overflow-hidden">
+                    <div className={`flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors ${
+                      active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
+                    }`}>
+                      <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
+                      {l.label}
+                    </div>
+                    {active && (
+                      <motion.div 
+                        layoutId="nav-glow-xl"
+                        className="absolute inset-0 bg-white dark:bg-slate-900 shadow-sm border border-border/30 rounded-xl -z-10"
+                        transition={springConfig}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Laptop (lg) - Adaptive Layout */}
+            <div className="hidden lg:flex xl:hidden items-center gap-1">
+              {[...MISSION_NAV].slice(0, 3).map((l) => {
+                const Icon = l.icon;
+                const active = isActive(l.href);
+                return (
+                  <Link key={l.href} href={l.href} className="relative px-3 py-1.5 group shrink-0 rounded-xl overflow-hidden">
+                    <div className={`flex items-center gap-2 text-xs font-semibold whitespace-nowrap transition-colors ${
+                      active ? "text-indigo-600 dark:text-indigo-400" : "text-text-3 group-hover:text-text-1"
+                    }`}>
+                      <Icon className={`w-3.5 h-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
+                      {l.label}
+                    </div>
+                    {active && (
+                      <motion.div 
+                        layoutId="nav-glow-lg"
+                        className="absolute inset-0 bg-white dark:bg-slate-900 shadow-sm border border-border/30 rounded-xl -z-10"
+                        transition={springConfig}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+              
+              {/* "More" Dropdown for remaining items on lg */}
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-text-3 hover:text-text-1 transition-colors">
+                  <Menu className="w-3.5 h-3.5 opacity-50" />
+                  More
+                </button>
+                <div className="absolute top-full left-0 mt-2 w-48 py-2 rounded-xl bg-white dark:bg-slate-900 border border-border shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                   {[...MISSION_NAV.slice(3), ...(user ? AUTH_ALIGNED : [])].map((l) => {
+                      const Icon = l.icon;
+                      const active = isActive(l.href);
+                      return (
+                        <Link key={l.href} href={l.href} className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${active ? "text-indigo-600" : "text-text-2"}`}>
+                           <Icon className="w-3.5 h-3.5 opacity-50" />
+                           {l.label}
+                        </Link>
+                      )
+                   })}
+                </div>
+              </div>
+            </div>
           </nav>
 
-          <div className="flex-1" />
+          <div className="flex-1 min-w-[24px]" />
 
           {/* Actions & Core Interfacing */}
-          <div className="flex items-center gap-4 min-w-0">
+          <div className="flex items-center gap-2 xl:gap-4 min-w-0 shrink-0">
             {user && (
-              <div className="flex-1 max-w-[320px] min-w-[40px] transition-all duration-500">
+              <div className="flex-none w-[150px] xl:flex-1 xl:max-w-[320px] transition-all duration-500">
                 <SearchBar />
               </div>
             )}
@@ -173,31 +221,30 @@ export default function Navbar() {
                         : "bg-white dark:bg-white/5 border-border/50 hover:bg-slate-50 dark:hover:bg-white/10"
                     }`}
                   >
-                    <div className="relative">
+                    <div className="relative shrink-0">
                        {user.photoURL ? (
-                         <img src={user.photoURL} alt="" className="w-8 h-8 rounded-xl object-cover ring-2 ring-indigo-500/20" />
+                         <img src={user.photoURL} alt="" className="w-7 h-7 xl:w-8 xl:h-8 rounded-xl object-cover ring-2 ring-indigo-500/20" />
                        ) : (
-                         <div className="w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-[10px] font-black text-white">
+                         <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-[10px] font-black text-white">
                            {initials}
                          </div>
                        )}
-                       <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                       <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 xl:w-3 xl:h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest hidden lg:block">User Account</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-500 ${dropOpen ? "rotate-180" : ""}`} />
+                    <span className="text-[9px] xl:text-[10px] font-bold uppercase tracking-widest hidden xl:block whitespace-nowrap">User Account</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-500 ${dropOpen ? "rotate-180" : ""}`} />
                   </motion.button>
 
                   <AnimatePresence>
                     {dropOpen && (
                       <motion.div 
-                        initial={{ opacity: 0, y: 15, scale: 0.95, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                        exit={{ opacity: 0, y: 15, scale: 0.95, filter: "blur(10px)" }}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={springConfig}
-                        className="absolute right-0 mt-4 w-72 rounded-[32px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-border shadow-3xl overflow-hidden z-[100] p-3 ring-1 ring-border/50"
+                        className="absolute right-0 mt-4 w-72 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-border shadow-2xl overflow-hidden z-[100] p-3 ring-1 ring-border/50"
                       >
-                        <div className="px-5 py-6 mb-3 bg-slate-50 dark:bg-white/5 rounded-[24px] border border-border/50 relative overflow-hidden group/profile">
-                          <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl transition-all group/profile:scale-150" />
+                        <div className="px-5 py-6 mb-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-border/50 relative overflow-hidden group/profile">
                           <p className="text-[11px] font-bold text-text-3 uppercase tracking-widest mb-1">User Profile</p>
                           <p className="text-sm font-bold text-text-1 truncate tracking-tight">{user.displayName || "Student"}</p>
                           <p className="text-[9px] text-text-3 truncate font-bold uppercase tracking-widest mt-2 opacity-50">{user.email}</p>
@@ -243,11 +290,11 @@ export default function Navbar() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 pl-4">
-                <Link href="/login" className="text-[11px] font-black uppercase tracking-[0.3em] text-text-2 hover:text-text-1 px-6 py-3 transition-colors">Log in</Link>
-                <Link href="/register" className="relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.03] active:scale-[0.97] transition-all shadow-2xl">
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Zap className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1 xl:gap-2 pl-2 xl:pl-4 shrink-0">
+                <Link href="/login" className="text-[9px] xl:text-[11px] font-black uppercase tracking-[0.2em] xl:tracking-[0.3em] text-text-2 hover:text-text-1 px-3 xl:px-6 py-2 xl:py-3 transition-colors whitespace-nowrap">Log in</Link>
+                <Link href="/register" className="relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 xl:px-8 py-2.5 xl:py-3.5 rounded-[12px] xl:rounded-2xl text-[9px] xl:text-[11px] font-black uppercase tracking-[0.2em] xl:tracking-[0.3em] hover:scale-[1.03] active:scale-[0.97] transition-all shadow-xl xl:shadow-2xl whitespace-nowrap">
+                  <span className="relative z-10 flex items-center gap-1.5 xl:gap-2">
+                    <Zap className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
                     Join Now
                   </span>
                 </Link>

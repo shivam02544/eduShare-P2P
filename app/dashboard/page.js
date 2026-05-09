@@ -45,14 +45,18 @@ const QUICK_ACTIONS = [
   { href: "/explore", icon: Compass, label: "Explore", desc: "Browse resources", color: "text-amber-500", bg: "bg-amber-500/10" },
 ];
 
+import PageContainer from "@/components/layouts/PageContainer";
+import SectionHeader from "@/components/layouts/SectionHeader";
+import ResponsiveGrid from "@/components/layouts/ResponsiveGrid";
+
 function DashSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-pulse pb-24">
-      <div className="h-64 rounded-[48px] bg-slate-200 dark:bg-white/5" />
+    <PageContainer className="animate-pulse">
+      <div className="h-64 rounded-3xl bg-slate-200 dark:bg-white/5" />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {Array(6).fill(0).map((_, i) => <div key={i} className="h-32 rounded-[32px] bg-slate-200 dark:bg-white/5" />)}
+        {Array(6).fill(0).map((_, i) => <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-white/5" />)}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -92,132 +96,129 @@ export default function DashboardPage() {
   const firstName = user.displayName?.split(" ")[0] || "there";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 md:space-y-10 pb-32 px-4 md:px-6 lg:px-0">
+    <PageContainer>
       
       {/* ── Welcome Stage ── */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="relative overflow-hidden rounded-[32px] md:rounded-[48px] p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-3xl"
+        className="relative overflow-hidden rounded-3xl p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-slate-800 text-white shadow-xl"
       >
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
           <div className="flex items-center gap-4 md:gap-8">
             <div className="relative">
               {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-24 h-24 rounded-[32px] object-cover ring-4 ring-white/20 dark:ring-indigo-500/10 shadow-2xl" />
+                <img src={user.photoURL} alt="" className="w-24 h-24 rounded-2xl object-cover ring-2 ring-white/20 shadow-lg" />
               ) : (
-                <div className="w-24 h-24 rounded-[32px] bg-white/10 dark:bg-indigo-500/10 flex items-center justify-center text-4xl font-black border border-white/20">
+                <div className="w-24 h-24 rounded-2xl bg-white/10 flex items-center justify-center text-4xl font-bold border border-white/20">
                   {firstName[0].toUpperCase()}
                 </div>
               )}
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-xl border-4 border-slate-900 dark:border-white">
-                 <Zap className="w-5 h-5" />
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-white shadow-md border-2 border-slate-900">
+                 <Zap className="w-4 h-4" />
               </div>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <LayoutDashboard className="w-5 h-5 opacity-40" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">My Dashboard</span>
+              <div className="flex items-center gap-2 text-indigo-300">
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-widest">My Dashboard</span>
               </div>
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tighter leading-tight">
-                Welcome back, <span className="opacity-60">{firstName}</span>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+                Welcome back, <span className="opacity-80">{firstName}</span>
               </h1>
-              <p className="text-sm font-medium opacity-50 tracking-tight">{user.email}</p>
+              <p className="text-sm font-medium opacity-70">{user.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 md:gap-10 px-6 md:px-10 py-5 md:py-8 rounded-[28px] md:rounded-[40px] bg-white/5 dark:bg-slate-500/5 border border-white/10 dark:border-slate-900/5 backdrop-blur-md shadow-inner">
-             <div className="text-center space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Total Credits</p>
-               <div className="flex items-center justify-center gap-3">
-                 <TrendingUp className="w-6 h-6 text-emerald-400" />
-                 <p className="text-2xl md:text-4xl font-black tracking-tighter">{stats.credits ?? 0}</p>
+          <div className="flex items-center gap-6 px-6 py-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md shadow-inner">
+             <div className="text-center space-y-1">
+               <p className="text-xs font-bold uppercase tracking-widest opacity-70">Total Credits</p>
+               <div className="flex items-center justify-center gap-2">
+                 <TrendingUp className="w-5 h-5 text-emerald-400" />
+                 <p className="text-2xl md:text-3xl font-bold tracking-tight">{stats.credits ?? 0}</p>
                </div>
              </div>
-             <div className="w-px h-12 bg-white/10" />
+             <div className="w-px h-10 bg-white/10" />
              <div className="text-center group cursor-help">
-               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white mx-auto mb-2 transition-transform group-hover:rotate-12">
-                 <Sparkles className="w-6 h-6" />
+               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white mx-auto mb-1 transition-transform group-hover:scale-110">
+                 <Sparkles className="w-5 h-5" />
                </div>
-               <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Platform Level 4</p>
+               <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">Level 4</p>
              </div>
           </div>
         </div>
       </motion.div>
 
       {/* ── Dashboard Statistics ── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
+      <ResponsiveGrid columns={6}>
         {STATS.map((s, i) => (
           <motion.div
             key={s.key}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...springConfig, delay: i * 0.05 }}
-            className="group relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-border p-4 md:p-6 rounded-[24px] md:rounded-[32px] shadow-sm hover:shadow-2xl transition-all hover:-translate-y-2"
+            className="group bg-white dark:bg-slate-900 border border-border p-5 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
           >
-            <div className={`w-12 h-12 rounded-[18px] ${s.bg} ${s.color} flex items-center justify-center mb-6 transition-transform group-hover:scale-110`}>
-              <s.icon className="w-6 h-6" />
+            <div className={`w-10 h-10 rounded-xl ${s.bg} ${s.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-105`}>
+              <s.icon className="w-5 h-5" />
             </div>
-            <p className="text-xl md:text-3xl font-black text-text-1 tracking-tighter leading-none mb-1">
+            <p className="text-2xl md:text-3xl font-bold text-text-1 tracking-tight leading-none mb-1">
               {stats[s.key] ?? 0}
             </p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3 opacity-60">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-3">
               {s.label}
             </p>
           </motion.div>
         ))}
-      </div>
+      </ResponsiveGrid>
 
-      <div className="grid lg:grid-cols-12 gap-10">
+      <div className="grid lg:grid-cols-12 gap-8">
         
         {/* ── Content Stream (Left) ── */}
-        <div className="lg:col-span-8 space-y-10">
+        <div className="lg:col-span-8 space-y-8">
           
           {/* Continue Learning Selection */}
           {continueWatching.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-indigo-500" />
-                  <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-text-1">Continue Learning</h2>
-                </div>
-                <Link href="/history" className="text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-indigo-500 transition-colors">
-                  Watch History →
+                <SectionHeader title="Continue Learning" className="!space-y-1" />
+                <Link href="/history" className="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors">
+                  Watch History &rarr;
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {continueWatching.map((h, i) => {
                   const pct = h.durationSeconds > 0 ? Math.min(100, Math.round((h.progressSeconds / h.durationSeconds) * 100)) : 0;
                   return (
                     <motion.div
                       key={h._id}
                       whileHover={{ scale: 1.02 }}
-                      className="group relative overflow-hidden bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border rounded-3xl"
+                      className="group bg-white dark:bg-slate-900 border border-border rounded-2xl overflow-hidden shadow-sm"
                     >
                       <Link href={`/videos/${h.video._id}`}>
-                        <div className="relative aspect-video bg-slate-100 dark:bg-white/5 overflow-hidden">
+                        <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
                           {h.video.thumbnailUrl ? (
-                            <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          ) : <div className="w-full h-full flex items-center justify-center text-2xl">🎥</div>}
-                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-colors duration-500" />
+                            <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : <div className="w-full h-full flex items-center justify-center text-xl text-slate-400"><Video className="w-8 h-8" /></div>}
+                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300" />
                         </div>
-                        <div className="p-4 space-y-3">
-                          <p className="text-sm font-black text-text-1 leading-tight line-clamp-1">{h.video.title}</p>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-[10px] font-black text-text-3 uppercase">
-                               <span>{pct}% Complete</span>
+                        <div className="p-4 space-y-2">
+                          <p className="text-sm font-bold text-text-1 leading-tight line-clamp-1">{h.video.title}</p>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs font-semibold text-text-3">
+                               <span>{pct}%</span>
                                <span>{h.video.uploader?.name}</span>
                             </div>
-                            <div className="h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden shadow-inner font-black">
-                               <div className="h-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.5)] transition-all duration-1000" style={{ width: `${pct}%` }} />
+                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                               <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${pct}%` }} />
                             </div>
                           </div>
                         </div>
@@ -230,73 +231,69 @@ export default function DashboardPage() {
           )}
 
           {/* Activity Overviews — My Content */}
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6">
             {[
               { title: "My Videos", items: recentVideos, icon: Video, type: 'video', uploadHref: '/upload-video' },
               { title: "My Notes", items: recentNotes, icon: FileText, type: 'note', uploadHref: '/upload-notes' },
             ].map((s) => (
-              <div key={s.title} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[28px] md:rounded-[40px] p-5 md:p-8 shadow-sm">
-                <div className="flex items-center justify-between mb-6 md:mb-8">
-                  <div className="flex items-center gap-3">
-                    <s.icon className="w-5 h-5 text-text-3" />
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-text-1">{s.title}</h3>
+              <div key={s.title} className="bg-white dark:bg-slate-900 border border-border rounded-3xl p-6 shadow-sm flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2 text-text-1">
+                    <s.icon className="w-5 h-5 text-indigo-500" />
+                    <h3 className="text-sm font-bold uppercase tracking-wider">{s.title}</h3>
                   </div>
-                  <Link href={`/profile/${user?.uid}`} className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-text-3 hover:text-indigo-500 transition-colors">
+                  <Link href={`/profile/${user?.uid}`} className="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors flex items-center gap-1">
                     View All
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
 
                 {s.items.length === 0 ? (
-                  <div className="text-center py-10 space-y-5">
-                    <div className="w-14 h-14 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-text-3 opacity-30">
-                      <s.icon className="w-7 h-7" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8 space-y-4">
+                    <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
+                      <s.icon className="w-6 h-6" />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-black text-text-1 tracking-tight">No {s.type === 'video' ? 'videos' : 'notes'} yet</p>
-                      <p className="text-[10px] font-medium text-text-3 max-w-[200px] mx-auto">Share your first {s.type === 'video' ? 'video lesson' : 'study notes'} with the community</p>
+                    <div className="space-y-1">
+                      <p className="text-base font-bold text-text-1 tracking-tight">No {s.type === 'video' ? 'videos' : 'notes'} yet</p>
+                      <p className="text-xs font-medium text-text-3 max-w-[200px] mx-auto">Share your first {s.type === 'video' ? 'video lesson' : 'study notes'} with the community</p>
                     </div>
-                    <Link href={s.uploadHref} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform">
-                      <Plus className="w-3.5 h-3.5" />
+                    <Link href={s.uploadHref} className="inline-flex items-center gap-2 px-4 py-2 mt-2 rounded-lg bg-indigo-500 text-white text-xs font-bold shadow-md hover:bg-indigo-600 transition-colors">
+                      <Plus className="w-4 h-4" />
                       Upload {s.type === 'video' ? 'Video' : 'Notes'}
                     </Link>
                   </div>
                 ) : (
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 flex-1">
                     {s.items.map((item) => (
                       <li key={item._id}>
                         <Link 
                           href={s.type === 'video' ? `/videos/${item._id}` : `/notes/${item._id}`}
-                          className="group flex items-center justify-between p-3 md:p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-indigo-500/20 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-pointer"
+                          className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                         >
-                          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             {s.type === 'video' && item.thumbnailUrl ? (
-                              <div className="w-12 h-9 md:w-14 md:h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-white/5 flex-shrink-0">
-                                <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                              <div className="w-12 h-8 rounded shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                               </div>
                             ) : (
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
-                                s.type === 'video' 
-                                  ? 'bg-indigo-500/10 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white' 
-                                  : 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white'
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                s.type === 'video' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500'
                               }`}>
                                 {s.type === 'video' ? <Play className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-[13px] font-black text-text-1 truncate tracking-tight group-hover:text-indigo-500 transition-colors">{item.title}</p>
-                              <p className="text-[10px] font-medium text-text-3 mt-0.5">
-                                {item.subject && <span className="uppercase tracking-wider">{item.subject}</span>}
-                              </p>
+                              <p className="text-sm font-semibold text-text-1 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.title}</p>
+                              {item.subject && (
+                                <p className="text-xs text-text-3 mt-0.5">{item.subject}</p>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 ml-3 shrink-0">
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-text-3 uppercase tracking-tighter opacity-60">
-                                {s.type === 'video' ? `${item.views || 0} views` : `${item.downloads || 0} dl`}
-                              </p>
-                            </div>
-                            <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            <span className="text-xs font-medium text-text-3">
+                              {s.type === 'video' ? `${item.views || 0} views` : `${item.downloads || 0} dl`}
+                            </span>
+                            <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         </Link>
                       </li>
@@ -309,41 +306,43 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Quick Actions (Right) ── */}
-        <div className="lg:col-span-4 space-y-10">
+        <div className="lg:col-span-4 space-y-6">
           
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border rounded-[48px] p-10 shadow-sm space-y-8">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-text-1 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 gap-4">
+          <div className="bg-white dark:bg-slate-900 border border-border rounded-3xl p-6 shadow-sm">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-text-1 mb-4 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-500" />
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 gap-2">
               {QUICK_ACTIONS.map((a) => (
                 <Link key={a.href} href={a.href}
-                  className={`group relative flex items-center gap-6 p-6 rounded-[32px] overflow-hidden transition-all duration-300 border border-transparent hover:border-border hover:bg-white dark:hover:bg-slate-800 shadow-sm hover:shadow-2xl`}
+                  className="group flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <div className={`w-14 h-14 rounded-2xl ${a.bg} ${a.color} flex items-center justify-center transition-transform group-hover:rotate-12`}>
-                    <a.icon className="w-7 h-7" />
+                  <div className={`w-10 h-10 rounded-lg ${a.bg} ${a.color} flex items-center justify-center shrink-0`}>
+                    <a.icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className={`text-[15px] font-black tracking-tight ${a.color}`}>{a.label}</p>
-                    <p className="text-[11px] font-medium text-text-3 mt-0.5">{a.desc}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-text-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{a.label}</p>
+                    <p className="text-xs text-text-3">{a.desc}</p>
                   </div>
-                  <ArrowUpRight className="absolute top-4 right-4 w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-indigo-500 p-10 rounded-[48px] text-white shadow-2xl group">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-3xl -z-0" />
-             <div className="relative z-10 space-y-6">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center border border-white/20">
-                   <Users className="w-6 h-6" />
+          <div className="bg-indigo-600 dark:bg-indigo-500 p-8 rounded-3xl text-white shadow-lg relative overflow-hidden">
+             <div className="relative z-10 space-y-4">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                   <Users className="w-5 h-5" />
                 </div>
-                <div className="space-y-2">
-                   <h4 className="text-2xl font-black tracking-tighter leading-tight">Community Standings</h4>
-                   <p className="text-xs font-medium opacity-70 leading-relaxed">
+                <div>
+                   <h4 className="text-xl font-bold tracking-tight mb-1">Community Standings</h4>
+                   <p className="text-sm text-indigo-100 leading-relaxed">
                      Check the global leaderboard to see how your learning progress compares with other educators.
                    </p>
                 </div>
-                <Link href="/leaderboard" className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest shadow-xl transition-transform hover:scale-105">
+                <Link href="/leaderboard" className="inline-block mt-2 px-5 py-2.5 rounded-lg bg-white text-indigo-600 text-sm font-bold hover:bg-indigo-50 transition-colors">
                    View Leaderboard
                 </Link>
              </div>
@@ -351,7 +350,7 @@ export default function DashboardPage() {
 
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
