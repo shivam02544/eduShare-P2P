@@ -174,7 +174,7 @@ export default function DashboardPage() {
                <div className="w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center mx-auto mb-2 transition-all group-hover/lvl:rotate-6 group-hover/lvl:scale-105 shadow-lg shadow-accent/20 border-2 border-white/20">
                  <Sparkles className="w-6 h-6" />
                </div>
-               <p className="text-[11px] font-bold uppercase tracking-wider text-text-2">Lvl 4</p>
+               <p className="text-[11px] font-bold uppercase tracking-wider text-text-2">Lvl {Math.floor((stats.credits || 0) / 500) + 1}</p>
              </div>
           </div>
         </div>

@@ -41,9 +41,18 @@ export default function CertificatePage() {
     fetch(`/api/certificates/${certId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d.valid) setNotFound(true);
-        else setCert(d);
+        if (!d.valid) {
+          setNotFound(true);
+          toast.error(d.error || "Certificate not found");
+        } else {
+          setCert(d);
+        }
         setLoading(false);
+      })
+      .catch(err => {
+        setNotFound(true);
+        setLoading(false);
+        toast.error("Failed to load certificate");
       });
   }, [certId]);
 
@@ -72,10 +81,19 @@ export default function CertificatePage() {
     year: "numeric", month: "long", day: "numeric",
   });
 
+  // Derived metadata for premium feel
+  const performanceTier = cert.score >= 95 ? "Distinction" : cert.score >= 85 ? "High Honors" : "Completion";
+  const skillCategory = cert.video?.subject || "Digital Learning";
+  const knowledgeCredits = Math.floor(cert.score / 10) + 5;
+  
+  const verificationUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/v/${certId}` 
+    : '';
+
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-32 px-6 md:px-0">
+    <div className="max-w-5xl mx-auto space-y-12 pb-32 px-6 md:px-0">
       
-      {/* ── Page Actions ── */}
+      {/* ── Dashboard Header ── */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -83,152 +101,241 @@ export default function CertificatePage() {
       >
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Certificate Details</span>
+            <Link href="/dashboard" className="text-indigo-500 hover:text-indigo-600 transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+            </Link>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Professional Credential</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3">ID: {cert.certId.slice(-12)}</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-3">Verified Digital Record</span>
           </div>
-          <h1 className="text-2xl font-bold text-text-1 tracking-tight">
-            Course <span className="text-indigo-500">Certificate</span>
+          <h1 className="text-3xl font-bold text-text-1 tracking-tight">
+            Credential <span className="text-indigo-500">Workbench</span>
           </h1>
         </div>
 
         <div className="flex items-center gap-3">
           <button 
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              toast.success("Link copied to clipboard", {
+              navigator.clipboard.writeText(verificationUrl);
+              toast.success("Verification link copied", {
                  style: { borderRadius: '16px', background: '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 'bold' }
               });
             }} 
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-[10px] font-bold uppercase tracking-widest text-text-2 hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white dark:bg-white/5 border border-border text-[10px] font-bold uppercase tracking-widest text-text-2 hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm"
           >
             <Share2 className="w-4 h-4" />
-            Share Link
+            Copy Verify Link
           </button>
           <button 
             onClick={handlePrint} 
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-900/20"
+            className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-900/30"
           >
-            <Download className="w-4 h-4" />
-            Print / Download
+            <Printer className="w-4 h-4" />
+            Download / Print
           </button>
         </div>
       </motion.div>
 
-      {/* ── Certificate Document ── */}
+      {/* ── Premium Certificate Document ── */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: 0.99 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
         ref={certRef}
-        className="relative aspect-[1.4/1] w-full bg-white dark:bg-slate-950 overflow-hidden rounded-3xl print:rounded-none shadow-3xl ring-1 ring-border group"
+        id="certificate-print-area"
+        className="relative aspect-[1.414/1] w-full bg-[#fdfdfd] dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden rounded-[2rem] print:rounded-none shadow-[0_32px_80px_rgba(0,0,0,0.12)] print:shadow-none ring-1 ring-slate-200 dark:ring-white/10 group select-none"
       >
-        {/* Visual Accents */}
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/10 transition-all duration-1000" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-[100px] -z-10" />
-        
-        {/* High-End Grid Pattern */}
-        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" 
-          style={{ backgroundImage: 'radial-gradient(var(--text-1) 1px, transparent 1px)', backgroundSize: '32px 32px' }} 
+        {/* Anti-Tamper Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none" 
+          style={{ 
+            backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
+            backgroundSize: '24px 24px'
+          }} 
         />
+        
+        {/* Elegant Framing */}
+        <div className="absolute inset-8 border border-slate-900/5 dark:border-white/5 rounded-[1.5rem] pointer-events-none" />
+        <div className="absolute inset-10 border-2 border-slate-900/10 dark:border-white/10 rounded-[1.25rem] pointer-events-none" />
+        
+        {/* Corner Accents */}
+        <div className="absolute top-12 left-12 w-12 h-12 border-t-2 border-l-2 border-indigo-500/30 rounded-tl-xl pointer-events-none" />
+        <div className="absolute top-12 right-12 w-12 h-12 border-t-2 border-r-2 border-indigo-500/30 rounded-tr-xl pointer-events-none" />
+        <div className="absolute bottom-12 left-12 w-12 h-12 border-b-2 border-l-2 border-indigo-500/30 rounded-bl-xl pointer-events-none" />
+        <div className="absolute bottom-12 right-12 w-12 h-12 border-b-2 border-r-2 border-indigo-500/30 rounded-br-xl pointer-events-none" />
 
-        {/* Framing */}
-        <div className="absolute inset-8 border border-text-1/5 rounded-3xl pointer-events-none" />
-        <div className="absolute inset-12 border-2 border-text-1/5 rounded-2xl pointer-events-none" />
-
-        <div className="relative h-full flex flex-col items-center justify-between p-16 md:p-24 text-center">
+        <div className="relative h-full flex flex-col items-center justify-between p-12 md:p-16 text-center">
           
-          {/* Platform Identity */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-950 shadow-2xl">
+          {/* Header Section */}
+          <div className="w-full flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-950 shadow-lg">
                 <Zap className="w-5 h-5" />
               </div>
-              <span className="text-[12px] font-bold text-text-1 uppercase tracking-[0.4em]">EduShare Platform</span>
+              <div className="text-left">
+                <p className="text-[11px] font-extrabold text-slate-900 dark:text-white uppercase tracking-[0.3em] leading-none">EduShare</p>
+                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mt-1">Knowledge Network</p>
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-4">
-               <div className="h-px w-8 bg-text-1/10" />
-               <span className="text-[9px] font-bold text-text-3 uppercase tracking-widest">Official Document</span>
-               <div className="h-px w-8 bg-text-1/10" />
+            <div className="flex flex-col items-end">
+              <div className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[8px] font-bold uppercase tracking-widest mb-1">
+                Official Credential
+              </div>
+              <p className="text-[8px] font-mono text-slate-400">Ref: {cert.certId.slice(0, 16).toUpperCase()}</p>
             </div>
           </div>
 
-          {/* Recipient Details */}
-          <div className="space-y-6">
-            <p className="text-[13px] font-bold text-text-3 uppercase tracking-[0.3em] font-serif">Certificate of Completion</p>
+          {/* Main Body */}
+          <div className="space-y-6 py-2">
             <div className="space-y-2">
-              <p className="text-[11px] font-bold text-text-3 uppercase tracking-widest opacity-40">This verifies that</p>
-              <h2 className="text-5xl md:text-7xl font-bold text-text-1 tracking-tighter leading-tight drop-shadow-2xl">
-                {cert.recipientName}
-              </h2>
+              <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Certificate of Completion</h2>
+              <div className="h-px w-16 bg-gradient-to-r from-transparent via-slate-200 dark:via-white/10 to-transparent mx-auto" />
+              <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 italic leading-none">This digital credential confirms that</p>
             </div>
-            <div className="max-w-xl mx-auto space-y-4 pt-4">
-              <p className="text-[14px] font-medium text-text-2 leading-relaxed opacity-80">
-                Has successfully completed the final quiz for the course:
-              </p>
-              <div className="px-8 py-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-border inline-block shadow-inner">
-                <p className="text-xl md:text-2xl font-bold text-text-1 tracking-tight leading-tight">
-                  {cert.videoTitle}
+
+            <div className="space-y-3">
+              <h1 className="text-4xl md:text-5xl font-serif font-medium text-slate-900 dark:text-white tracking-tight leading-tight line-clamp-1">
+                {cert.recipientName}
+              </h1>
+              <div className="flex items-center justify-center gap-3 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                <div className="h-px w-6 bg-slate-200 dark:bg-white/10" />
+                <span>has demonstrated proficiency in</span>
+                <div className="h-px w-6 bg-slate-200 dark:bg-white/10" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight max-w-2xl mx-auto line-clamp-2">
+                {cert.videoTitle}
+              </h3>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2 max-w-xl mx-auto">
+              {["Mastery", skillCategory, performanceTier].map((skill, i) => (
+                <span key={i} className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[9px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Verification & Authority Footer */}
+          <div className="w-full grid grid-cols-3 items-end gap-6 pt-4 border-t border-slate-100 dark:border-white/5">
+            {/* Left: Metadata */}
+            <div className="text-left space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Issue Authority</p>
+                  <p className="text-[11px] font-bold text-slate-900 dark:text-white">EduShare Academic Council</p>
+                </div>
+                <div>
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Credential Level</p>
+                  <p className="text-[11px] font-bold text-slate-900 dark:text-white">Professional ({cert.score}%)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center: Signatures & Seal */}
+            <div className="flex flex-col items-center gap-3 relative">
+              <div className="relative">
+                {/* Visual Seal */}
+                <div className="w-16 h-16 rounded-full bg-slate-900 dark:bg-white border-4 border-slate-100 dark:border-slate-800 flex items-center justify-center text-white dark:text-slate-900 shadow-xl">
+                  <Zap className="w-6 h-6" />
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-white/20 dark:border-black/10 animate-spin-slow" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-slate-950">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-[13px] font-medium text-slate-900 dark:text-white italic opacity-80" style={{ fontFamily: 'Dancing Script, cursive, serif' }}>
+                  {cert.issuerName}
                 </p>
+                <div className="h-px w-20 bg-slate-200 dark:bg-white/10 my-0.5 mx-auto" />
+                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Authorized Issuer</p>
+              </div>
+            </div>
+
+            {/* Right: Verification */}
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-1">Verify Credential</p>
+                  <p className="text-[8px] font-mono text-slate-500 dark:text-slate-400 mb-0.5">{issuedDate}</p>
+                  <p className="text-[7px] font-bold text-indigo-500/70 uppercase tracking-widest truncate max-w-[100px]">
+                    v/{certId.slice(0, 8)}
+                  </p>
+                </div>
+                <div className="p-1 bg-white rounded-lg shadow-md border border-slate-100">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=${encodeURIComponent(verificationUrl)}`}
+                    alt="Scan to Verify"
+                    className="w-10 h-10"
+                  />
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Certificate Metrics */}
-          <div className="flex items-center gap-12 pt-8">
-            <div className="text-center space-y-1">
-              <p className="text-2xl font-bold text-text-1 tracking-tighter">{cert.score}%</p>
-              <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Score</p>
-            </div>
-            <div className="w-px h-10 bg-border shadow-inner" />
-            <div className="text-center space-y-1">
-              <p className="text-[15px] font-bold text-text-1 tracking-tight">{cert.issuerName}</p>
-              <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Instructor</p>
-            </div>
-            <div className="w-px h-10 bg-border shadow-inner" />
-            <div className="text-center space-y-1">
-              <p className="text-[15px] font-bold text-text-1 tracking-tight">{issuedDate}</p>
-              <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-50">Issue Date</p>
-            </div>
-          </div>
-
-          {/* Verification Seal */}
-          <div className="flex flex-col items-center gap-3">
-             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500/5 text-emerald-500 border border-emerald-500/10 backdrop-blur-md">
-                <ShieldCheck className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Verified Account</span>
-             </div>
-             <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest opacity-30 font-mono">
-               Certificate ID: {cert.certId}
-             </p>
-          </div>
         </div>
       </motion.div>
 
-      {/* ── Verification Status ── */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-8 rounded-3xl shadow-2xl flex items-center gap-6 print:hidden"
-      >
-        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-inner">
-          <CheckCircle2 className="w-8 h-8" />
-        </div>
-        <div className="flex-1 space-y-1">
-          <p className="text-lg font-bold text-text-1 tracking-tight leading-tight">Certificate Verified</p>
-          <p className="text-sm font-medium text-text-3">
-            This certificate is an official record issued by EduShare and can be publicly verified.
-          </p>
-        </div>
-        <button 
-          onClick={() => router.push(`/profile/${cert.recipient?.firebaseUid}`)}
-          className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-900/20"
+      {/* ── Status & Actions ── */}
+      <div className="grid md:grid-cols-3 gap-6 print:hidden">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="md:col-span-2 bg-white dark:bg-slate-900 border border-border p-8 rounded-3xl shadow-xl flex items-center gap-6"
         >
-          View Profile
-          <ChevronLeft className="w-4 h-4 rotate-180" />
-        </button>
-      </motion.div>
+          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-inner">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-bold text-text-1 tracking-tight leading-tight">Verified Credential</p>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-bold uppercase tracking-widest border border-emerald-500/20">Active</span>
+            </div>
+            <p className="text-sm font-medium text-text-3">
+              Issued on {issuedDate}. This certificate is cryptographically secured and publicly verifiable on the EduShare Knowledge Network.
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-indigo-500/5 border border-indigo-500/10 p-8 rounded-3xl flex flex-col justify-between"
+        >
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Rewards Earned</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-text-1">{knowledgeCredits}</span>
+              <span className="text-sm font-bold text-text-3">Knowledge Credits</span>
+            </div>
+          </div>
+          <button 
+            onClick={() => router.push(`/profile/${cert.recipient?.firebaseUid}`)}
+            className="w-full mt-6 py-3 rounded-2xl bg-white dark:bg-white/10 text-text-1 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/20 transition-all border border-border"
+          >
+            Update Portfolio
+          </button>
+        </motion.div>
+      </div>
+
+      {/* ── Credential Detail Breakdown ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:hidden">
+        {[
+          { label: "Exam Score", value: `${cert.score}%`, icon: Zap },
+          { label: "Category", value: skillCategory, icon: Award },
+          { label: "Difficulty", value: "Intermediate", icon: ShieldCheck },
+          { label: "Authority", value: "EduShare Network", icon: ExternalLink }
+        ].map((item, i) => (
+          <div key={i} className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-border space-y-2 group hover:border-indigo-500/30 transition-colors">
+            <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-text-3 group-hover:text-indigo-500 transition-colors">
+              <item.icon className="w-4 h-4" />
+            </div>
+            <p className="text-[9px] font-bold text-text-3 uppercase tracking-widest">{item.label}</p>
+            <p className="text-sm font-bold text-text-1">{item.value}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Video from "@/models/Video";
 import User from "@/models/User";
 import { awardCredits } from "@/lib/credits";
 import { createNotification } from "@/lib/notify";
+import { generateCompletion } from "@/lib/ai/groq";
 
 export class QuizError extends Error {
   constructor(message, statusCode) {
@@ -18,10 +19,11 @@ export async function getQuiz(videoId, mongoUserId) {
   if (!quiz) return { exists: false };
 
   // Strip correct answers before sending to client
-  const safeQuestions = quiz.questions.map(({ _id, question, options }) => ({
+  const safeQuestions = quiz.questions.map(({ _id, question, options, explanation }) => ({
     _id,
     question,
     options,
+    explanation, // We can send explanations if we want students to see them after the quiz
   }));
 
   // Check if user already attempted
@@ -35,6 +37,9 @@ export async function getQuiz(videoId, mongoUserId) {
   return {
     exists: true,
     _id: quiz._id,
+    title: quiz.title,
+    topic: quiz.topic,
+    difficulty: quiz.difficulty,
     passingScore: quiz.passingScore,
     questionCount: quiz.questions.length,
     questions: safeQuestions,
@@ -47,17 +52,20 @@ export async function getQuiz(videoId, mongoUserId) {
   };
 }
 
-export async function saveQuiz(videoId, uploaderId, questions, passingScore = 70, isPublished = false) {
-  // Verify ownership
-  const video = await Video.findById(videoId).select("uploader");
-  if (!video) throw new QuizError("Video not found", 404);
-  if (video.uploader.toString() !== uploaderId.toString()) {
-    throw new QuizError("Forbidden", 403);
+export async function saveQuiz(videoId, uploaderId, { questions, title, topic, difficulty, passingScore = 70, isPublished = false, generatedByAI = false }) {
+  // Verify ownership if videoId is provided
+  if (videoId) {
+    const video = await Video.findById(videoId).select("uploader");
+    if (!video) throw new QuizError("Video not found", 404);
+    if (video.uploader.toString() !== uploaderId.toString()) {
+      throw new QuizError("Forbidden", 403);
+    }
   }
 
   // Validate
-  if (!Array.isArray(questions) || questions.length < 1 || questions.length > 10)
-    throw new QuizError("Quiz must have 1–10 questions", 400);
+  if (!title?.trim()) throw new QuizError("Quiz title is required", 400);
+  if (!Array.isArray(questions) || questions.length < 1 || questions.length > 20)
+    throw new QuizError("Quiz must have 1–20 questions", 400);
 
   for (const q of questions) {
     if (!q.question?.trim())
@@ -70,9 +78,21 @@ export async function saveQuiz(videoId, uploaderId, questions, passingScore = 70
       throw new QuizError("All options must be non-empty", 400);
   }
 
+  const query = videoId ? { video: videoId } : { title, uploader: uploaderId };
+  
   const quiz = await Quiz.findOneAndUpdate(
-    { video: videoId },
-    { video: videoId, uploader: uploaderId, questions, passingScore, isPublished },
+    query,
+    { 
+      video: videoId, 
+      uploader: uploaderId, 
+      title, 
+      topic, 
+      difficulty, 
+      questions, 
+      passingScore, 
+      isPublished,
+      generatedByAI
+    },
     { upsert: true, new: true, runValidators: true }
   );
 
@@ -125,6 +145,7 @@ export async function attemptQuiz(userId, userName, videoId, answers) {
     questionId: q._id,
     question: q.question,
     options: q.options,
+    explanation: q.explanation,
     selectedIndex: answers[i],
     correctIndex: q.correctIndex,
     correct: answers[i] === q.correctIndex,
@@ -166,6 +187,19 @@ export async function attemptQuiz(userId, userName, videoId, answers) {
       }),
     ]);
   }
+
+  // ── Adaptive Learning Integration ──
+  // We run this asynchronously to not block the response
+  import("@/services/analytics.service").then(async (analytics) => {
+    try {
+      await Promise.all([
+        analytics.updateTopicMastery(userId, quiz._id, results),
+        analytics.updateLearningStreak(userId)
+      ]);
+    } catch (err) {
+      console.warn("[adaptive-learning] Failed to update analytics:", err.message);
+    }
+  });
 
   // ── Record attempt (unique index prevents duplicates) ──
   try {
@@ -220,88 +254,102 @@ export async function attemptQuiz(userId, userName, videoId, answers) {
 }
 
 const SYSTEM_PROMPT = `
-You are an expert educational AI. 
-Your task is to generate a multiple-choice quiz based on the provided video's Title and Description.
-You MUST output ONLY a pure JSON array containing up to 10 question objects.
-Do NOT enclose the JSON in markdown formatting blocks or provide any extra text.
+You are a senior educational AI specialized in creating high-quality, professional Multiple Choice Questions (MCQs).
+Your task is to generate a quiz based on the provided context.
 
-Data Structure for each object must be EXACLTY:
+CRITICAL RULES:
+1. Output ONLY a JSON object. No markdown, no conversational text.
+2. The JSON must follow this exact structure:
 {
-  "question": "The question text here",
-  "options": [
-    "Option 1",
-    "Option 2",
-    "Option 3",
-    "Option 4"
-  ],
-  "correctIndex": 0 // 0-based integer matching the correct option
+  "title": "A concise, engaging title for the quiz",
+  "topic": "The main subject area",
+  "questions": [
+    {
+      "question": "Clear and pedagogical question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctIndex": 0,
+      "explanation": "A brief explanation of why this answer is correct and why others are wrong."
+    }
+  ]
 }
+3. Generate exactly the number of questions requested.
+4. Ensure options are distinct and plausible (no obvious "joke" answers).
+5. Difficulty should be balanced according to the requested level (easy, medium, hard).
+6. Explanations should be educational and concise.
 `;
 
-export async function generateAiQuiz(videoId, firebaseUid, source = "description", customNotes = "") {
-  const video = await Video.findById(videoId).populate("uploader");
-  if (!video) throw new QuizError("Video not found", 404);
+/**
+ * Generate a quiz using Groq AI
+ * @param {Object} options - Generation options
+ */
+export async function generateAiQuiz({
+  videoId,
+  firebaseUid,
+  source = "description",
+  customContent = "",
+  difficulty = "medium",
+  questionCount = 5,
+  topic = ""
+}) {
+  let uploaderMongoId;
+  let videoContext = "";
 
-  if (video.uploader?.firebaseUid !== firebaseUid) {
-    throw new QuizError("Forbidden: Not the uploader", 403);
+  if (videoId) {
+    const video = await Video.findById(videoId).populate("uploader");
+    if (!video) throw new QuizError("Video not found", 404);
+    if (video.uploader?.firebaseUid !== firebaseUid) {
+      throw new QuizError("Forbidden: Not the uploader", 403);
+    }
+    uploaderMongoId = video.uploader._id;
+    videoContext = `Video Title: ${video.title}\nVideo Description: ${video.description}\n`;
   }
 
-  const host = process.env.DATABRICKS_HOST;
-  const token = process.env.DATABRICKS_TOKEN;
-  const endpoint = process.env.DATABRICKS_ENDPOINT || "databricks-meta-llama-3-70b-instruct";
+  const userPrompt = `
+Context Source: ${source}
+Topic Preference: ${topic || "Determine from content"}
+Difficulty Level: ${difficulty}
+Number of Questions: ${questionCount}
 
-  if (!host || !token) {
-    throw new QuizError("AI Services temporarily unavailable: Configure Databricks Host and Token in environment variables.", 500);
-  }
+Content to analyze:
+${videoContext}
+${customContent}
 
-  let AI_Context = "";
-  if (source === "notes" && customNotes.trim().length > 0) {
-    AI_Context = `Source Material (Instructor Notes):\n${customNotes}`;
-  } else {
-    AI_Context = `Title: ${video.title}\nDescription: ${video.description}`;
-  }
-
-  const prompt = `Context:\n${AI_Context}\n\nPlease generate the JSON array of multiple choice questions based specifically on the context provided above. Only rely on general knowledge if the context is insufficient.`;
+Please generate a high-quality MCQ quiz in JSON format as specified in the system prompt.
+`;
 
   try {
-    const aiResponse = await fetch(`https://${host.replace("https://", "")}/api/2.0/serving-endpoints/${endpoint}/invocations`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: prompt }
-        ],
-        max_tokens: 1500,
-        temperature: 0.2
-      })
+    const quizData = await generateCompletion({
+      system: SYSTEM_PROMPT,
+      prompt: userPrompt,
+      json: true,
+      temperature: 0.3
     });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("Databricks API Error:", errorText);
-      throw new QuizError("Upstream AI execution failed.", 502);
+    if (!quizData || !Array.isArray(quizData.questions)) {
+      throw new Error("AI returned an invalid quiz structure.");
     }
 
-    const aiData = await aiResponse.json();
-    let resultText = aiData.choices?.[0]?.message?.content || aiData.predictions?.[0]?.content || "";
+    // Basic validation/sanitization of AI output
+    const sanitizedQuestions = quizData.questions.slice(0, questionCount).map(q => ({
+      question: q.question?.trim() || "Untitled Question",
+      options: Array.isArray(q.options) && q.options.length === 4 
+        ? q.options.map(o => o.trim()) 
+        : ["A", "B", "C", "D"],
+      correctIndex: typeof q.correctIndex === "number" && q.correctIndex >= 0 && q.correctIndex <= 3 
+        ? q.correctIndex 
+        : 0,
+      explanation: q.explanation?.trim() || ""
+    }));
 
-    // Cleanup potential markdown blocks if the LLM leaked them
-    resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    const questions = JSON.parse(resultText);
-
-    if (!Array.isArray(questions)) {
-      throw new Error("AI did not return a valid array");
-    }
-
-    return questions;
+    return {
+      title: quizData.title?.trim() || "AI Generated Quiz",
+      topic: quizData.topic?.trim() || topic || "General",
+      difficulty,
+      questions: sanitizedQuestions
+    };
   } catch (err) {
     console.error("AI Quiz Generator Error:", err);
-    if (err instanceof QuizError) throw err;
-    throw new QuizError("Failed to parse AI output into strict Quiz schema.", 500);
+    throw new QuizError(err.message || "Failed to generate AI quiz.", 500);
   }
 }
+

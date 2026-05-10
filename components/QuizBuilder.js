@@ -40,21 +40,29 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
       question: q.question,
       options: [...q.options],
       correctIndex: q.correctIndex ?? 0,
+      explanation: q.explanation || "",
     })) || [EMPTY_QUESTION()]
   );
+  
+  const [title, setTitle] = useState(existingQuiz?.title || "");
+  const [topic, setTopic] = useState(existingQuiz?.topic || "");
+  const [difficulty, setDifficulty] = useState(existingQuiz?.difficulty || "medium");
+  const [questionCount, setQuestionCount] = useState(5);
   const [passingScore, setPassingScore] = useState(existingQuiz?.passingScore || 70);
   const [isPublished, setIsPublished] = useState(existingQuiz?.isPublished || false);
+  const [isAiGenerated, setIsAiGenerated] = useState(existingQuiz?.generatedByAI || false);
+  
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [generatingAI, setGeneratingAI] = useState(false);
   const [aiSource, setAiSource] = useState("description");
-  const [customNotes, setCustomNotes] = useState("");
+  const [customContent, setCustomContent] = useState("");
 
   const generateWithAI = async () => {
-    if (aiSource === "notes" && !customNotes.trim()) {
-      return setError("Please provide custom notes or select the video description source.");
+    if (aiSource === "notes" && !customContent.trim()) {
+      return setError("Please provide content to analyze.");
     }
     setGeneratingAI(true);
     setError(""); setSuccess("");
@@ -62,18 +70,28 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
       const res = await authFetch(`/api/videos/${videoId}/ai-quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: aiSource, customNotes }),
+        body: JSON.stringify({ 
+          source: aiSource, 
+          customContent,
+          difficulty,
+          questionCount,
+          topic
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "AI Generation Failed");
 
-      if (Array.isArray(data) && data.length > 0) {
-        setQuestions(data.map((q) => ({
+      if (data && Array.isArray(data.questions)) {
+        setTitle(data.title || title);
+        setTopic(data.topic || topic);
+        setQuestions(data.questions.map((q) => ({
           question: q.question || "",
           options: q.options || ["", "", "", ""],
           correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
+          explanation: q.explanation || "",
         })));
-        setSuccess(`AI generated ${data.length} questions. Please review before saving.`);
+        setIsAiGenerated(true);
+        setSuccess(`AI generated ${data.questions.length} questions. Please review before saving.`);
       } else {
         throw new Error("AI returned invalid structure.");
       }
@@ -85,8 +103,8 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
   };
 
   const addQuestion = () => {
-    if (questions.length >= 10) return;
-    setQuestions([...questions, EMPTY_QUESTION()]);
+    if (questions.length >= 20) return;
+    setQuestions([...questions, { ...EMPTY_QUESTION(), explanation: "" }]);
   };
 
   const removeQuestion = (i) => {
@@ -94,9 +112,9 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
     setQuestions(questions.filter((_, idx) => idx !== i));
   };
 
-  const updateQuestion = (i, field, value) => {
+  const updateQuestion = (qi, field, value) => {
     const updated = [...questions];
-    updated[i] = { ...updated[i], [field]: value };
+    updated[qi] = { ...updated[qi], [field]: value };
     setQuestions(updated);
   };
 
@@ -108,6 +126,8 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
 
   const handleSave = async (publish = false) => {
     setError(""); setSuccess("");
+    if (!title.trim()) return setError("Quiz title is required.");
+    
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.question.trim()) return setError(`Question ${i + 1} text is required.`);
@@ -119,7 +139,15 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
       const res = await authFetch(`/api/videos/${videoId}/quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questions, passingScore, isPublished: publish }),
+        body: JSON.stringify({ 
+          title, 
+          topic, 
+          difficulty, 
+          questions, 
+          passingScore, 
+          isPublished: publish,
+          generatedByAI: isAiGenerated
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -147,6 +175,16 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
       {/* ── Status Messages ── */}
       <div aria-live="polite" aria-atomic="true" id={statusId}>
         <AnimatePresence mode="wait">
+          {isAiGenerated && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 flex items-center gap-3 bg-indigo-500/5 border border-indigo-500/10 px-5 py-3 rounded-2xl w-fit"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">AI Assisted Design</span>
+            </motion.div>
+          )}
           {error && (
             <motion.div
               key="error"
@@ -176,349 +214,314 @@ export default function QuizBuilder({ videoId, existingQuiz, onSaved }) {
         </AnimatePresence>
       </div>
 
-      {/* ── Settings ── */}
-      <fieldset className="bg-slate-50 dark:bg-white/5 border border-border p-5 md:p-6 rounded-3xl">
-        <legend className="sr-only">Quiz Settings</legend>
-        <div className="flex flex-col md:flex-row items-baseline md:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="space-y-1">
-              <label htmlFor={`${formId}-passing-score`} className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]">
-                Passing Score
-              </label>
-              <div className="relative">
-                <select
-                  id={`${formId}-passing-score`}
-                  value={passingScore}
-                  onChange={(e) => setPassingScore(Number(e.target.value))}
-                  className="bg-white dark:bg-slate-900 border border-border rounded-xl px-4 py-2 text-xs font-semibold text-text-1 outline-none cursor-pointer appearance-none pr-10 hover:border-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                >
-                  {[50, 60, 70, 80, 90, 100].map((v) => (
-                    <option key={v} value={v}>{v}% to Pass</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 pointer-events-none" aria-hidden="true" />
-              </div>
-            </div>
-
-            <div className="w-px h-10 bg-border hidden md:block" aria-hidden="true" />
-
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]" id={`${formId}-progress-label`}>
-                Progress
-              </p>
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-2 w-32 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-valuenow={questions.length}
-                  aria-valuemin={1}
-                  aria-valuemax={10}
-                  aria-label={`${questions.length} of 10 questions added`}
-                >
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(questions.length / 10) * 100}%` }}
-                    className="h-full bg-indigo-500"
-                  />
-                </div>
-                <span className="text-xs font-semibold text-text-1" aria-live="polite">{questions.length}/10</span>
-              </div>
-            </div>
+      {/* ── Main Quiz Info ── */}
+      <section className="bg-white dark:bg-white/5 border border-border p-6 rounded-3xl space-y-6 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor={`${formId}-title`} className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em] ml-1">
+              Quiz Title
+            </label>
+            <input
+              id={`${formId}-title`}
+              type="text"
+              placeholder="e.g. Advanced Quantum Mechanics Quiz"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl px-5 py-3 text-sm font-semibold text-text-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            />
           </div>
-
-          <div className="flex items-center gap-2" aria-hidden="true">
-            <Layers className="w-4 h-4 text-text-3" />
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-text-3">Editing</span>
-          </div>
-        </div>
-      </fieldset>
-
-      {/* ── AI Source ── */}
-      <section
-        aria-labelledby={`${formId}-ai-heading`}
-        className="bg-slate-50 dark:bg-white/5 border border-border p-6 rounded-3xl space-y-5"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 id={`${formId}-ai-heading`} className="text-sm font-bold text-text-1 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-indigo-500" aria-hidden="true" /> AI Generation
-            </h2>
-            <p className="text-xs text-text-3 font-medium mt-1">Select the data source for AI quiz generation</p>
-          </div>
-
-          <div
-            className="flex p-1 bg-white dark:bg-slate-900 border border-border rounded-xl w-fit"
-            role="radiogroup"
-            aria-label="AI source"
-          >
-            {[
-              { value: "description", label: "Video Description" },
-              { value: "notes", label: "Custom Notes" },
-            ].map((opt) => (
-              <label key={opt.value} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name={`${formId}-ai-source`}
-                  value={opt.value}
-                  checked={aiSource === opt.value}
-                  onChange={() => setAiSource(opt.value)}
-                  className="sr-only"
-                />
-                <span className={`block px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
-                  aiSource === opt.value ? "bg-indigo-500 text-white shadow-md" : "text-text-3 hover:text-text-1"
-                }`}>
-                  {opt.label}
-                </span>
-              </label>
-            ))}
+          <div className="space-y-2">
+            <label htmlFor={`${formId}-topic`} className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em] ml-1">
+              Topic / Category
+            </label>
+            <input
+              id={`${formId}-topic`}
+              type="text"
+              placeholder="e.g. Physics"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-border rounded-2xl px-5 py-3 text-sm font-semibold text-text-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            />
           </div>
         </div>
 
-        <AnimatePresence>
-          {aiSource === "notes" && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
+        <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-border/50">
+          <div className="space-y-1">
+            <label htmlFor={`${formId}-passing-score`} className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]">
+              Passing Score
+            </label>
+            <div className="relative">
+              <select
+                id={`${formId}-passing-score`}
+                value={passingScore}
+                onChange={(e) => setPassingScore(Number(e.target.value))}
+                className="bg-white dark:bg-slate-900 border border-border rounded-xl px-4 py-2 text-xs font-semibold text-text-1 outline-none cursor-pointer appearance-none pr-10 hover:border-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500"
+              >
+                {[50, 60, 70, 80, 90, 100].map((v) => (
+                  <option key={v} value={v}>{v}% to Pass</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor={`${formId}-difficulty`} className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em]">
+              Level
+            </label>
+            <div className="relative">
+              <select
+                id={`${formId}-difficulty`}
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+                className="bg-white dark:bg-slate-900 border border-border rounded-xl px-4 py-2 text-xs font-semibold text-text-1 outline-none cursor-pointer appearance-none pr-10 hover:border-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-3 bg-indigo-500/5 px-4 py-2 rounded-2xl border border-indigo-500/10">
+            <Target className="w-4 h-4 text-indigo-500" />
+            <div
+              className="h-1.5 w-24 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden"
+              role="progressbar"
+              aria-valuenow={questions.length}
+              aria-valuemin={1}
+              aria-valuemax={20}
             >
-              <div className="pt-2">
-                <label htmlFor={`${formId}-custom-notes`} className="sr-only">Custom notes for AI quiz generation</label>
-                <textarea
-                  id={`${formId}-custom-notes`}
-                  value={customNotes}
-                  onChange={(e) => setCustomNotes(e.target.value)}
-                  placeholder="Paste lesson transcript, study guide, or key points. The AI will generate questions based on this content."
-                  className="w-full h-32 bg-white dark:bg-slate-950 border border-border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none rounded-3xl p-5 text-sm font-medium text-text-1 placeholder:opacity-30 resize-none transition-colors"
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(questions.length / 20) * 100}%` }}
+                className="h-full bg-indigo-500"
+              />
+            </div>
+            <span className="text-xs font-bold text-indigo-500">{questions.length}/20</span>
+          </div>
+        </div>
       </section>
 
-      {/* ── Question Stack ── */}
-      <section aria-label="Questions">
-        <div className="space-y-6">
-          <AnimatePresence mode="popLayout">
-            {questions.map((q, qi) => {
-              const qId = `${formId}-q${qi}`;
-              return (
-                <motion.article
-                  key={`question-${qi}`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ delay: qi * 0.04 }}
-                  aria-label={`Question ${qi + 1}`}
-                  className="group bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border p-6 md:p-8 rounded-3xl shadow-sm hover:shadow-xl transition-shadow relative"
-                >
-                  {/* Question header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-8 h-8 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center text-white dark:text-slate-900 text-xs font-bold"
-                        aria-hidden="true"
-                      >
-                        {qi + 1}
-                      </div>
-                      <span className="text-xs font-semibold text-text-3 uppercase tracking-widest">
-                        Question {qi + 1} of {questions.length}
-                      </span>
-                    </div>
-                    {questions.length > 1 && (
-                      <button
-                        onClick={() => removeQuestion(qi)}
-                        aria-label={`Remove question ${qi + 1}`}
-                        className="p-2 rounded-xl bg-rose-500/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                      >
-                        <Trash2 className="w-4 h-4" aria-hidden="true" />
-                      </button>
-                    )}
-                  </div>
+      {/* ── AI Power Section ── */}
+      <section
+        aria-labelledby={`${formId}-ai-heading`}
+        className="bg-indigo-500/[0.03] dark:bg-indigo-500/[0.05] border-2 border-indigo-500/20 p-6 md:p-8 rounded-[2.5rem] space-y-6 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+          <Zap className="w-24 h-24 text-indigo-500" />
+        </div>
 
-                  <div className="space-y-8">
-                    {/* Question textarea */}
-                    <div className="relative">
-                      <label htmlFor={`${qId}-text`} className="sr-only">Question {qi + 1} text</label>
-                      <BookOpen className="absolute left-5 top-5 w-5 h-5 text-text-3" aria-hidden="true" />
-                      <textarea
-                        id={`${qId}-text`}
-                        placeholder={`Type question ${qi + 1} here…`}
-                        value={q.question}
-                        onChange={(e) => updateQuestion(qi, "question", e.target.value)}
-                        maxLength={500}
-                        rows={2}
-                        required
-                        aria-required="true"
-                        className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl pl-16 pr-6 py-5 text-sm font-semibold text-text-1 placeholder:opacity-30 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none resize-none"
-                      />
-                    </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+          <div>
+            <h2 id={`${formId}-ai-heading`} className="text-lg font-bold text-text-1 flex items-center gap-3">
+              <div className="p-2 bg-indigo-500 rounded-xl text-white">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              Groq AI Quiz Engine
+            </h2>
+            <p className="text-sm text-text-3 font-medium mt-1">Transform content into professional MCQs in seconds.</p>
+          </div>
 
-                    {/* Answer options */}
-                    <fieldset>
-                      <legend className="text-xs font-semibold text-text-3 uppercase tracking-[0.2em] mb-4 px-1">
-                        Answer options — select the correct one
-                      </legend>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="radiogroup" aria-label={`Answer options for question ${qi + 1}`}>
-                        {q.options.map((opt, oi) => {
-                          const optId = `${qId}-opt${oi}`;
-                          const isCorrect = q.correctIndex === oi;
-                          return (
-                            <div
-                              key={optId}
-                              className={`relative flex items-center gap-3 p-4 rounded-3xl border transition-all duration-300 ${
-                                isCorrect
-                                  ? "bg-emerald-500/5 border-emerald-500/40"
-                                  : "bg-white dark:bg-white/[0.02] border-border hover:border-indigo-500/30"
-                              }`}
-                            >
-                              {/* Radio-style correct answer selector */}
-                              <div>
-                                <input
-                                  type="radio"
-                                  id={`${optId}-radio`}
-                                  name={`${qId}-correct`}
-                                  value={oi}
-                                  checked={isCorrect}
-                                  onChange={() => updateQuestion(qi, "correctIndex", oi)}
-                                  className="sr-only"
-                                  aria-label={`Mark option ${OPTION_LABELS[oi]} as correct answer for question ${qi + 1}`}
-                                />
-                                <label
-                                  htmlFor={`${optId}-radio`}
-                                  className={`w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all focus-within:ring-2 focus-within:ring-indigo-500 ${
-                                    isCorrect
-                                      ? "bg-emerald-500 text-white shadow-lg"
-                                      : "bg-slate-100 dark:bg-white/5 text-text-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
-                                  }`}
-                                  aria-label={`Option ${OPTION_LABELS[oi]}${isCorrect ? " — currently selected as correct" : ""}`}
-                                >
-                                  {isCorrect
-                                    ? <Check className="w-4 h-4" aria-hidden="true" />
-                                    : <span className="text-xs font-bold" aria-hidden="true">{OPTION_LABELS[oi]}</span>
-                                  }
-                                </label>
-                              </div>
+          <div className="flex items-center gap-4">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-text-3 uppercase tracking-widest ml-1">Questions</label>
+              <select
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Number(e.target.value))}
+                className="block w-full bg-white dark:bg-slate-900 border border-border rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
+              >
+                {[3, 5, 10, 15, 20].map(n => <option key={n} value={n}>{n} Qs</option>)}
+              </select>
+            </div>
+            <button
+              onClick={generateWithAI}
+              disabled={generatingAI}
+              className="flex items-center gap-3 px-8 py-3.5 rounded-2xl bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 active:scale-[0.98]"
+            >
+              {generatingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {generatingAI ? "Analyzing..." : "Generate Quiz"}
+            </button>
+          </div>
+        </div>
 
-                              <div className="flex-1 min-w-0">
-                                <label htmlFor={`${optId}-input`} className="sr-only">
-                                  Option {OPTION_LABELS[oi]} text for question {qi + 1}
-                                </label>
-                                <input
-                                  id={`${optId}-input`}
-                                  type="text"
-                                  placeholder={`Option ${OPTION_LABELS[oi]}`}
-                                  value={opt}
-                                  onChange={(e) => updateOption(qi, oi, e.target.value)}
-                                  maxLength={200}
-                                  required
-                                  aria-required="true"
-                                  className="w-full bg-transparent text-sm font-medium text-text-1 placeholder:opacity-30 focus:outline-none focus:underline"
-                                />
-                              </div>
+        <div className="space-y-4 relative z-10">
+          <div className="flex p-1 bg-white/50 dark:bg-slate-900/50 backdrop-blur border border-border rounded-2xl w-fit">
+            {[
+              { value: "description", label: "Video Data", icon: Send },
+              { value: "notes", label: "Raw Content / Notes", icon: BookOpen },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setAiSource(opt.value)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
+                  aiSource === opt.value ? "bg-indigo-500 text-white shadow-md" : "text-text-3 hover:text-text-1"
+                }`}
+              >
+                <opt.icon className="w-3.5 h-3.5" />
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
-                              {isCorrect && (
-                                <motion.span
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  className="absolute -top-2.5 -right-2.5 bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full shadow-lg"
-                                  aria-hidden="true"
-                                >
-                                  Correct
-                                </motion.span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </fieldset>
-                  </div>
-                </motion.article>
-              );
-            })}
+          <AnimatePresence>
+            {aiSource === "notes" && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <textarea
+                  value={customContent}
+                  onChange={(e) => setCustomContent(e.target.value)}
+                  placeholder="Paste text, notes, PDF content or transcripts here..."
+                  className="w-full h-40 bg-white dark:bg-slate-950 border border-border focus:ring-2 focus:ring-indigo-500/20 outline-none rounded-3xl p-6 text-sm font-medium text-text-1 placeholder:opacity-40 resize-none transition-all"
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </section>
 
-      {/* ── Actions ── */}
-      <div className="flex flex-col xl:flex-row items-center gap-6 pt-8">
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
-          {questions.length < 10 && (
-            <button
-              onClick={addQuestion}
-              aria-label="Add a new question"
-              className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-3xl border-2 border-dashed border-border text-xs font-bold uppercase tracking-widest text-text-3 hover:border-indigo-500 hover:text-indigo-500 transition-all hover:bg-slate-50 dark:hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-            >
-              <Plus className="w-5 h-5" aria-hidden="true" />
-              Add Question
-            </button>
-          )}
+      {/* ── Question Stack ── */}
+      <section aria-label="Questions" className="space-y-8">
+        <AnimatePresence mode="popLayout">
+          {questions.map((q, qi) => {
+            const qId = `${formId}-q${qi}`;
+            return (
+              <motion.article
+                key={`question-${qi}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-border p-6 md:p-10 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all relative"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center text-sm font-black shadow-lg shadow-indigo-500/20">
+                      {qi + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-text-1 uppercase tracking-widest">Question {qi + 1}</h3>
+                      <p className="text-[10px] text-text-3 font-bold uppercase tracking-[0.2em] mt-0.5">MCQ • 4 Options</p>
+                    </div>
+                  </div>
+                  {questions.length > 1 && (
+                    <button
+                      onClick={() => removeQuestion(qi)}
+                      className="p-3 rounded-2xl bg-rose-500/5 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
 
+                <div className="space-y-8">
+                  <div className="relative">
+                    <textarea
+                      placeholder="Enter question text here..."
+                      value={q.question}
+                      onChange={(e) => updateQuestion(qi, "question", e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-3xl px-6 py-5 text-base font-bold text-text-1 placeholder:opacity-20 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {q.options.map((opt, oi) => {
+                      const isCorrect = q.correctIndex === oi;
+                      return (
+                        <div
+                          key={oi}
+                          className={`flex items-center gap-4 p-4 rounded-[1.5rem] border-2 transition-all cursor-pointer ${
+                            isCorrect 
+                              ? "bg-emerald-500/5 border-emerald-500/40" 
+                              : "bg-white dark:bg-white/5 border-border hover:border-indigo-500/30"
+                          }`}
+                          onClick={() => updateQuestion(qi, "correctIndex", oi)}
+                        >
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                            isCorrect ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-white/10 text-text-3"
+                          }`}>
+                            {OPTION_LABELS[oi]}
+                          </div>
+                          <input
+                            type="text"
+                            value={opt}
+                            onChange={(e) => updateOption(qi, oi, e.target.value)}
+                            placeholder={`Option ${OPTION_LABELS[oi]}`}
+                            className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-text-1 placeholder:opacity-20"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          {isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-text-3 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+                      <BookOpen className="w-3 h-3" /> Educational Explanation
+                    </label>
+                    <textarea
+                      placeholder="Explain why this answer is correct..."
+                      value={q.explanation || ""}
+                      onChange={(e) => updateQuestion(qi, "explanation", e.target.value)}
+                      className="w-full bg-amber-500/[0.03] dark:bg-amber-500/[0.05] border border-amber-500/10 rounded-2xl px-5 py-4 text-xs font-medium text-text-2 placeholder:opacity-30 outline-none focus:border-amber-500/30 transition-all resize-none"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </motion.article>
+            );
+          })}
+        </AnimatePresence>
+
+        {questions.length < 20 && (
           <button
-            onClick={generateWithAI}
-            disabled={generatingAI}
-            aria-disabled={generatingAI}
-            aria-busy={generatingAI}
-            aria-label={generatingAI ? "Generating quiz with AI, please wait" : "Generate quiz questions using AI"}
-            className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-3xl bg-indigo-500/10 text-xs font-bold uppercase tracking-[0.2em] text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            onClick={addQuestion}
+            className="w-full py-6 rounded-[2.5rem] border-2 border-dashed border-border text-text-3 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-500/5 transition-all flex items-center justify-center gap-3 font-bold text-xs uppercase tracking-widest"
           >
-            {generatingAI
-              ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-              : <Sparkles className="w-5 h-5 shrink-0" aria-hidden="true" />
-            }
-            {generatingAI ? "Generating…" : "Generate with AI"}
+            <Plus className="w-5 h-5" /> Add Manual Question
           </button>
-        </div>
+        )}
+      </section>
 
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto md:ml-auto">
-          <button
-            onClick={() => handleSave(false)}
-            disabled={saving}
-            aria-disabled={saving}
-            aria-busy={saving}
-            aria-label={saving ? "Saving draft…" : "Save as draft"}
-            className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-3xl bg-slate-100 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-widest text-text-2 hover:bg-white dark:hover:bg-white/10 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-          >
-            {saving
-              ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-              : <Save className="w-5 h-5" aria-hidden="true" />
-            }
-            Save Draft
-          </button>
-
-          <button
-            onClick={() => handleSave(true)}
-            disabled={saving}
-            aria-disabled={saving}
-            aria-busy={saving}
-            aria-label={saving ? "Publishing…" : isPublished ? "Update published quiz" : "Publish quiz"}
-            className="w-full md:w-auto flex items-center justify-center gap-3 px-10 py-4 rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 text-xs font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
-          >
-            {saving
-              ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-              : <Zap className="w-5 h-5" aria-hidden="true" />
-            }
-            {isPublished ? "Update Quiz" : "Publish Quiz"}
-          </button>
-        </div>
-      </div>
-
-      {/* ── Delete ── */}
-      {existingQuiz && (
-        <div className="pt-10 text-center">
+      {/* ── Footer Actions ── */}
+      <div className="flex flex-col md:flex-row items-center gap-4 pt-12 border-t border-border">
+        {existingQuiz && (
           <button
             onClick={handleDelete}
             disabled={deleting}
-            aria-disabled={deleting}
-            aria-busy={deleting}
-            aria-label={deleting ? "Deleting quiz…" : "Delete this quiz permanently"}
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-400 hover:text-rose-500 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:underline"
+            className="w-full md:w-auto px-8 py-4 text-rose-500 font-bold text-[10px] uppercase tracking-[0.3em] hover:bg-rose-500/10 rounded-2xl transition-all"
           >
-            {deleting ? "Deleting…" : "Delete Quiz"}
+            {deleting ? "Deleting..." : "Delete Quiz"}
+          </button>
+        )}
+        
+        <div className="flex flex-col md:flex-row gap-4 w-full md:ml-auto md:w-auto">
+          <button
+            onClick={() => handleSave(false)}
+            disabled={saving}
+            className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-slate-100 dark:bg-white/5 font-bold text-[10px] uppercase tracking-widest text-text-2 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Draft
+          </button>
+          <button
+            onClick={() => handleSave(true)}
+            disabled={saving}
+            className="flex items-center justify-center gap-3 px-12 py-4 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 dark:shadow-white/5"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {isPublished ? "Update & Publish" : "Publish Quiz"}
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
+

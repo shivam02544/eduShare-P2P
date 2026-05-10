@@ -96,14 +96,31 @@ export default function QuizPage() {
                     <Zap className="w-7 h-7 md:w-8 md:h-8 fill-current" />
                   </div>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-text-1 tracking-tighter">Video Knowledge Quiz</h1>
-                    <p className="text-[9px] md:text-[10px] font-bold text-text-3 uppercase tracking-widest mt-1 opacity-50">
-                      {quiz?.exists ? (
-                        quiz.attempted
-                          ? `Attempted • Highest Score: ${quiz.attempt.score}%`
-                          : `Quiz Pending • Take the test`
-                      ) : "Quiz Creation Portal"}
-                    </p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-text-1 tracking-tighter">
+                      {quiz?.exists ? (quiz.title || "Knowledge Assessment") : "Quiz Creation Portal"}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                      <p className="text-[9px] md:text-[10px] font-black text-text-3 uppercase tracking-widest opacity-50">
+                        {quiz?.exists ? (
+                          quiz.attempted
+                            ? `Attempted • Highest Score: ${quiz.attempt.score}%`
+                            : `Quiz Pending • Take the test`
+                        ) : "Create assessment for students"}
+                      </p>
+                      {quiz?.exists && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-border" />
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-indigo-500">{quiz.difficulty || "medium"}</span>
+                          </div>
+                          {quiz.topic && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 border border-border">
+                              <span className="text-[8px] font-black uppercase tracking-widest text-text-3">{quiz.topic}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 

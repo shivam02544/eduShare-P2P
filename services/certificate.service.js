@@ -16,11 +16,19 @@ export async function getCertificates(userId) {
 }
 
 export async function getCertificateById(certId) {
-  const cert = await Certificate.findOne({ certId })
+  if (!certId) {
+    throw new CertificateError("Certificate ID is required", 400);
+  }
+  
+  const normalizedId = certId.toUpperCase();
+  console.log(`[CertificateService] Verifying: ${normalizedId}`);
+  
+  const cert = await Certificate.findOne({ certId: normalizedId })
     .populate("recipient", "name image firebaseUid")
     .populate("video", "title subject thumbnailUrl");
 
   if (!cert) {
+    console.error(`[CertificateService] Not Found: ${normalizedId}`);
     throw new CertificateError("Certificate not found", 404);
   }
 

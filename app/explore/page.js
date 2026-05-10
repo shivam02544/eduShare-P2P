@@ -15,8 +15,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-const SUBJECTS = ["All", "Math", "Science", "History", "Programming", "English", "Physics", "Chemistry", "Biology"];
-
 import PageContainer from "@/components/layouts/PageContainer";
 import SectionHeader from "@/components/layouts/SectionHeader";
 import ResponsiveGrid from "@/components/layouts/ResponsiveGrid";
@@ -106,6 +104,7 @@ export default function ExplorePage() {
   const router = useRouter();
   const [tab, setTab] = useState("videos");
   const [subject, setSubject] = useState("All");
+  const [subjects, setSubjects] = useState(["All"]);
   const [sort, setSort] = useState("recent");
   const [videos, setVideos] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -115,6 +114,21 @@ export default function ExplorePage() {
   const [errorNotes, setErrorNotes] = useState(null);
   // Track which tabs have been fetched to avoid redundant fetches
   const fetchedNotes = useRef(false);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const res = await fetch("/api/subjects");
+        if (res.ok) {
+          const data = await res.json();
+          setSubjects(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subjects", error);
+      }
+    };
+    fetchSubjects();
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/login");
@@ -226,7 +240,7 @@ export default function ExplorePage() {
       <div className="relative py-4 -mx-4 px-4 md:mx-0 md:px-0 mb-12" role="group" aria-label="Filter by subject">
         <div className="overflow-x-auto no-scrollbar scroll-smooth">
           <div className="flex gap-3 md:gap-4 min-w-max pb-2">
-            {SUBJECTS.map((s) => {
+            {subjects.map((s) => {
               const isActive = subject === s;
               return (
                  <button

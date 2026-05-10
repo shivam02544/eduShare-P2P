@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -23,13 +23,6 @@ import ContributorsSection from "@/components/ContributorsSection";
 
 const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
-const stats = [
-  { value: "12K+", label: "STUDENTS",  icon: Users,    color: "text-accent" },
-  { value: "8K+",  label: "RESOURCES",  icon: BookOpen, color: "text-emerald-500" },
-  { value: "600+", label: "CHANNELS",   icon: Play,     color: "text-rose-500" },
-  { value: "80K+", label: "CREDITS",   icon: Zap,      color: "text-amber-500" },
-];
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -51,6 +44,34 @@ const itemVariants = {
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [platformStats, setPlatformStats] = useState({
+    totalUsers: 0,
+    totalResources: 0,
+    totalQuizzes: 0,
+    totalCredits: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setPlatformStats(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch platform stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const statsList = [
+    { value: platformStats.totalUsers.toLocaleString(), label: "STUDENTS",  icon: Users,    color: "text-accent" },
+    { value: platformStats.totalResources.toLocaleString(), label: "RESOURCES",  icon: BookOpen, color: "text-emerald-500" },
+    { value: platformStats.totalQuizzes.toLocaleString(), label: "QUIZZES",   icon: Play,     color: "text-rose-500" },
+    { value: platformStats.totalCredits.toLocaleString(), label: "CREDITS",   icon: Zap,      color: "text-amber-500" },
+  ];
 
   useEffect(() => {
     if (!loading && user) {
@@ -139,7 +160,7 @@ export default function HomePage() {
           variants={containerVariants}
           className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
         >
-          {stats.map((s, i) => (
+          {statsList.map((s, i) => (
             <motion.div 
               key={i} 
               variants={itemVariants}
@@ -194,7 +215,7 @@ export default function HomePage() {
               <span className="text-accent">INTELLIGENCE?</span>
             </h2>
             <p className="text-bg/60 text-lg leading-relaxed font-medium max-w-xl mx-auto">
-              Join 10,000+ elite students already synchronizing knowledge on the EduShare network.
+              Join {platformStats.totalUsers.toLocaleString()} active students already synchronizing knowledge on the EduShare network.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
               <Link href="/register" className="group flex items-center gap-3 bg-accent text-bg px-12 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl">
@@ -230,4 +251,3 @@ export default function HomePage() {
     </div>
   );
 }
-

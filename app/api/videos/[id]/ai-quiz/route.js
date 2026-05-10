@@ -6,12 +6,25 @@ export const dynamic = "force-dynamic";
 
 export const POST = apiHandler(async (ctx) => {
   const { user, params, firebaseUser, body } = ctx;
-  const source = body?.source || "description";
-  const customNotes = body?.customNotes || "";
+  const { 
+    source = "description", 
+    customContent = "", 
+    difficulty = "medium", 
+    questionCount = 5,
+    topic = "" 
+  } = body;
 
   try {
-    const questions = await generateAiQuiz(params.id, firebaseUser.uid, source, customNotes);
-    return NextResponse.json(questions);
+    const quiz = await generateAiQuiz({
+      videoId: params.id,
+      firebaseUid: firebaseUser.uid,
+      source,
+      customContent: customContent || body.customNotes, // Backward compatibility
+      difficulty,
+      questionCount,
+      topic
+    });
+    return NextResponse.json(quiz);
   } catch (err) {
     if (err instanceof QuizError) {
       return NextResponse.json({ error: err.message }, { status: err.statusCode });
@@ -19,3 +32,4 @@ export const POST = apiHandler(async (ctx) => {
     throw err;
   }
 }, { isProtected: true });
+

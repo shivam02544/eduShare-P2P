@@ -15,6 +15,20 @@ const UserSchema = new mongoose.Schema(
     image: { type: String, default: "" },
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    learningProfile: {
+      mastery: [{
+        topic: String,
+        score: { type: Number, default: 0 },
+        attempts: { type: Number, default: 0 },
+        lastTested: Date
+      }],
+      weakTopics: [{ type: String }],
+      streaks: {
+        current: { type: Number, default: 0 },
+        longest: { type: Number, default: 0 },
+        lastActivity: Date
+      }
+    }
   },
   { timestamps: true }
 );

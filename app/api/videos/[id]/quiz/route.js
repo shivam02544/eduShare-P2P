@@ -18,6 +18,9 @@ export const GET = apiHandler(async (ctx) => {
 }, { isProtected: false });
 
 const postQuizSchema = z.object({
+  title: z.string().min(1).max(200),
+  topic: z.string().max(100).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional().default("medium"),
   questions: z.array(z.any()),
   passingScore: z.number().optional().default(70),
   isPublished: z.boolean().optional().default(false),
@@ -29,10 +32,9 @@ const postQuizSchema = z.object({
  */
 export const POST = apiHandler(async (ctx) => {
   const { user, params, body } = ctx;
-  const { questions, passingScore, isPublished } = body;
 
   try {
-    const result = await saveQuiz(params.id, user._id, questions, passingScore, isPublished);
+    const result = await saveQuiz(params.id, user._id, body);
     return NextResponse.json(result);
   } catch (err) {
     if (err instanceof QuizError) {
@@ -41,6 +43,7 @@ export const POST = apiHandler(async (ctx) => {
     throw err;
   }
 }, { isProtected: true, schema: postQuizSchema });
+
 
 /**
  * DELETE /api/videos/[id]/quiz

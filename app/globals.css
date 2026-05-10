@@ -822,14 +822,67 @@ main { animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
   }
 }
 
-/* ── Print: hide navigation ─────────────────────────────────────────────────*/
+/* ── Print Styles ── */
 @media print {
-  header, nav, .skip-link, [role="navigation"] {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Robust isolation: Hide everything by default, then show only the target */
+  body > * {
     display: none !important;
   }
-  main {
+
+  body > main {
+    display: block !important;
     padding: 0 !important;
-    animation: none !important;
+    margin: 0 !important;
+  }
+
+  main * {
+    visibility: hidden !important;
+  }
+
+  #certificate-print-area, #certificate-print-area * {
+    visibility: visible !important;
+  }
+
+  #certificate-print-area {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: white !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    ring: none !important;
+    z-index: 9999 !important;
+  }
+
+  /* Ensure background colors/images print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force light mode colors for printing */
+  .dark #certificate-print-area {
+    background: white !important;
+    color: black !important;
   }
 }
 

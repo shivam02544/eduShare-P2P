@@ -1,7 +1,11 @@
 "use client";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Trophy, Zap, ArrowRight, ShieldCheck, Star } from "lucide-react";
+import SectionHeader from "./layouts/SectionHeader";
+import ResponsiveGrid from "./layouts/ResponsiveGrid";
+import { Skeleton } from "./Skeleton";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
 
@@ -39,48 +43,52 @@ const RANK_STYLES = [
   },
 ];
 
-const CONTRIBUTORS = [
-  {
-    name: "Priya Sharma",
-    role: "Engineering Student",
-    avatar: "P",
-    avatarBg: "bg-accent",
-    credits: 3840,
-    uploads: 42,
-    subjects: ["Physics", "Math"],
-    quote: "Sharing is the fastest way to master what you know.",
-  },
-  {
-    name: "Rahul Mehta",
-    role: "Computer Science",
-    avatar: "R",
-    avatarBg: "bg-emerald-500",
-    credits: 3210,
-    uploads: 37,
-    subjects: ["Programming", "Algorithms"],
-    quote: "Every upload earns me credits and reinforces my own learning.",
-  },
-  {
-    name: "Aisha Khan",
-    role: "Pre-Med Student",
-    avatar: "A",
-    avatarBg: "bg-rose-500",
-    credits: 2990,
-    uploads: 31,
-    subjects: ["Biology", "Chemistry"],
-    quote: "EduShare made studying collaborative and rewarding.",
-  },
-];
-
-import SectionHeader from "./layouts/SectionHeader";
-import ResponsiveGrid from "./layouts/ResponsiveGrid";
-
-// ... [RANK_STYLES and CONTRIBUTORS constants remain] ...
-
 export default function ContributorsSection() {
+  const [contributors, setContributors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContributors = async () => {
+      try {
+        const res = await fetch("/api/leaderboard");
+        if (res.ok) {
+          const data = await res.json();
+          setContributors(data.slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Failed to fetch top contributors", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContributors();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+          <SectionHeader 
+            title="Top Contributors"
+            description="Meet the students powering the EduShare community — earning credits by sharing knowledge."
+            badge="Community"
+          />
+        </div>
+        <ResponsiveGrid columns={3}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-80 bg-surface-1 dark:bg-surface-2 rounded-xl animate-pulse border border-border" />
+          ))}
+        </ResponsiveGrid>
+      </section>
+    );
+  }
+
+  if (contributors.length === 0) {
+    return null;
+  }
+
   return (
     <section className="max-w-7xl mx-auto px-6">
-      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
         <SectionHeader 
           title="Top Contributors"
@@ -98,7 +106,6 @@ export default function ContributorsSection() {
         </Link>
       </div>
 
-      {/* Contributor Cards */}
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -106,36 +113,34 @@ export default function ContributorsSection() {
         variants={containerVariants}
       >
         <ResponsiveGrid columns={3}>
-          {CONTRIBUTORS.map((c, i) => {
-            const rank = RANK_STYLES[i];
+          {contributors.map((c, i) => {
+            const rank = RANK_STYLES[i] || RANK_STYLES[2];
+            const avatar = c.name?.charAt(0).toUpperCase() || "?";
             return (
               <motion.div
-                key={i}
+                key={c._id || i}
                 variants={itemVariants}
                 whileHover={{ y: -4 }}
                 transition={springConfig}
                 className={`group relative bg-bg dark:bg-surface-2 border border-border rounded-xl p-6 shadow-sm hover:shadow-lg ${rank.glow} transition-all overflow-hidden`}
               >
-                {/* Background texture */}
                 <div className="absolute -top-16 -right-16 w-32 h-32 bg-surface-2 dark:bg-surface-3 rounded-full opacity-50 transition-opacity" />
 
-                {/* Rank badge */}
                 <div className="relative z-10 space-y-6">
                   <div className="flex items-start justify-between">
-                    {/* Avatar */}
-                    <div className="relative">
+                    <Link href={`/profile/${c.firebaseUid || c._id}`} className="relative group/avatar">
                       <div
-                        className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-md ring-2 ${rank.ringColor} ${c.avatarBg} transition-transform group-hover:scale-105 duration-300`}
+                        className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-md ring-2 ${rank.ringColor} bg-accent transition-transform group-hover/avatar:scale-105 duration-300`}
                       >
-                        {c.avatar}
+                        {c.image ? (
+                          <img src={c.image} alt={c.name} className="w-full h-full rounded-xl object-cover" />
+                        ) : avatar}
                       </div>
-                      {/* Online dot */}
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-bg flex items-center justify-center">
                         <ShieldCheck className="w-2.5 h-2.5 text-white" />
                       </div>
-                    </div>
+                    </Link>
 
-                    {/* Rank pill */}
                     <div
                       className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-sm ${rank.badgeBg} ${rank.badgeText}`}
                     >
@@ -143,48 +148,50 @@ export default function ContributorsSection() {
                     </div>
                   </div>
 
-                  {/* Info */}
                   <div className="space-y-1">
-                    <p className="text-base font-bold text-text-1 group-hover:text-accent transition-colors">
-                      {c.name}
-                    </p>
+                    <Link href={`/profile/${c.firebaseUid || c._id}`}>
+                      <p className="text-base font-bold text-text-1 group-hover:text-accent transition-colors">
+                        {c.name}
+                      </p>
+                    </Link>
                     <p className="text-xs font-semibold text-text-3">
-                      {c.role}
+                      {c.skills?.slice(0, 2).join(" • ") || "EduShare Member"}
                     </p>
                   </div>
 
-                  {/* Quote */}
                   <p className="text-sm font-medium text-text-2 leading-relaxed opacity-80 line-clamp-2">
-                    "{c.quote}"
+                    "{c.bio || "Sharing knowledge is the best way to grow together."}"
                   </p>
 
-                  {/* Subjects */}
                   <div className="flex flex-wrap gap-2">
-                    {c.subjects.map((s) => (
+                    {c.skills?.slice(0, 3).map((s) => (
                       <span
                         key={s}
                         className="px-2.5 py-1 rounded-lg bg-surface-2 dark:bg-surface-3 border border-border text-xs font-semibold text-text-3"
                       >
                         {s}
                       </span>
-                    ))}
+                    )) || (
+                      <span className="px-2.5 py-1 rounded-lg bg-surface-2 dark:bg-surface-3 border border-border text-xs font-semibold text-text-3">
+                        General
+                      </span>
+                    )}
                   </div>
 
-                  {/* Stats row */}
                   <div className="flex items-center justify-between pt-5 border-t border-border/50">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
                       <span className="text-base font-bold text-text-1">
-                        {c.credits.toLocaleString()}
+                        {c.credits?.toLocaleString() || 0}
                       </span>
                       <span className="text-[10px] font-semibold text-text-3 uppercase tracking-wider">
                         Credits
                       </span>
                     </div>
                     <div className="text-right flex items-center gap-2">
-                      <p className="text-base font-bold text-text-1">{c.uploads}</p>
+                      <Star className="w-4 h-4 text-indigo-500" />
                       <p className="text-[10px] font-semibold text-text-3 uppercase tracking-wider">
-                        Uploads
+                        Ranked Member
                       </p>
                     </div>
                   </div>
