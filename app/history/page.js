@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { History, Trash2, Play, CheckCircle2, Clock, Calendar } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { History, Trash2, Play, CheckCircle2, Clock, Calendar, AlertCircle, Sparkles } from "lucide-react";
 import PageContainer from "@/components/layouts/PageContainer";
 import SectionHeader from "@/components/layouts/SectionHeader";
+
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 function formatTime(seconds) {
   const s = Math.floor(seconds);
@@ -27,69 +30,83 @@ function HistoryItem({ item }) {
     : 0;
 
   return (
-    <Link href={`/videos/${item.video._id}`}
-      className="group flex flex-col md:flex-row gap-6 p-4 bg-white dark:bg-slate-900 border border-border rounded-2xl hover:shadow-md transition-shadow"
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
     >
-      {/* Video Thumbnail */}
-      <div className="relative w-full md:w-48 h-28 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-border">
-        {item.video.thumbnailUrl ? (
-          <img src={item.video.thumbnailUrl} alt={item.video.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-text-3">
-            <Play className="w-8 h-8 opacity-50" />
+      <Link href={`/videos/${item.video._id}`}
+        className="group flex flex-col md:flex-row gap-8 p-6 bg-surface-1 dark:bg-surface-2 border border-border rounded-[32px] hover:shadow-2xl hover:shadow-black/5 transition-all duration-300"
+      >
+        {/* Video Thumbnail */}
+        <div className="relative w-full md:w-56 h-32 rounded-[24px] overflow-hidden bg-surface-2 dark:bg-surface-3 shrink-0 border border-border">
+          {item.video.thumbnailUrl ? (
+            <img src={item.video.thumbnailUrl} alt={item.video.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-text-4">
+              <Play className="w-10 h-10 opacity-20" />
+            </div>
+          )}
+          
+          {/* Progress Bar Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
+            <div 
+              className="h-full bg-accent" 
+              style={{ width: `${pct}%` }}
+            />
           </div>
-        )}
-        
-        {/* Progress Bar Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
-          <div 
-            className="h-full bg-indigo-500" 
-            style={{ width: `${pct}%` }}
-          />
+
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+             <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center scale-0 group-hover:scale-100 transition-transform duration-300">
+               <Play className="w-6 h-6 text-white fill-current" />
+             </div>
+          </div>
+
+          {item.completed && (
+            <div className="absolute top-3 right-3 w-8 h-8 bg-accent rounded-2xl flex items-center justify-center shadow-lg border-2 border-white dark:border-surface-2">
+              <CheckCircle2 className="w-4 h-4 text-white" />
+            </div>
+          )}
         </div>
 
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-           <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-
-        {item.completed && (
-          <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-slate-900">
-            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+        {/* Video Details */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="flex items-start justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">{item.video.category || "MODULE"}</p>
+                 <div className="w-1 h-1 rounded-full bg-border" />
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">{timeAgo(item.lastWatchedAt)}</p>
+              </div>
+              <h3 className="font-black text-text-1 text-lg md:text-xl group-hover:text-accent transition-colors line-clamp-1 md:line-clamp-2 leading-tight">
+                {item.video.title}
+              </h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-3">
+                BY {item.video.uploader?.name}
+              </p>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Video Details */}
-      <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="font-bold text-text-1 text-base md:text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1 md:line-clamp-2">
-              {item.video.title}
-            </h3>
-            <p className="text-sm font-semibold text-text-3">
-              {item.video.uploader?.name}
-            </p>
-          </div>
-          <span className="text-xs font-semibold text-text-3 whitespace-nowrap bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg border border-border">
-            {timeAgo(item.lastWatchedAt)}
-          </span>
-        </div>
-
-        <div className="mt-auto pt-4 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-text-2 uppercase tracking-wide">
-            <span className={item.completed ? "text-emerald-600 dark:text-emerald-400" : ""}>
-              {pct}% Watched
-            </span>
-            <span className="text-text-3">
-              {item.completed ? "Completed" : `${formatTime(item.progressSeconds)} / ${formatTime(item.durationSeconds)}`}
-            </span>
-          </div>
-          <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-             <div className="h-full bg-indigo-500" style={{ width: `${pct}%` }} />
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between text-[10px] font-black text-text-2 uppercase tracking-[0.2em]">
+              <span className={item.completed ? "text-accent" : "text-text-4"}>
+                {pct}% ARCHIVED
+              </span>
+              <span className="text-text-4">
+                {item.completed ? "SYNCHRONIZED" : `${formatTime(item.progressSeconds)} / ${formatTime(item.durationSeconds)}`}
+              </span>
+            </div>
+            <div className="h-2 bg-surface-2 dark:bg-surface-3 rounded-full overflow-hidden border border-border">
+               <motion.div 
+                 initial={{ width: 0 }}
+                 animate={{ width: `${pct}%` }}
+                 transition={{ duration: 1, ease: "easeOut" }}
+                 className="h-full bg-accent" 
+               />
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -117,7 +134,7 @@ export default function HistoryPage() {
   useEffect(() => { if (user) fetchHistory(); }, [user]);
 
   const handleClear = async () => {
-    if (!confirm("Clear all watch history?")) return;
+    if (!confirm("Delete all watch history artifacts?")) return;
     setClearing(true);
     await authFetch("/api/watch-history", { method: "DELETE" });
     setHistory([]);
@@ -130,66 +147,96 @@ export default function HistoryPage() {
   return (
     <PageContainer>
       <SectionHeader 
-        icon={History}
-        title="Watch History"
-        description={`Total of ${history.length} videos recorded in your watch history.`}
+        title="Playback Logs"
+        description="Monitor your session history and archive progress."
+        badge="ACTIVITY"
         action={
-          history.length > 0 ? (
-            <button 
-              onClick={handleClear} 
-              disabled={clearing}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 text-sm font-bold transition-colors disabled:opacity-50 dark:bg-red-500/10 dark:border-red-500/20 dark:hover:bg-red-500/20"
-            >
-              <Trash2 className="w-4 h-4" />
-              {clearing ? "Clearing..." : "Clear History"}
-            </button>
-          ) : null
+          history.length > 0 && (
+            <div className="flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-6 px-6 py-3 rounded-3xl bg-surface-1 border border-border shadow-inner">
+                <div className="text-center">
+                  <p className="text-xl font-black text-text-1 leading-none mb-1">{history.length}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">Sessions</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleClear} 
+                disabled={clearing}
+                className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-rose-500/20 disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                {clearing ? "PURGING..." : "CLEAR LOGS"}
+              </button>
+            </div>
+          )
         }
       />
 
       {loading ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {Array(5).fill(0).map((_, i) => (
-            <div key={i} className="bg-slate-100 dark:bg-slate-800 h-32 rounded-2xl animate-pulse" />
+            <div key={i} className="bg-surface-2 dark:bg-surface-3 h-40 rounded-[32px] animate-pulse border border-border" />
           ))}
         </div>
       ) : history.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 rounded-3xl border-2 border-dashed border-border/50 bg-slate-50 dark:bg-slate-800/30 text-center space-y-4">
-          <div className="w-16 h-16 rounded-xl bg-white dark:bg-slate-900 border border-border flex items-center justify-center text-text-3 shadow-sm">
-             <Calendar className="w-8 h-8" />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-32 space-y-10 bg-surface-1 dark:bg-surface-2 rounded-[40px] border border-dashed border-border group"
+        >
+          <div className="w-24 h-24 rounded-[32px] bg-surface-2 dark:bg-surface-3 flex items-center justify-center mx-auto text-text-4 border border-border shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+             <Clock className="w-10 h-10 opacity-20" />
           </div>
-          <div className="space-y-1">
-            <p className="text-lg font-bold text-text-1">No History Yet</p>
-            <p className="text-xs text-text-3">Start watching lessons to build your history.</p>
+          <div className="space-y-3">
+            <p className="text-2xl font-black text-text-1 tracking-tight">Logs Empty</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4 max-w-xs mx-auto leading-relaxed">No playback artifacts detected. Initiate a module session to record activity.</p>
           </div>
-          <Link href="/explore" className="mt-4 flex items-center justify-center px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-sm">
-            Explore Lessons
-          </Link>
-        </div>
+          <button 
+            onClick={() => router.push('/explore')}
+            className="px-10 py-5 rounded-2xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-accent/20 hover:scale-105 active:scale-95 transition-all border border-accent/20"
+          >
+            DISCOVER MODULES
+          </button>
+        </motion.div>
       ) : (
-        <div className="space-y-10">
-          {inProgress.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-border">
-                <Clock className="w-5 h-5 text-indigo-500" />
-                <h2 className="text-sm font-bold text-text-1 uppercase tracking-wider">Continue Watching</h2>
-              </div>
-              <div className="space-y-3">
-                {inProgress.map((h) => <HistoryItem key={h._id} item={h} />)}
-              </div>
-            </div>
-          )}
-          {completed.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-border">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <h2 className="text-sm font-bold text-text-1 uppercase tracking-wider">Recently Completed</h2>
-              </div>
-              <div className="space-y-3">
-                {completed.map((h) => <HistoryItem key={h._id} item={h} />)}
-              </div>
-            </div>
-          )}
+        <div className="space-y-16">
+          <AnimatePresence mode="popLayout">
+            {inProgress.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-8"
+              >
+                <div className="flex items-center justify-between border-b border-border/50 pb-6">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-4 h-4 text-accent" />
+                    <h2 className="text-[10px] font-black text-text-1 uppercase tracking-[0.3em]">Active Sessions</h2>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  {inProgress.map((h) => <HistoryItem key={h._id} item={h} />)}
+                </div>
+              </motion.div>
+            )}
+            
+            {completed.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-8"
+              >
+                <div className="flex items-center justify-between border-b border-border/50 pb-6">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <h2 className="text-[10px] font-black text-text-1 uppercase tracking-[0.3em]">Archived Modules</h2>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  {completed.map((h) => <HistoryItem key={h._id} item={h} />)}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </PageContainer>

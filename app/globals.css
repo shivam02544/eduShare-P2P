@@ -38,11 +38,11 @@
     --shadow:    0 8px 30px rgba(0,0,0,0.04);
     --shadow-lg: 0 20px 50px rgba(0,0,0,0.08);
 
-    /* Radius */
-    --radius-sm: 10px;
-    --radius:    16px;
-    --radius-lg: 24px;
-    --radius-xl: 32px;
+    /* Radius - Refined Scale */
+    --radius-sm: 8px;   /* rounded-lg */
+    --radius:    12px;  /* rounded-xl */
+    --radius-lg: 16px;  /* rounded-2xl */
+    --radius-xl: 24px;  /* rounded-3xl */
   }
 
   .dark {
@@ -296,24 +296,29 @@
 
   /* ── Typography utilities ── */
   .page-title {
-    font-size: clamp(22px, 4vw, 30px);
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 800; /* ExtraBold instead of Black */
+    letter-spacing: -0.025em;
     color: var(--text-1);
-    line-height: 1.15;
+    line-height: 1.1;
   }
   .section-title {
-    font-size: clamp(18px, 3vw, 24px);
-    font-weight: 600;
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 700;
     letter-spacing: -0.015em;
     color: var(--text-1);
   }
   .section-label {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--text-3);
+  }
+  .ui-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
   }
   .body-sm { font-size: 13px; color: var(--text-2); line-height: 1.6; }
   .caption  { font-size: 12px; color: var(--text-3); }

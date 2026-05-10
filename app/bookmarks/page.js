@@ -37,72 +37,84 @@ export default function BookmarksPage() {
   return (
     <PageContainer>
       <SectionHeader 
-        title="Bookmarked Lessons"
-        badge="Saved Resources"
+        title="Saved Archives"
+        description="Access your collection of bookmarked modules."
+        badge="BOOKMARKS"
         action={
-          <div className="flex items-center gap-6 px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-border">
+          <div className="flex items-center gap-8 px-8 py-4 rounded-3xl bg-surface-1 dark:bg-surface-2 border border-border shadow-inner">
              <div className="text-center">
-               <p className="text-lg font-bold text-text-1 leading-none mb-1">{videos.length}</p>
-               <p className="text-xs font-medium text-text-3">Saved Items</p>
+               <p className="text-2xl font-black text-text-1 leading-none mb-1">{videos.length}</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">Saved Nodes</p>
              </div>
-             <div className="w-px h-8 bg-border" />
+             <div className="w-px h-10 bg-border" />
              <div className="text-center flex flex-col items-center">
-               <div className="w-6 h-6 rounded-md bg-indigo-500/10 flex items-center justify-center text-indigo-500 mb-1">
-                 <Sparkles className="w-3 h-3" />
+               <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent mb-1 border border-accent/20">
+                 <Sparkles className="w-4 h-4 fill-current" />
                </div>
-               <p className="text-[10px] font-bold uppercase tracking-wider text-text-3">Sync Active</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-accent">Active Sync</p>
              </div>
           </div>
         }
       />
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border/50 pb-4">
-          <h2 className="text-sm font-bold text-text-1">My Bookmarks</h2>
+      <div className="space-y-10">
+        <div className="flex items-center justify-between border-b border-border/50 pb-6">
+          <h2 className="text-[10px] font-black text-text-3 uppercase tracking-[0.3em]">Personal Repository</h2>
         </div>
 
         {fetchError ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border">
-            <AlertCircle className="w-10 h-10 text-rose-400" aria-hidden="true" />
-            <p className="text-sm font-bold text-text-1">Could Not Load Bookmarks</p>
-            <p className="text-xs text-text-3">{fetchError}</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-32 space-y-8 text-center bg-rose-500/5 rounded-[40px] border border-dashed border-rose-500/20"
+          >
+            <div className="w-20 h-20 rounded-3xl bg-surface-1 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl">
+              <AlertCircle className="w-10 h-10" aria-hidden="true" />
+            </div>
+            <div className="space-y-3">
+              <p className="text-xl font-black text-text-1 tracking-tight">Access Protocol Failure</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">{fetchError}</p>
+            </div>
             <button
               onClick={() => { setFetchError(null); setLoading(true); }}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-            >Retry</button>
-          </div>
+              className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-rose-500/20"
+            >
+              Retry Connection
+            </button>
+          </motion.div>
         ) : loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {Array(8).fill(0).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : videos.length === 0 ? (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-32 space-y-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-border"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-32 space-y-10 bg-surface-1 dark:bg-surface-2 rounded-[40px] border border-dashed border-border group"
           >
-            <div className="w-20 h-20 rounded-2xl bg-slate-200 dark:bg-white/5 flex items-center justify-center mx-auto text-text-3">
-               <Compass className="w-8 h-8" />
+            <div className="w-24 h-24 rounded-[32px] bg-surface-2 dark:bg-surface-3 flex items-center justify-center mx-auto text-text-4 border border-border shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+               <Bookmark className="w-10 h-10 opacity-20" />
             </div>
-            <div className="space-y-2">
-              <p className="text-lg font-bold text-text-1">No Bookmarks Yet</p>
-              <p className="text-sm text-text-3">Explore the platform to find and save educational resources.</p>
+            <div className="space-y-3">
+              <p className="text-2xl font-black text-text-1 tracking-tight">Archives Empty</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4 max-w-xs mx-auto leading-relaxed">Initiate discovery protocol to populate your knowledge collection.</p>
             </div>
             <button 
               onClick={() => router.push('/explore')}
-              className="px-6 py-3 rounded-xl bg-indigo-500 text-white text-sm font-bold shadow-sm hover:opacity-90 transition-opacity"
+              className="px-10 py-5 rounded-2xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-accent/20 hover:scale-105 active:scale-95 transition-all border border-accent/20"
             >
-              Explore Lessons
+              Explore Network
             </button>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            <AnimatePresence>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            <AnimatePresence mode="popLayout">
               {videos.map((v, i) => (
                 <motion.div
                   key={v._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ ...springConfig, delay: i * 0.05 }}
                 >
                   <VideoCard video={v} />

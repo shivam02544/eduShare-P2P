@@ -17,7 +17,7 @@ export default function Error({ error, reset }) {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 mb-8"
+        className="w-20 h-20 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 mb-8"
       >
         <AlertCircle className="w-10 h-10" />
       </motion.div>
@@ -32,7 +32,7 @@ export default function Error({ error, reset }) {
       <div className="flex flex-wrap items-center justify-center gap-4 mt-12">
         <button
           onClick={() => reset()}
-          className="group flex items-center gap-3 px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-indigo-500/10"
+          className="group flex items-center gap-3 px-8 py-4 bg-accent text-white rounded-xl font-bold text-[11px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-accent/10"
         >
           <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
           Try Again
@@ -40,7 +40,7 @@ export default function Error({ error, reset }) {
         
         <Link
           href="/"
-          className="group flex items-center gap-3 px-8 py-4 bg-slate-50 dark:bg-white/5 border border-border text-text-2 rounded-2xl font-bold text-[11px] uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-white/10 transition-all font-bold"
+          className="group flex items-center gap-3 px-8 py-4 bg-surface-2 dark:bg-surface-3 border border-border text-text-2 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-surface-3 dark:hover:bg-surface-4 transition-all"
         >
           <Home className="w-4 h-4" />
           Go Home

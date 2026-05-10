@@ -43,18 +43,18 @@ import {
   Target
 } from "lucide-react";
 
-const springConfig = { mass: 1, tension: 120, friction: 20 };
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 function VideoSkeleton() {
   return (
-    <div className="max-w-[1440px] mx-auto space-y-12 animate-pulse pb-32 px-8">
-      <div className="aspect-video w-full rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
+    <div className="max-w-[1440px] mx-auto space-y-16 animate-pulse pb-32 px-8">
+      <div className="aspect-video w-full rounded-[40px] bg-surface-2 dark:bg-surface-3 border border-border/50" />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="h-16 w-3/4 bg-slate-200 dark:bg-white/5 rounded-3xl" />
-          <div className="h-8 w-1/4 bg-slate-200 dark:bg-white/5 rounded-xl" />
+        <div className="lg:col-span-2 space-y-10">
+          <div className="h-24 w-3/4 bg-surface-2 dark:bg-surface-3 rounded-[32px]" />
+          <div className="h-12 w-1/4 bg-surface-2 dark:bg-surface-3 rounded-2xl" />
         </div>
-        <div className="h-96 bg-slate-200 dark:bg-white/5 rounded-2xl" />
+        <div className="h-96 bg-surface-2 dark:bg-surface-3 rounded-[40px]" />
       </div>
     </div>
   );
@@ -133,19 +133,19 @@ export default function VideoPage() {
 
   if (fetchError) return (
     <PageContainer>
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6">
-        <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-10">
+        <div className="w-24 h-24 rounded-[32px] bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-500/5">
           <AlertCircle className="w-10 h-10" aria-hidden="true" />
         </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-text-1">Could Not Load Video</h2>
-          <p className="text-sm text-text-3">{fetchError}</p>
+        <div className="space-y-3">
+          <h2 className="text-3xl font-black text-text-1 tracking-tight">Access Protocol Failure</h2>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">{fetchError}</p>
         </div>
         <button
           onClick={() => { setLoading(true); setFetchError(null); }}
-          className="px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="px-10 py-5 rounded-2xl bg-surface-1 dark:bg-surface-2 border border-border text-text-1 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface-2 transition-all shadow-xl"
         >
-          Retry
+          Retry Connection
         </button>
       </div>
     </PageContainer>
@@ -153,17 +153,24 @@ export default function VideoPage() {
 
   if (!video || video.error) return (
     <PageContainer>
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-8">
-        <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3">
-          <AlertCircle className="w-10 h-10" aria-hidden="true" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12">
+        <div className="relative group">
+           <div className="w-48 h-48 rounded-[40px] bg-surface-1 dark:bg-surface-2 flex items-center justify-center text-text-4 border border-border shadow-inner group-hover:scale-105 transition-transform duration-700">
+             <AlertCircle className="w-20 h-20 opacity-10" aria-hidden="true" />
+           </div>
+           <motion.div 
+             animate={{ rotate: -360 }}
+             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+             className="absolute -inset-8 border border-accent/10 rounded-full border-dashed"
+           />
         </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-text-1">Video Not Found</h2>
-          <p className="text-sm font-medium text-text-3">Access Denied or Video Offline</p>
+        <div className="space-y-4">
+          <h2 className="text-5xl font-black text-text-1 tracking-tight">Session Terminated</h2>
+          <p className="text-text-4 font-black uppercase tracking-[0.3em] text-[10px]">The requested node is inaccessible or has been archived.</p>
         </div>
-        <Link href="/explore" className="flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
-          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-          Browse Content
+        <Link href="/explore" className="group flex items-center gap-4 px-12 py-6 bg-text-1 text-bg rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl">
+          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-500" aria-hidden="true" />
+          BACK TO NETWORK
         </Link>
       </div>
     </PageContainer>
@@ -176,7 +183,7 @@ export default function VideoPage() {
         initial={{ opacity: 0, scale: 0.98, filter: "blur(10px)" }}
         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
         transition={springConfig}
-        className="relative aspect-video w-full rounded-3xl overflow-hidden bg-slate-950 border border-border"
+        className="relative aspect-video w-full rounded-[40px] overflow-hidden bg-black border border-border shadow-2xl group"
       >
         <video
           ref={videoRef}
@@ -195,68 +202,69 @@ export default function VideoPage() {
       </motion.div>
 
       {/* ── Lesson Content ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 mt-8">
-        <div className="xl:col-span-2 space-y-10">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-16 mt-16">
+        <div className="xl:col-span-2 space-y-16">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            className="space-y-10"
           >
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-500/20">
-                    <Database className="w-4 h-4" />
-                    {video.subject || "Lesson"}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-4">
+                 <div className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-accent text-bg text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-accent/20 border border-accent/20">
+                    <Database className="w-4 h-4 fill-current" />
+                    {video.subject || "MODULE"}
                  </div>
                  {video.boostedUntil && new Date(video.boostedUntil) > new Date() && (
-                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-100 dark:border-amber-500/20">
-                      <Zap className="w-4 h-4" />
-                      Featured
+                   <div className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-[0.2em] border border-amber-500/20 shadow-sm shadow-amber-500/5">
+                      <Zap className="w-4 h-4 fill-current" />
+                      PRIORITY NODE
                    </div>
                  )}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-text-1 leading-tight">
+              <h1 className="text-5xl md:text-7xl font-black text-text-1 leading-[0.95] tracking-tight">
                 {video.title}
               </h1>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-y border-border py-6">
-              <Link href={`/profile/${video.uploader?.firebaseUid}`} className="flex items-center gap-4 group">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-12 border-y border-border/50 py-10">
+              <Link href={`/profile/${video.uploader?.firebaseUid}`} className="flex items-center gap-6 group/u">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-border">
+                  <div className="w-16 h-16 rounded-[24px] overflow-hidden border border-border group-hover/u:rotate-6 transition-transform duration-500 shadow-xl">
                     {video.uploader?.image ? (
                       <img src={video.uploader.image} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-text-2 font-bold text-lg">
+                      <div className="w-full h-full bg-accent text-bg flex items-center justify-center font-black text-2xl border border-accent">
                         {video.uploader?.name?.[0]}
                       </div>
                     )}
                   </div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-surface-1 shadow-lg" />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-text-1 group-hover:text-indigo-500 transition-colors">
+                 <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Contributor</span>
+                  <span className="text-xl font-black text-text-1 group-hover/u:text-accent transition-colors uppercase tracking-tight">
                     {video.uploader?.name}
-                  </p>
-                  <p className="text-xs text-text-3 font-medium mt-0.5">Course Instructor</p>
+                  </span>
                 </div>
               </Link>
 
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-lg">
-                    <Activity className="w-4 h-4 text-emerald-500" />
+              <div className="flex items-center gap-12">
+                 <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Engagements</span>
+                  <div className="flex items-center gap-3 text-2xl font-black text-text-1">
+                    <Activity className="w-5 h-5 text-accent" />
                     {video.views} 
                   </div>
-                  <span className="text-xs font-medium text-text-3">Views</span>
                 </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-right">
-                  <div className="flex items-center justify-end gap-2 text-text-1 font-bold text-lg">
-                    <Calendar className="w-4 h-4 text-indigo-500" />
+                <div className="w-px h-12 bg-border/50" />
+                 <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Timestamp</span>
+                  <div className="flex items-center gap-3 text-2xl font-black text-text-1">
+                    <Calendar className="w-5 h-5 text-accent" />
                     {new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </div>
-                  <span className="text-xs font-medium text-text-3">Posted On</span>
                 </div>
               </div>
             </div>
@@ -267,35 +275,35 @@ export default function VideoPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="flex items-center gap-4 flex-wrap"
+            className="flex items-center gap-6 flex-wrap"
           >
-            <div className="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-border flex items-center gap-4">
-              <span className="text-xs font-bold text-text-2">Likes</span>
-              <div className="w-px h-4 bg-border" />
+             <div className="px-6 py-4 rounded-3xl bg-surface-1 dark:bg-surface-2 border border-border flex items-center gap-6 shadow-inner">
+              <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Reaction Protocol</span>
+              <div className="w-px h-6 bg-border" />
               <LikeBookmarkBar item={video} type="video" />
             </div>
             
-            <div className="px-2 py-1 rounded-xl bg-white dark:bg-slate-900 border border-border">
+            <div className="p-1 rounded-3xl bg-surface-1 dark:bg-surface-2 border border-border shadow-sm">
                <AddToCollection videoId={id} />
             </div>
 
             {video?.uploader?.firebaseUid === user?.uid && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
                 <BoostButton
                   type="video"
                   id={id}
                   boostedUntil={video.boostedUntil}
                   onBoosted={(until) => setVideo((v) => ({ ...v, boostedUntil: until }))}
                 />
-                <button 
+                 <button 
                   onClick={() => setAdminMode(!adminMode)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
                     adminMode 
-                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent" 
-                      : "bg-white dark:bg-slate-900 border-border text-text-2 hover:bg-slate-50 dark:hover:bg-white/5"
+                      ? "bg-text-1 text-bg border-transparent shadow-2xl" 
+                      : "bg-surface-1 dark:bg-surface-2 border-border text-text-2 hover:bg-surface-2 shadow-sm"
                   }`}
                 >
-                  {adminMode ? "Close Settings" : "Edit Video"}
+                  {adminMode ? "CLOSE ARCHIVE" : "CONFIGURE NODE"}
                 </button>
               </div>
             )}
@@ -307,38 +315,43 @@ export default function VideoPage() {
 
           {/* Description */}
           {video.description && (
-            <motion.div 
+             <motion.div 
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
-              className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
+              className="bg-surface-1 dark:bg-surface-2 border border-border p-10 md:p-16 rounded-[40px] shadow-sm group hover:shadow-2xl hover:shadow-black/5 transition-all duration-700"
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                   <Archive className="w-5 h-5" />
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-12 h-12 rounded-[20px] bg-accent/10 flex items-center justify-center text-accent shadow-inner border border-accent/20">
+                   <Archive className="w-6 h-6 fill-current" />
                 </div>
                 <div>
-                   <h2 className="text-lg font-bold text-text-1">Description</h2>
+                   <h2 className="text-[10px] font-black text-accent uppercase tracking-[0.3em]">Module Overview</h2>
+                   <p className="text-2xl font-black text-text-1 tracking-tight">Artifact Metadata</p>
                 </div>
               </div>
-              <p className="text-sm font-medium text-text-2 leading-relaxed whitespace-pre-line">{video.description}</p>
+               <div className="relative">
+                 <div className="absolute inset-0 bg-accent/5 rounded-3xl blur-3xl -z-10 group-hover:bg-accent/10 transition-colors" />
+                 <p className="text-lg font-medium text-text-2 leading-relaxed whitespace-pre-line bg-surface-2 dark:bg-surface-3 p-10 rounded-[32px] border border-border shadow-inner">{video.description}</p>
+               </div>
             </motion.div>
           )}
 
           {/* Video Sections: Chapters indices */}
           {video.chapters?.length > 0 && (
-            <motion.div 
+             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
+              className="bg-surface-1 dark:bg-surface-2 border border-border p-10 md:p-16 rounded-[40px] shadow-sm"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-text-1 flex items-center justify-center">
-                  <Target className="w-5 h-5" />
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-12 h-12 rounded-[20px] bg-surface-2 dark:bg-surface-3 text-text-1 flex items-center justify-center border border-border shadow-inner">
+                  <Target className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-text-1">Video Chapters</h2>
+                   <h2 className="text-[10px] font-black text-text-4 uppercase tracking-[0.3em]">Temporal Navigation</h2>
+                   <p className="text-2xl font-black text-text-1 tracking-tight">Session Indices</p>
                 </div>
               </div>
               <ChapterList
@@ -352,22 +365,25 @@ export default function VideoPage() {
           {/* Quiz Gateway CTA */}
           <AnimatePresence>
             {(quiz?.exists || (video?.uploader?.firebaseUid === user?.uid)) && (
-              <motion.div 
+               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45 }}
-                className="bg-indigo-50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/20 p-6 md:p-8 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+                className="bg-accent/5 border border-accent/20 p-10 md:p-16 rounded-[48px] flex flex-col md:flex-row md:items-center justify-between gap-12 shadow-2xl shadow-accent/5 relative overflow-hidden group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500 text-white flex items-center justify-center shrink-0">
-                    <Zap className="w-6 h-6" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-[100px] -z-10 group-hover:scale-150 transition-transform duration-1000" />
+                
+                <div className="flex items-center gap-8">
+                  <div className="w-20 h-20 rounded-[32px] bg-accent text-bg flex items-center justify-center shrink-0 shadow-2xl shadow-accent/30 border border-accent/20">
+                    <Zap className="w-10 h-10 fill-current" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-text-1">Video Knowledge Quiz</h2>
-                    <p className="text-sm font-medium text-text-3 mt-1">
+                    <h2 className="text-[10px] font-black text-accent uppercase tracking-[0.4em] mb-2">Cognitive Validation</h2>
+                    <p className="text-3xl font-black text-text-1 tracking-tight leading-none mb-4">Module Examination</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">
                       {quiz?.exists 
-                        ? (quiz.attempted ? "Review your performance" : "Test your knowledge & earn credits") 
-                        : "No quiz available currently"}
+                        ? (quiz.attempted ? "PERFORMANCE ARTIFACTS AVAILABLE" : "TEST COGNITION & SECURE CREDITS") 
+                        : "PORTAL UNDER MAINTENANCE"}
                     </p>
                   </div>
                 </div>
@@ -375,10 +391,10 @@ export default function VideoPage() {
                 <div className="flex items-center">
                   <Link 
                     href={`/videos/${id}/quiz`} 
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
+                    className="w-full md:w-auto flex items-center justify-center gap-4 px-12 py-6 bg-accent text-bg rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-accent/20 border border-accent/20"
                   >
-                    {quiz?.exists ? (quiz.attempted ? "View Results" : "Take the Quiz") : (video?.uploader?.firebaseUid === user?.uid ? "Create Quiz Module" : "View Quiz Portal")}
-                    <ArrowRight className="w-4 h-4" />
+                    {quiz?.exists ? (quiz.attempted ? "VIEW ARTIFACTS" : "INITIATE EXAM") : (video?.uploader?.firebaseUid === user?.uid ? "CONSTRUCT PORTAL" : "VIEW PORTAL")}
+                    <ArrowRight className="w-5 h-5" />
                   </Link>
                 </div>
               </motion.div>
@@ -390,12 +406,17 @@ export default function VideoPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white dark:bg-slate-900 border border-border p-6 md:p-8 rounded-3xl"
+            className="bg-surface-1 dark:bg-surface-2 border border-border p-10 md:p-16 rounded-[40px] shadow-sm"
           >
-            <div className="flex items-center justify-between mb-8">
-               <div className="flex items-center gap-3">
-                  <Activity className="w-5 h-5 text-indigo-500" />
-                  <span className="text-lg font-bold text-text-1">Comments</span>
+            <div className="flex items-center justify-between mb-12">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-[20px] bg-accent/5 text-accent flex items-center justify-center border border-accent/10 shadow-inner">
+                     <Activity className="w-6 h-6" />
+                  </div>
+                  <div>
+                     <h2 className="text-[10px] font-black text-text-4 uppercase tracking-[0.3em]">Network Discourse</h2>
+                     <p className="text-2xl font-black text-text-1 tracking-tight">Public Feedback</p>
+                  </div>
                </div>
             </div>
             <Comments videoId={id} />
@@ -403,7 +424,7 @@ export default function VideoPage() {
         </div>
 
         {/* Sidebar Space: Settings & Management */}
-        <div className="space-y-8">
+        <div className="space-y-12">
           
           {/* Chapter Manager (Admin Only) */}
           <AnimatePresence>
@@ -412,17 +433,15 @@ export default function VideoPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white dark:bg-slate-900 border border-indigo-500/30 p-6 rounded-3xl"
+                className="bg-surface-1 dark:bg-surface-2 border border-accent/30 p-10 rounded-[40px] shadow-2xl shadow-accent/5"
               >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
-                    <Monitor className="w-5 h-5" />
+                <div className="flex items-center gap-5 mb-10">
+                  <div className="w-12 h-12 rounded-[20px] bg-accent text-bg flex items-center justify-center shadow-lg shadow-accent/20">
+                    <Monitor className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-text-1">Dashboard</h2>
-                    <p className="text-xs font-medium text-text-3">
-                      Manage Chapters
-                    </p>
+                    <h2 className="text-[10px] font-black text-accent uppercase tracking-[0.3em] mb-1">Command Center</h2>
+                    <p className="text-xl font-black text-text-1 tracking-tight">Node Configuration</p>
                   </div>
                 </div>
                 <ChapterEditor

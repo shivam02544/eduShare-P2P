@@ -4,9 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Medal, Users, TrendingUp, Search, User, Target, Zap } from "lucide-react";
+import PageContainer from "@/components/layouts/PageContainer";
+import { Trophy, Medal, Users, TrendingUp, Search, User, Target, Zap, Award, Activity, Sparkles, ChevronRight } from "lucide-react";
 
-const springConfig = { mass: 1, tension: 120, friction: 20 };
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 // Simple in-memory client cache
 const memCache = {};
@@ -14,16 +15,16 @@ function getMemCache(key) { const e = memCache[key]; return e && e.exp > Date.no
 function setMemCache(key, data, ttlMs = 60_000) { memCache[key] = { data, exp: Date.now() + ttlMs }; }
 
 const medals = [
-  <Medal key="gold" className="w-8 h-8 text-amber-400" />, 
-  <Medal key="silver" className="w-8 h-8 text-slate-400" />, 
-  <Medal key="bronze" className="w-8 h-8 text-amber-700" />
+  <Medal key="gold" className="w-10 h-10 text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />, 
+  <Medal key="silver" className="w-10 h-10 text-slate-400 drop-shadow-[0_0_15px_rgba(148,163,184,0.5)]" />, 
+  <Medal key="bronze" className="w-10 h-10 text-amber-700 drop-shadow-[0_0_15px_rgba(180,83,9,0.5)]" />
 ];
 
 function LeaderboardSkeleton() {
   return (
     <div className="space-y-4">
       {Array(8).fill(0).map((_, i) => (
-        <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-white/5 animate-pulse" />
+        <div key={i} className="h-28 rounded-3xl bg-surface-2 dark:bg-surface-3 animate-pulse border border-border/50" />
       ))}
     </div>
   );
@@ -58,153 +59,167 @@ export default function LeaderboardPage() {
   const myRank = users.findIndex((u) => u.firebaseUid === user?.uid) + 1;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 md:space-y-12 pb-32 px-4 md:px-6 lg:px-0">
-      
-      {/* ── Page Header ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={springConfig}
-        className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-10 lg:p-16 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-border shadow-2xl"
-      >
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-amber-500/5 rounded-full blur-[120px] -z-10" />
+    <PageContainer>
+      <div className="max-w-5xl mx-auto space-y-20 pb-32">
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-10">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
-                <Trophy className="w-6 h-6" />
+        {/* ── Page Header ── */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={springConfig}
+          className="relative overflow-hidden rounded-3xl p-10 md:p-16 bg-surface-1 dark:bg-surface-2 text-text-1 shadow-xl border border-border group"
+        >
+          <div className="absolute top-0 right-0 w-[80%] h-[80%] bg-accent/5 rounded-full blur-[140px] -z-10 group-hover:scale-110 transition-transform duration-1000" />
+          
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-16 relative z-10">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-accent text-bg flex items-center justify-center shadow-lg shadow-accent/20 border border-accent/20">
+                  <Award className="w-6 h-6" />
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-accent">Hall of Fame</span>
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-text-3">Global Leaderboard</span>
+              <h1 className="text-5xl md:text-7xl font-bold text-text-1 tracking-tight leading-none">
+                Network<br /><span className="text-accent">Elite</span>
+              </h1>
+              <p className="text-lg font-medium text-text-4 max-w-md leading-relaxed">
+                Celebrating the architects of collective intelligence and the champions of peer-to-peer exchange.
+              </p>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-text-1 tracking-tight leading-tight">
-              Top <span className="text-amber-500">Contributors</span>
-            </h1>
-            <p className="text-base font-medium text-text-3 max-w-sm">
-              Recognizing the top contributors in the EduShare community.
-            </p>
+
+            {/* User Rank Overview */}
+            {myRank > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ ...springConfig, delay: 0.2 }}
+                className="p-8 rounded-3xl bg-surface-2 dark:bg-surface-3 text-text-1 shadow-xl space-y-8 border border-border min-w-[320px] relative overflow-hidden group/rank"
+              >
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/rank:opacity-10 transition-opacity">
+                  <Sparkles className="w-20 h-20" />
+                </div>
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-2xl bg-accent text-bg flex items-center justify-center shadow-xl shadow-accent/30 border-4 border-surface-1">
+                     <Target className="w-8 h-8" />
+                  </div>
+                  <div>
+                     <p className="text-[11px] font-bold uppercase tracking-wider text-accent mb-1">My Standing</p>
+                     <p className="text-4xl font-bold tracking-tight">#{myRank}</p>
+                  </div>
+                </div>
+                 <div className="h-px bg-border/50" />
+                <div className="flex items-center justify-between gap-12">
+                   <div className="flex flex-col">
+                       <span className="text-[11px] font-bold uppercase tracking-wider text-text-4 mb-1">Asset Value</span>
+                       <div className="flex items-center gap-3">
+                         <Zap className="w-4 h-4 text-accent fill-accent" />
+                         <span className="text-2xl font-bold tracking-tight text-text-1">{users[myRank - 1]?.credits}</span>
+                       </div>
+                    </div>
+                    <Link href={`/profile/${user?.uid}`} className="px-6 py-3 rounded-xl bg-text-1 text-bg text-[11px] font-bold uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all">
+                      View Identity
+                    </Link>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* ── Rankings List ── */}
+        <div className="space-y-12">
+          <div className="flex items-center justify-between border-b border-border/50 pb-10 px-8">
+            <div className="flex items-center gap-4 text-text-1">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.4em]">Live Network Standing</h2>
+            </div>
+            <div className="flex items-center gap-8">
+               <div className="flex items-center gap-2 text-[11px] font-bold text-text-4 uppercase tracking-wider">
+                  <Users className="w-4 h-4 opacity-40" />
+                  {users.length} Active Nodes
+               </div>
+            </div>
           </div>
 
-          {/* User Rank Overview */}
-          {myRank > 0 && (
-            <motion.div 
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              className="px-6 md:px-8 py-5 md:py-6 rounded-2xl md:rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-2xl space-y-3 md:space-y-4 border border-white/10"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-lg border border-white/20">
-                   <Target className="w-6 h-6" />
-                </div>
-                <div>
-                   <p className="text-xs font-bold uppercase tracking-wider opacity-60">My Rank</p>
-                   <p className="text-2xl font-bold tracking-tight">Position #{myRank}</p>
-                </div>
-              </div>
-              <div className="h-px bg-white/10 dark:bg-indigo-500/10" />
-              <div className="flex items-center justify-between gap-8">
-                 <div className="space-y-0.5">
-                    <p className="text-xs font-bold uppercase tracking-wider opacity-60">Total Credits</p>
-                    <p className="text-lg font-bold tracking-tight">{users[myRank - 1]?.credits}</p>
-                 </div>
-                 <Link href={`/profile/${user?.uid}`} className="px-4 py-2 rounded-xl bg-white/10 dark:bg-indigo-500/10 text-xs font-bold uppercase tracking-wider border border-white/10 hover:bg-white/20 transition-all">
-                   View Profile
-                 </Link>
-              </div>
-            </motion.div>
+          {loading ? <LeaderboardSkeleton /> : (
+            <div className="space-y-6">
+              <AnimatePresence>
+                {users.map((u, i) => {
+                  const isMe = u.firebaseUid === user?.uid;
+                  const isTop3 = i < 3;
+                  
+                  return (
+                    <motion.div
+                      key={u._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ ...springConfig, delay: i * 0.05 }}
+                    >
+                       <Link href={`/profile/${u.firebaseUid}`}
+                        className={`group relative flex items-center gap-6 md:gap-10 p-8 rounded-3xl border transition-all duration-500 ${
+                          isMe ? "bg-accent/5 border-accent shadow-xl shadow-accent/5 z-10" : "bg-surface-1 dark:bg-surface-2 border-border hover:bg-surface-2 hover:shadow-xl hover:-translate-y-1"
+                        }`}
+                      >
+                        {/* Rank Indicator */}
+                        <div className="w-16 flex flex-col items-center justify-center shrink-0">
+                          {isTop3 ? medals[i] : (
+                            <span className="text-3xl font-black text-text-4/20 italic tracking-tighter">#{i + 1}</span>
+                          )}
+                        </div>
+
+                        {/* User Avatar */}
+                        <div className="relative shrink-0">
+                           {u.image ? (
+                             <div className={`p-0.5 rounded-2xl transition-transform duration-500 group-hover:rotate-3 ${isTop3 ? 'bg-gradient-to-br from-accent to-accent/50 shadow-lg shadow-accent/10' : 'bg-border'}`}>
+                               <img src={u.image} alt="" className="w-16 h-16 md:w-20 md:h-20 rounded-[14px] object-cover border-2 border-surface-1 shadow-inner" />
+                             </div>
+                          ) : (
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-surface-2 dark:bg-surface-3 flex items-center justify-center text-text-1 text-2xl font-bold border border-border group-hover:bg-accent group-hover:text-bg transition-all shadow-inner group-hover:rotate-3">
+                              {u.name?.[0]?.toUpperCase()}
+                            </div>
+                          )}
+                          {isMe && <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-accent border-4 border-surface-1 shadow-2xl z-10 animate-pulse" />}
+                        </div>
+
+                        {/* User Details */}
+                         <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-3 mb-2">
+                             <p className="text-2xl md:text-3xl font-bold text-text-1 tracking-tight group-hover:text-accent transition-colors truncate uppercase">{u.name}</p>
+                             {isMe && <span className="text-[10px] font-bold uppercase tracking-wider bg-accent text-bg px-3 py-1 rounded-full shadow-lg shadow-accent/10 border border-accent/20">Authorized Identity</span>}
+                           </div>
+                           {u.skills?.length > 0 && (
+                              <div className="hidden sm:flex flex-wrap gap-2">
+                               {u.skills.slice(0, 4).map((s) => (
+                                 <span key={s} className="text-[10px] font-semibold uppercase tracking-wider bg-surface-2 dark:bg-surface-3 text-text-4 px-3 py-1.5 rounded-lg border border-border group-hover:border-accent/30 transition-all">
+                                   {s}
+                                 </span>
+                               ))}
+                             </div>
+                           )}
+                         </div>
+
+                         {/* Credit Score */}
+                        <div className="flex items-center gap-5 bg-surface-2 dark:bg-surface-3 px-8 py-5 rounded-2xl shadow-inner border border-border group-hover:border-accent/30 transition-all shrink-0">
+                          <div className="text-right space-y-0.5">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-text-4 opacity-50">Equity</p>
+                            <div className="flex items-center justify-end gap-2">
+                               <Zap className="w-5 h-5 text-accent fill-accent" />
+                               <p className="text-3xl font-bold text-text-1 tracking-tight">{u.credits}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-6 h-6 text-text-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
           )}
         </div>
-      </motion.div>
-
-      {/* ── Rankings List ── */}
-      <div className="space-y-8">
-        <div className="flex items-center justify-between border-b border-border/50 pb-6">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-4 h-4 text-text-3" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-text-3">Rankings</h2>
-          </div>
-          <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 text-xs font-bold text-text-3">
-                <Users className="w-3.5 h-3.5" />
-                {users.length} Active Members
-             </div>
-          </div>
-        </div>
-
-        {loading ? <LeaderboardSkeleton /> : (
-          <div className="space-y-4">
-            <AnimatePresence>
-              {users.map((u, i) => {
-                const isMe = u.firebaseUid === user?.uid;
-                const isTop3 = i < 3;
-                
-                return (
-                  <motion.div
-                    key={u._id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ ...springConfig, delay: i * 0.05 }}
-                  >
-                    <Link href={`/profile/${u.firebaseUid}`}
-                      className={`group relative flex items-center gap-3 md:gap-6 p-4 md:p-5 rounded-2xl md:rounded-3xl backdrop-blur-md border transition-all duration-300 ${
-                        isMe ? "bg-indigo-500/10 border-indigo-500/30 shadow-xl" : "bg-white/70 dark:bg-slate-900/70 border-border hover:bg-slate-50 dark:hover:bg-white/5"
-                      }`}
-                    >
-                      {/* Rank Indicator */}
-                      <div className="w-10 flex flex-col items-center justify-center">
-                        {isTop3 ? medals[i] : (
-                          <span className="text-sm font-bold text-text-3 opacity-40">#{i + 1}</span>
-                        )}
-                      </div>
-
-                      {/* User Avatar */}
-                      <div className="relative">
-                        {u.image ? (
-                          <img src={u.image} alt="" className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl object-cover ring-2 ring-border shadow-lg group-hover:scale-110 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-2 text-base md:text-xl font-bold border border-border group-hover:bg-indigo-500 transition-all">
-                            {u.name?.[0]?.toUpperCase()}
-                          </div>
-                        )}
-                        {isMe && <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-indigo-500 border-2 border-white dark:border-slate-900" />}
-                      </div>
-
-                      {/* User Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
-                          <p className="text-sm md:text-lg font-bold text-text-1 tracking-tight group-hover:text-amber-500 transition-colors truncate">{u.name}</p>
-                          {isMe && <span className="text-xs font-bold uppercase tracking-wider bg-indigo-500 text-white px-2 py-0.5 rounded-md">Top Member</span>}
-                        </div>
-                        {u.skills?.length > 0 && (
-                          <div className="hidden sm:flex gap-2 mt-1.5 opacity-60">
-                            {u.skills.slice(0, 3).map((s) => (
-                              <span key={s} className="text-xs font-bold uppercase tracking-tight bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-lg border border-border">
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Credit Score */}
-                      <div className="flex items-center gap-2 md:gap-4 bg-slate-900 dark:bg-white px-3 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl shadow-xl shadow-slate-900/20 group-hover:scale-105 transition-transform duration-500 shrink-0">
-                        <div className="text-center">
-                          <p className="text-xs font-bold uppercase tracking-wider text-white/50 dark:text-slate-400 mb-0.5">Credits</p>
-                          <div className="flex items-center gap-2">
-                             <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                             <p className="text-base font-bold text-white dark:text-slate-950 tracking-tight">{u.credits}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
-        )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

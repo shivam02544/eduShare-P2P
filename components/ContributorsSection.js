@@ -44,7 +44,7 @@ const CONTRIBUTORS = [
     name: "Priya Sharma",
     role: "Engineering Student",
     avatar: "P",
-    avatarBg: "bg-indigo-500",
+    avatarBg: "bg-accent",
     credits: 3840,
     uploads: 42,
     subjects: ["Physics", "Math"],
@@ -114,10 +114,10 @@ export default function ContributorsSection() {
                 variants={itemVariants}
                 whileHover={{ y: -4 }}
                 transition={springConfig}
-                className={`group relative bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg ${rank.glow} transition-all overflow-hidden`}
+                className={`group relative bg-bg dark:bg-surface-2 border border-border rounded-xl p-6 shadow-sm hover:shadow-lg ${rank.glow} transition-all overflow-hidden`}
               >
                 {/* Background texture */}
-                <div className="absolute -top-16 -right-16 w-32 h-32 bg-slate-50 dark:bg-slate-800 rounded-full opacity-50 transition-opacity" />
+                <div className="absolute -top-16 -right-16 w-32 h-32 bg-surface-2 dark:bg-surface-3 rounded-full opacity-50 transition-opacity" />
 
                 {/* Rank badge */}
                 <div className="relative z-10 space-y-6">
@@ -125,12 +125,12 @@ export default function ContributorsSection() {
                     {/* Avatar */}
                     <div className="relative">
                       <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-md ring-2 ${rank.ringColor} ${c.avatarBg} transition-transform group-hover:scale-105 duration-300`}
+                        className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-md ring-2 ${rank.ringColor} ${c.avatarBg} transition-transform group-hover:scale-105 duration-300`}
                       >
                         {c.avatar}
                       </div>
                       {/* Online dot */}
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center">
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-bg flex items-center justify-center">
                         <ShieldCheck className="w-2.5 h-2.5 text-white" />
                       </div>
                     </div>
@@ -145,7 +145,7 @@ export default function ContributorsSection() {
 
                   {/* Info */}
                   <div className="space-y-1">
-                    <p className="text-base font-bold text-text-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <p className="text-base font-bold text-text-1 group-hover:text-accent transition-colors">
                       {c.name}
                     </p>
                     <p className="text-xs font-semibold text-text-3">
@@ -163,7 +163,7 @@ export default function ContributorsSection() {
                     {c.subjects.map((s) => (
                       <span
                         key={s}
-                        className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-border text-xs font-semibold text-text-3"
+                        className="px-2.5 py-1 rounded-lg bg-surface-2 dark:bg-surface-3 border border-border text-xs font-semibold text-text-3"
                       >
                         {s}
                       </span>

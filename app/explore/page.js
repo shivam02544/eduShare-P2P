@@ -25,17 +25,17 @@ import ResponsiveGrid from "@/components/layouts/ResponsiveGrid";
 function SkeletonCard() {
   return (
     <div
-      className="rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse border border-border/50 overflow-hidden"
+      className="rounded-xl bg-surface-2 dark:bg-surface-3 animate-pulse border border-border/50 overflow-hidden"
       aria-hidden="true"
     >
-      <div className="aspect-video bg-slate-300 dark:bg-white/10" />
+      <div className="aspect-video bg-surface-3 dark:bg-surface-4" />
       <div className="p-5 space-y-3">
-        <div className="h-4 rounded bg-slate-300 dark:bg-white/10 w-4/5" />
-        <div className="h-3 rounded bg-slate-300 dark:bg-white/10 w-3/5" />
-        <div className="h-3 rounded bg-slate-300 dark:bg-white/10 w-2/5" />
+        <div className="h-4 rounded bg-surface-3 dark:bg-surface-4 w-4/5" />
+        <div className="h-3 rounded bg-surface-3 dark:bg-surface-4 w-3/5" />
+        <div className="h-3 rounded bg-surface-3 dark:bg-surface-4 w-2/5" />
         <div className="pt-3 border-t border-border flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-300 dark:bg-white/10" />
-          <div className="h-3 rounded bg-slate-300 dark:bg-white/10 flex-1" />
+          <div className="w-8 h-8 rounded-lg bg-surface-3 dark:bg-surface-4" />
+          <div className="h-3 rounded bg-surface-3 dark:bg-surface-4 flex-1" />
         </div>
       </div>
     </div>
@@ -50,46 +50,54 @@ function SkeletonGrid() {
   );
 }
 
-function EmptyState({ tab, onRetry }) {
+  function EmptyState({ tab, onRetry }) {
   const isVideo = tab === "videos";
   return (
-    <div className="flex flex-col items-center justify-center py-24 rounded-3xl border-2 border-dashed border-border/50 bg-slate-50/50 dark:bg-slate-800/30 text-center space-y-6">
-      <div className={`w-20 h-20 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-900 border border-border shadow-sm ${isVideo ? "text-indigo-500" : "text-emerald-500"}`}>
-        {isVideo ? <Video className="w-9 h-9" aria-hidden="true" /> : <FileText className="w-9 h-9" aria-hidden="true" />}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-20 rounded-3xl border-2 border-dashed border-border/50 bg-surface-1 dark:bg-surface-2 text-center space-y-6"
+    >
+      <div className={`w-20 h-20 rounded-2xl flex items-center justify-center bg-surface-2 dark:bg-surface-3 border border-border shadow-inner transition-transform hover:scale-110 duration-500 ${isVideo ? "text-accent" : "text-emerald-500"}`}>
+        {isVideo ? <Video className="w-8 h-8" aria-hidden="true" /> : <FileText className="w-8 h-8" aria-hidden="true" />}
       </div>
-      <div className="space-y-1">
-        <h3 className="text-xl font-bold text-text-1">No Results Found</h3>
-        <p className="text-text-3 text-sm">No {tab} found in this category.</p>
+      <div className="space-y-2 px-6">
+        <h3 className="text-xl font-bold text-text-1 tracking-tight">No Results Found</h3>
+        <p className="text-[11px] font-semibold text-text-4 uppercase tracking-wider max-w-xs mx-auto">No {tab} matching your parameters.</p>
       </div>
       <button
         onClick={onRetry}
-        className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-500 hover:text-indigo-600 transition-colors bg-indigo-50 dark:bg-indigo-500/10 px-4 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-wider text-accent hover:bg-accent hover:text-white transition-all bg-accent/10 px-6 py-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent border border-accent/20 active:scale-95 shadow-lg shadow-accent/5"
       >
         <RefreshCw className="w-4 h-4" aria-hidden="true" />
-        Try Again
+        Synchronize Data
       </button>
-    </div>
+    </motion.div>
   );
 }
 
-function ErrorState({ message, onRetry }) {
+ function ErrorState({ message, onRetry }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 rounded-3xl border-2 border-dashed border-rose-200 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5 text-center space-y-4">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-500/20 text-rose-500">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-20 rounded-3xl border-2 border-dashed border-rose-500/20 bg-rose-500/5 text-center space-y-6"
+    >
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-surface-1 border border-rose-500/20 text-rose-500 shadow-lg shadow-rose-500/5">
         <AlertCircle className="w-8 h-8" aria-hidden="true" />
       </div>
-      <div className="space-y-1">
-        <h3 className="text-lg font-bold text-text-1">Failed to Load</h3>
-        <p className="text-sm text-text-3">{message || "Something went wrong. Please try again."}</p>
+      <div className="space-y-2">
+        <h3 className="text-lg font-bold text-text-1 tracking-tight">Protocol Failure</h3>
+        <p className="text-[11px] font-semibold text-text-4 uppercase tracking-wider">{message || "Something went wrong."}</p>
       </div>
       <button
         onClick={onRetry}
-        className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-500 hover:text-rose-600 transition-colors bg-rose-50 dark:bg-rose-500/10 px-4 py-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+        className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-wider text-rose-500 hover:bg-rose-500 hover:text-white transition-all bg-rose-500/10 px-6 py-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 border border-rose-500/20 active:scale-95 shadow-lg"
       >
         <RefreshCw className="w-4 h-4" aria-hidden="true" />
-        Retry
+        Retry Connection
       </button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -188,48 +196,47 @@ export default function ExplorePage() {
     <PageContainer>
 
       {/* ── Page Header ── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-12 mb-12">
         <SectionHeader
-          title="Find Lessons."
-          description="High-quality lessons and notes shared by your peers."
-          badge="Community Hub"
+          title="Find Lessons"
+          description="Access high-quality peer-reviewed knowledge modules."
+          badge="KNOWLEDGE HUB"
         />
 
-        <div className="flex items-center gap-6 shrink-0">
-          <div className="relative flex items-center gap-3 bg-white dark:bg-slate-900 border border-border pl-4 pr-3 py-3 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-            <Filter className="w-4 h-4 text-indigo-500 shrink-0" aria-hidden="true" />
+         <div className="flex items-center gap-6 shrink-0">
+          <div className="relative flex items-center gap-3 bg-surface-1 dark:bg-surface-2 border border-border pl-4 pr-3 py-3 rounded-xl shadow-sm hover:shadow-lg transition-all group">
+            <Filter className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
             <div className="w-px h-5 bg-border" aria-hidden="true" />
             <label htmlFor="explore-sort" className="sr-only">Sort order</label>
             <select
               id="explore-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="bg-transparent text-xs font-bold text-text-1 uppercase tracking-wider appearance-none outline-none cursor-pointer pr-8 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+              className="bg-transparent text-[11px] font-bold text-text-1 uppercase tracking-wider appearance-none outline-none cursor-pointer pr-8 focus-visible:ring-2 focus-visible:ring-accent rounded"
             >
-              <option value="recent">Newest First</option>
-              <option value="popular">Most Popular</option>
+              <option value="recent">Newest nodes</option>
+              <option value="popular">Most popular</option>
             </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 pointer-events-none group-hover:text-indigo-500 transition-colors" aria-hidden="true" />
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-4 pointer-events-none group-hover:text-accent transition-colors" aria-hidden="true" />
           </div>
         </div>
       </div>
 
       {/* ── Category Selection ── */}
-      <div className="relative py-2 -mx-4 px-4 md:mx-0 md:px-0" role="group" aria-label="Filter by subject">
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-bg to-transparent z-10 pointer-events-none md:hidden" aria-hidden="true" />
+      <div className="relative py-4 -mx-4 px-4 md:mx-0 md:px-0 mb-12" role="group" aria-label="Filter by subject">
         <div className="overflow-x-auto no-scrollbar scroll-smooth">
-          <div className="flex gap-2 md:gap-3 min-w-max pb-2">
+          <div className="flex gap-3 md:gap-4 min-w-max pb-2">
             {SUBJECTS.map((s) => {
               const isActive = subject === s;
               return (
-                <button
+                 <button
                   key={s}
                   onClick={() => setSubject(s)}
                   aria-pressed={isActive}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+                  className={`px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95 ${
                     isActive
-                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md"
-                      : "bg-white dark:bg-slate-900 border border-border text-text-3 hover:border-indigo-500/30 hover:text-text-1 shadow-sm"
+                      ? "bg-accent text-white shadow-xl shadow-accent/20 border border-accent/20"
+                      : "bg-surface-1 dark:bg-surface-2 border border-border text-text-3 hover:border-accent/50 hover:text-text-1 shadow-sm"
                   }`}
                 >
                   {s}
@@ -238,31 +245,30 @@ export default function ExplorePage() {
             })}
           </div>
         </div>
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg to-transparent z-10 pointer-events-none md:hidden" aria-hidden="true" />
       </div>
 
       {/* ── Content Type Tabs ── */}
-      <div className="flex justify-center">
-        <div className="inline-flex p-1.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-border shadow-inner" role="tablist">
+      <div className="flex justify-center mb-16">
+        <div className="inline-flex p-2 rounded-[24px] bg-surface-2 dark:bg-surface-3 border border-border shadow-inner" role="tablist">
           {[
-            { key: "videos", label: "Videos", icon: Video, count: videos.length },
-            { key: "notes", label: "Study Notes", icon: FileText, count: notes.length },
+            { key: "videos", label: "Video Modules", icon: Video, count: videos.length },
+            { key: "notes", label: "Knowledge Base", icon: FileText, count: notes.length },
           ].map((t) => {
             const isActive = tab === t.key;
             return (
-              <button
+             <button
                 key={t.key}
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setTab(t.key)}
-                className={`relative flex items-center gap-2 md:gap-3 px-6 py-3 rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  isActive ? "bg-white dark:bg-slate-900 shadow-sm ring-1 ring-border text-text-1" : "text-text-3 hover:text-text-1"
+                className={`relative flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:scale-95 ${
+                  isActive ? "bg-surface-1 dark:bg-surface-2 shadow-lg ring-1 ring-border text-text-1" : "text-text-4 hover:text-text-2"
                 }`}
               >
-                <t.icon className={`w-4 h-4 ${isActive ? "text-indigo-500" : ""}`} aria-hidden="true" />
-                <span className={`hidden sm:block text-xs font-bold uppercase tracking-wider`}>{t.label}</span>
+                <t.icon className={`w-4 h-4 ${isActive ? "text-accent" : ""}`} aria-hidden="true" />
+                <span className={`hidden sm:block text-[11px] font-bold uppercase tracking-wider`}>{t.label}</span>
                 {isActive && (
-                  <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">
+                  <span className="px-2.5 py-0.5 rounded-lg bg-accent text-white text-[11px] font-bold shadow-md shadow-accent/20">
                     {t.count}
                   </span>
                 )}
@@ -273,20 +279,30 @@ export default function ExplorePage() {
       </div>
 
       {/* ── Content Grid ── */}
-      <div role="tabpanel" aria-live="polite">
-        {isLoading ? (
-          <SkeletonGrid />
-        ) : error ? (
-          <ErrorState message={error} onRetry={retry} />
-        ) : tab === "videos" ? (
-          videos.length === 0
-            ? <EmptyState tab="videos" onRetry={fetchVideos} />
-            : <ResponsiveGrid columns={4}>{videos.map((v) => <VideoCard key={v._id} video={v} />)}</ResponsiveGrid>
-        ) : (
-          notes.length === 0
-            ? <EmptyState tab="notes" onRetry={fetchNotes} />
-            : <ResponsiveGrid columns={4}>{notes.map((n) => <NoteCard key={n._id} note={n} onDownload={handleDownload} />)}</ResponsiveGrid>
-        )}
+      <div role="tabpanel" aria-live="polite" className="min-h-[400px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab + subject + sort + isLoading}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {isLoading ? (
+              <SkeletonGrid />
+            ) : error ? (
+              <ErrorState message={error} onRetry={retry} />
+            ) : tab === "videos" ? (
+              videos.length === 0
+                ? <EmptyState tab="videos" onRetry={fetchVideos} />
+                : <ResponsiveGrid columns={4}>{videos.map((v) => <VideoCard key={v._id} video={v} />)}</ResponsiveGrid>
+            ) : (
+              notes.length === 0
+                ? <EmptyState tab="notes" onRetry={fetchNotes} />
+                : <ResponsiveGrid columns={4}>{notes.map((n) => <NoteCard key={n._id} note={n} onDownload={handleDownload} />)}</ResponsiveGrid>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
     </PageContainer>

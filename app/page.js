@@ -13,18 +13,21 @@ import {
   Sparkles,
   Play,
   FileText,
-  ShieldCheck
+  ShieldCheck,
+  Activity,
+  Globe,
+  Lock
 } from "lucide-react";
 import TrendingSection from "@/components/TrendingSection";
 import ContributorsSection from "@/components/ContributorsSection";
 
-const springConfig = { mass: 1, tension: 120, friction: 20 };
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 const stats = [
-  { value: "12K+", label: "Students",  icon: Users,    color: "text-indigo-500" },
-  { value: "8K+",  label: "Videos",    icon: BookOpen, color: "text-emerald-500" },
-  { value: "600+", label: "Classes",   icon: Play,     color: "text-rose-500" },
-  { value: "80K+", label: "Credits",   icon: Zap,      color: "text-amber-500" },
+  { value: "12K+", label: "STUDENTS",  icon: Users,    color: "text-accent" },
+  { value: "8K+",  label: "RESOURCES",  icon: BookOpen, color: "text-emerald-500" },
+  { value: "600+", label: "CHANNELS",   icon: Play,     color: "text-rose-500" },
+  { value: "80K+", label: "CREDITS",   icon: Zap,      color: "text-amber-500" },
 ];
 
 const containerVariants = {
@@ -41,7 +44,7 @@ const itemVariants = {
     opacity: 1, 
     y: 0, 
     scale: 1,
-    transition: { type: "spring", ...springConfig }
+    transition: { type: "spring", stiffness: 200, damping: 25 }
   }
 };
 
@@ -56,93 +59,102 @@ export default function HomePage() {
   }, [user, loading, router]);
 
   return (
-    <div className="space-y-32 pb-32">
+    <div className="space-y-48 pb-48 overflow-x-hidden">
       
       {/* ── World-Class Hero ── */}
-      <section className="relative pt-16 lg:pt-24 pb-10 text-center max-w-4xl mx-auto overflow-hidden">
+      <section className="relative pt-24 lg:pt-32 text-center max-w-6xl mx-auto px-6">
+        {/* Background Aura */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-full max-w-[1200px] aspect-square bg-accent/5 rounded-full blur-[160px] pointer-events-none" />
+
         <motion.div
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="relative z-10 space-y-8"
+          className="relative z-10 space-y-12"
         >
           {/* Elite Badge */}
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 text-xs font-semibold">
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-surface-2 dark:bg-surface-3 border border-border text-[10px] font-black uppercase tracking-[0.3em] text-accent shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Peer-to-Peer Learning Community</span>
+            <span>Peer-to-Peer Signal Node Active</span>
           </motion.div>
 
           {/* Headline */}
-          <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl lg:text-7xl font-bold text-text-1 tracking-tight leading-[1.1]">
-            Learn from peers,<br />
-            <span className="text-text-3">Teach the </span>
-            <span className="text-indigo-600 dark:text-indigo-400">World.</span>
+          <motion.h1 variants={itemVariants} className="text-6xl md:text-7xl lg:text-8xl font-black text-text-1 tracking-tighter leading-[0.95]">
+            LEARN FROM PEERS,<br />
+            <span className="text-text-4">TEACH THE </span>
+            <span className="text-accent underline decoration-accent/20 decoration-8 underline-offset-[12px]">WORLD.</span>
           </motion.h1>
 
           {/* Subheadline */}
-          <motion.p variants={itemVariants} className="text-lg text-text-2 font-medium max-w-2xl mx-auto leading-relaxed">
-            A simple platform for sharing knowledge. Connect with peers, share videos and notes, and earn Credits through contribution.
+          <motion.p variants={itemVariants} className="text-xl text-text-2 font-medium max-w-2xl mx-auto leading-relaxed opacity-80">
+            The premium network for architectural knowledge exchange. Connect with peers, share high-fidelity resources, and earn recognition through contribution.
           </motion.p>
 
           {/* Action Hub */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="/register" className="group flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-3.5 rounded-xl font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md">
-              Create Account
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+            <Link href="/register" className="group relative overflow-hidden bg-text-1 text-bg px-12 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl">
+              <span className="relative z-10 flex items-center gap-3">
+                Initialize Account
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-accent/20 rounded-full blur-[30px]" />
             </Link>
             
-            <Link href="/explore" className="flex items-center justify-center px-8 py-3.5 rounded-xl border border-border bg-white dark:bg-slate-900 font-semibold text-text-1 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
-              Explore Content Library
+            <Link href="/explore" className="flex items-center justify-center px-12 py-5 rounded-[24px] border border-border bg-surface-1 dark:bg-surface-2 text-[11px] font-black uppercase tracking-[0.3em] text-text-1 hover:bg-surface-2 dark:hover:bg-surface-3 transition-all hover:border-accent/40 shadow-xl">
+              Explore Library
             </Link>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="pt-8 flex items-center justify-center gap-6 text-text-3">
-             <div className="flex items-center gap-2 text-xs font-semibold">
-                <ShieldCheck className="w-4 h-4" />
-                Verified Infrastructure
+          {/* Verification Nodes */}
+          <motion.div variants={itemVariants} className="pt-12 flex flex-wrap items-center justify-center gap-10 text-text-4">
+             <div className="flex items-center gap-3">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Validated Infrastructure</span>
              </div>
-             <div className="w-1 h-1 rounded-full bg-border" />
-             <div className="flex items-center gap-2 text-xs font-semibold">
-                <Trophy className="w-4 h-4" />
-                Merit-Based Economy
+             <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-border" />
+             <div className="flex items-center gap-3">
+                <Trophy className="w-4 h-4 text-amber-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Merit-Based Tokenomics</span>
+             </div>
+             <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-border" />
+             <div className="flex items-center gap-3">
+                <Globe className="w-4 h-4 text-indigo-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Decentralized Learning</span>
              </div>
           </motion.div>
         </motion.div>
       </section>
 
       {/* ── Platform Stats ── */}
-      <section className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-14 space-y-4">
-          <div className="flex items-center justify-center gap-2.5">
-            <div className="w-12 h-px bg-indigo-500/20" />
-            <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest">Platform</p>
-            <div className="w-12 h-px bg-indigo-500/20" />
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-text-1 tracking-tight">By the Numbers</h2>
-          <p className="text-base text-text-2 font-medium max-w-md mx-auto leading-relaxed">
-            A growing community of students and educators sharing knowledge every day.
-          </p>
+      <section className="max-w-7xl mx-auto px-6 relative">
+        <div className="text-center mb-20 space-y-4">
+          <p className="text-[10px] font-black text-accent uppercase tracking-[0.5em]">Network Metrics</p>
+          <h2 className="text-4xl md:text-5xl font-black text-text-1 tracking-tight uppercase">By the <span className="text-text-4">Numbers</span></h2>
         </div>
+        
         <motion.div 
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.05, margin: "-10px" }}
+          viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
         >
           {stats.map((s, i) => (
             <motion.div 
               key={i} 
               variants={itemVariants}
-              whileHover={{ y: -4 }}
-              className="relative group bg-white dark:bg-slate-900 border border-border p-6 rounded-3xl text-center transition-all hover:shadow-lg hover:shadow-indigo-500/5 overflow-hidden"
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="group bg-surface-1 dark:bg-surface-2 border border-border p-10 rounded-[40px] text-center transition-all hover:shadow-2xl hover:border-accent/30 relative overflow-hidden"
             >
-              <div className="relative z-10 space-y-3">
-                <div className={`w-12 h-12 rounded-2xl bg-slate-50 dark:bg-white/5 mx-auto flex items-center justify-center ${s.color} border border-border`}>
-                  <s.icon className="w-6 h-6" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl group-hover:bg-accent/10 transition-colors" />
+              <div className="relative z-10 space-y-6">
+                <div className={`w-16 h-16 rounded-[24px] bg-surface-2 dark:bg-surface-3 mx-auto flex items-center justify-center ${s.color} border border-border shadow-inner group-hover:scale-110 transition-transform`}>
+                  <s.icon className="w-8 h-8" />
                 </div>
-                <div className="text-3xl font-bold text-text-1 tracking-tight">{s.value}</div>
-                <div className="text-xs font-semibold text-text-3">{s.label}</div>
+                <div className="space-y-1">
+                  <div className="text-4xl font-black text-text-1 tracking-tighter">{s.value}</div>
+                  <div className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">{s.label}</div>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -150,43 +162,70 @@ export default function HomePage() {
       </section>
 
       {/* ── Trending Content ── */}
-      <TrendingSection />
+      <div className="max-w-7xl mx-auto">
+        <TrendingSection />
+      </div>
 
       {/* ── Top Contributors ── */}
-      <ContributorsSection />
+      <div className="max-w-7xl mx-auto">
+        <ContributorsSection />
+      </div>
 
       {/* ── Pro-Grade CTA ── */}
-      <section className="max-w-5xl mx-auto px-6">
+      <section className="max-w-6xl mx-auto px-6">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.05 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={springConfig}
-          className="relative bg-slate-900 rounded-3xl p-8 md:p-16 text-center overflow-hidden border border-white/10 shadow-2xl"
+          className="relative bg-text-1 rounded-[48px] p-12 md:p-24 text-center overflow-hidden border border-white/5 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]"
         >
-          <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-xs font-semibold text-indigo-400">
-               Join Our Community
+          {/* Ambient Glow */}
+          <div className="absolute -top-1/2 -left-1/4 w-[80%] h-full bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute -bottom-1/2 -right-1/4 w-[60%] h-full bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 max-w-3xl mx-auto space-y-10">
+            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-accent">
+               <Activity className="w-3.5 h-3.5" />
+               Join the Core Cluster
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">
-              Ready to grow your <br />
-              <span className="text-indigo-400">knowledge?</span>
+            <h2 className="text-5xl md:text-7xl font-black text-bg tracking-tighter leading-[0.9] uppercase">
+              READY TO SCALE YOUR <br />
+              <span className="text-accent">INTELLIGENCE?</span>
             </h2>
-            <p className="text-slate-400 text-lg leading-relaxed">
-              Join 10,000+ students already learning and growing together on the EduShare platform.
+            <p className="text-bg/60 text-lg leading-relaxed font-medium max-w-xl mx-auto">
+              Join 10,000+ elite students already synchronizing knowledge on the EduShare network.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
-              <Link href="/register" className="group flex items-center gap-2 bg-indigo-500 text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-indigo-600 transition-colors shadow-lg">
-                Get Started Now
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
+              <Link href="/register" className="group flex items-center gap-3 bg-accent text-bg px-12 py-5 rounded-[24px] text-[11px] font-black uppercase tracking-[0.3em] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl">
+                Initialize Access
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/explore" className="px-8 py-3.5 rounded-xl border border-white/20 bg-white/5 font-semibold text-white hover:bg-white/10 transition-colors">
-                Explore Content
+              <Link href="/explore" className="px-12 py-5 rounded-[24px] border border-white/10 bg-white/5 text-[11px] font-black uppercase tracking-[0.3em] text-bg hover:bg-white/10 transition-all">
+                Sync Content Library
               </Link>
             </div>
           </div>
         </motion.div>
       </section>
+
+      {/* ── Footer Metadata ── */}
+      <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex items-center gap-4">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">System Operational // v2.0.4-LATEST</span>
+        </div>
+        <div className="flex items-center gap-10">
+          <div className="flex items-center gap-3 text-text-4">
+            <Lock className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Encrypted Storage</span>
+          </div>
+          <div className="flex items-center gap-3 text-text-4">
+            <Activity className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">High Bandwidth</span>
+          </div>
+        </div>
+      </footer>
 
     </div>
   );

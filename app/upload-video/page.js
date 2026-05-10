@@ -6,266 +6,339 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import PageContainer from "@/components/layouts/PageContainer";
 import SectionHeader from "@/components/layouts/SectionHeader";
-import { 
-  UploadCloud, 
-  Film, 
-  Image as ImageIcon, 
-  Zap, 
-  ShieldCheck, 
-  X, 
-  CheckCircle2, 
-  ChevronLeft, 
-  Play, 
-  Sparkles,
+import {
+  Video,
+  Play,
+  ShieldCheck,
+  Zap,
+  X,
+  AlertCircle,
+  UploadCloud,
+  CheckCircle,
+  Plus,
+  Shield,
+  Info,
   Loader2,
-  FileVideo
+  MonitorPlay,
+  Eye,
+  Target,
+  Image as ImageIcon
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const springConfig = { mass: 1, tension: 120, friction: 20 };
-const SUBJECTS = ["Math", "Science", "History", "Programming", "English", "Physics", "Chemistry", "Biology", "Other"];
-
-function captureVideoFrame(videoFile, atSecond = 1) {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(videoFile);
-    const video = document.createElement("video");
-    video.src = url;
-    video.muted = true;
-
-    // ── Timeout guard: if seeked never fires (corrupt file, codec issue),
-    //    resolve null after 5 seconds rather than hanging forever.
-    const cleanup = (result) => {
-      clearTimeout(timeout);
-      URL.revokeObjectURL(url);
-      resolve(result);
-    };
-    const timeout = setTimeout(() => cleanup(null), 5_000);
-
-    video.addEventListener("seeked", () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 640;
-      canvas.height = 360;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => cleanup(blob), "image/jpeg", 0.85);
-    }, { once: true });
-
-    video.addEventListener("error", () => cleanup(null), { once: true });
-
-    video.load();
-    // Seek after load to avoid race on some browsers
-    video.addEventListener("loadedmetadata", () => {
-      video.currentTime = Math.min(atSecond, video.duration - 0.1 || atSecond);
-    }, { once: true });
-  });
-}
+const SUBJECTS = ["Math", "Science", "Programming", "Design", "Business", "History", "Other"];
 
 export default function UploadVideoPage() {
   const { user, loading: authLoading, authFetch } = useAuth();
   const { withLoading } = useLoading();
   const router = useRouter();
-  const [form, setForm] = useState({ title: "", description: "", subject: "Math" });
-  const [file, setFile] = useState(null);
-  const [thumbnail, setThumbnail] = useState(null);
-  const [thumbPreview, setThumbPreview] = useState("");
-  const [thumbSource, setThumbSource] = useState("");
+  
+  const [form, setForm] = useState({ title: "", description: "", subject: "Programming", tags: [] });
+  const [tagInput, setTagInput] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadStep, setUploadStep] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
-  const fileRef = useRef();
-  const thumbRef = useRef();
+
+  const videoInputRef = useRef();
+  const thumbInputRef = useRef();
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/login");
   }, [user, authLoading, router]);
 
-  const handleVideoSelect = async (selectedFile) => {
-    if (!selectedFile) return;
-    setFile(selectedFile);
-    setThumbPreview("");
-    setThumbnail(null);
-    setThumbSource("");
-
-    setUploadStep("Creating thumbnail...");
-    const blob = await captureVideoFrame(selectedFile, 2);
-    if (blob) {
-      setThumbnail(blob);
-      setThumbPreview(URL.createObjectURL(blob));
-      setThumbSource("auto");
-    }
-    setUploadStep("");
-  };
-
-  const handleManualThumb = (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    if (!f.type.startsWith("image/")) return toast.error("Thumbnail must be an image");
-    if (f.size > 5 * 1024 * 1024) return toast.error("Image too large (max 5MB)");
-
-    setThumbnail(f);
-    setThumbPreview(URL.createObjectURL(f));
-    setThumbSource("manual");
-  };
-
-  const uploadDirectToS3 = async (uploadFile, folder) => {
+  const uploadToS3 = async (file, folder) => {
     const res = await authFetch("/api/upload/presigned-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: uploadFile.name, contentType: uploadFile.type, folder }),
+      body: JSON.stringify({ filename: file.name, contentType: file.type, folder }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to get upload URL");
 
-    const s3Res = await fetch(data.presignedUrl, {
-      method: "PUT",
-      body: uploadFile,
-      headers: { "Content-Type": uploadFile.type },
+    const xhr = new XMLHttpRequest();
+    return new Promise((resolve, reject) => {
+      xhr.open("PUT", data.presignedUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && folder === "videos") {
+          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      xhr.onload = () => xhr.status === 200 ? resolve(data.fileUrl) : reject(new Error("S3 Upload Failed"));
+      xhr.onerror = () => reject(new Error("XHR Error"));
+      xhr.send(file);
     });
-    if (!s3Res.ok) throw new Error("Failed to upload file to S3");
-    return data.fileUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return toast.error("Please select a video file");
+    if (!videoFile) return toast.error("Video file is required");
     setError("");
 
     await withLoading(async () => {
       setUploading(true);
       try {
-        setUploadStep("Uploading video...");
-        const videoUrl = await uploadDirectToS3(file, "videos");
+        const [videoUrl, thumbnailUrl] = await Promise.all([
+          uploadToS3(videoFile, "videos"),
+          thumbnailFile ? uploadToS3(thumbnailFile, "thumbnails") : Promise.resolve(null)
+        ]);
 
-        let thumbnailUrl = "";
-        if (thumbnail) {
-          setUploadStep("Uploading thumbnail...");
-          const thumbFile = thumbnail instanceof Blob && !(thumbnail instanceof File)
-            ? new File([thumbnail], "thumbnail.jpg", { type: "image/jpeg" })
-            : thumbnail;
-          thumbnailUrl = await uploadDirectToS3(thumbFile, "thumbnails");
-        }
-
-        setUploadStep("Finishing up...");
         const res = await authFetch("/api/videos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...form, videoUrl, thumbnailUrl }),
         });
 
-        if (!res.ok) throw new Error("Failed to save video");
+        if (!res.ok) throw new Error("Failed to index video");
 
-        toast.success("Video uploaded successfully");
+        toast.success("Video broadcast initialized");
         router.push("/dashboard");
       } catch (err) {
         setError(err.message);
         toast.error(err.message);
       } finally {
         setUploading(false);
-        setUploadStep("");
+        setUploadProgress(0);
       }
-    });
+    }, "Broadcasting Video...");
   };
+
+  const addTag = () => {
+    if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
+      setForm({ ...form, tags: [...form.tags, tagInput.trim()] });
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (t) => setForm({ ...form, tags: form.tags.filter(tag => tag !== t) });
 
   return (
     <PageContainer>
-      <SectionHeader 
-        title="Upload Video"
-        badge="Type: Media"
+      <SectionHeader
+        title="Broadcast Video"
+        badge="TYPE: MULTIMEDIA"
         action={
-          <button 
+          <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-border text-sm font-bold text-text-2 hover:text-text-1 transition-all"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-1 dark:bg-surface-3 border border-border text-[10px] font-black text-text-2 hover:text-accent transition-all shadow-sm uppercase tracking-widest"
           >
-            <X className="w-4 h-4" />
-            Cancel Upload
+            <X className="w-4 h-4" aria-hidden="true" />
+            Abort Broadcast
           </button>
         }
       />
 
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10">
-        
-        {/* ── Upload Form (Left) ── */}
-        <div className="lg:col-span-7 space-y-8">
-          <motion.form 
+      <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 mt-8">
+        {/* ── Main Production Deck (Left) ── */}
+        <div className="lg:col-span-8 space-y-8">
+          <motion.form
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={springConfig}
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-slate-900 border border-border p-6 md:p-10 rounded-3xl space-y-8"
+            className="bg-surface-1 dark:bg-surface-2 border border-border p-8 md:p-10 rounded-[32px] shadow-sm space-y-10"
           >
-            {/* Error Banner */}
-            {error && (
-              <div role="alert" className="flex items-start gap-3 p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400">
-                <span className="text-sm font-medium leading-snug">{error}</span>
-              </div>
-            )}
+            {/* Video Node Selector */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Master Video File</label>
+              <div
+                onClick={() => videoInputRef.current.click()}
+                className={`
+                  relative aspect-video rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden
+                  ${videoFile ? 'border-accent bg-accent/5' : 'border-border bg-surface-2/50 dark:bg-surface-3/30 hover:border-accent/40'}
+                `}
+              >
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => setVideoFile(e.target.files[0])}
+                />
+                
+                {videoFile ? (
+                   <div className="text-center space-y-4 z-10">
+                      <div className="w-20 h-20 rounded-3xl bg-accent flex items-center justify-center text-white shadow-2xl mx-auto animate-in zoom-in duration-500">
+                         <Play className="w-10 h-10 fill-current" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-lg font-black text-text-1 truncate max-w-md mx-auto">{videoFile.name}</p>
+                        <p className="text-xs font-bold text-text-3 uppercase tracking-widest">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB • READY FOR BROADCAST</p>
+                      </div>
+                   </div>
+                ) : (
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className="w-16 h-16 rounded-2xl bg-surface-1 dark:bg-surface-2 border border-border flex items-center justify-center text-text-4 group-hover:text-accent transition-all duration-500 shadow-xl">
+                      <Video className="w-8 h-8" />
+                    </div>
+                    <p className="text-sm font-black text-text-1 uppercase tracking-widest">Select Production Source</p>
+                    <div className="px-6 py-2 bg-surface-1 dark:bg-surface-2 border border-border rounded-xl text-[10px] font-black text-text-4 uppercase tracking-widest">
+                      MP4 • MKV • WEBM (MAX 100MB)
+                    </div>
+                  </div>
+                )}
 
-            {/* Title Section */}
-            <div className="space-y-3">
-              <label htmlFor="video-title" className="text-sm font-bold text-text-2 ml-1">Video Title</label>
-              <input 
-                id="video-title"
-                type="text" 
-                placeholder="Enter title..." 
-                required
-                autoComplete="off"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-xl px-4 py-3 text-sm font-medium text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none"
-              />
+                {/* Progress Overlay */}
+                {uploading && (
+                  <div className="absolute inset-0 bg-surface-1/90 dark:bg-surface-2/90 backdrop-blur-sm flex flex-col items-center justify-center p-12 z-20">
+                     <div className="w-full max-w-sm space-y-6 text-center">
+                        <Loader2 className="w-12 h-12 text-accent animate-spin mx-auto" />
+                        <div className="space-y-3">
+                           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-1">
+                             <span>Broadcasting Stream</span>
+                             <span>{uploadProgress}%</span>
+                           </div>
+                           <div className="h-3 bg-surface-3 rounded-full overflow-hidden border border-border">
+                              <motion.div 
+                                className="h-full bg-accent"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${uploadProgress}%` }}
+                              />
+                           </div>
+                        </div>
+                        <p className="text-xs text-text-3 font-medium">Compressing and distributing to global nodes...</p>
+                     </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Subject Selection */}
-            <div className="flex flex-col md:grid md:grid-cols-2 gap-6 md:gap-8">
-              <div className="space-y-3">
-                <label htmlFor="video-subject" className="text-sm font-bold text-text-2 ml-1">Category</label>
-                <select 
-                  id="video-subject"
-                  value={form.subject} 
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-xl px-4 py-3 text-sm font-medium text-text-1 focus:border-indigo-500 transition-all outline-none cursor-pointer appearance-none"
-                >
-                  {SUBJECTS.map((s) => <option key={s} className="bg-slate-900 text-white">{s}</option>)}
-                </select>
-              </div>
-              <div className="space-y-3">
-                 <label className="text-sm font-bold text-text-2 ml-1">Verification Status</label>
-                 <div className="w-full bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                    <span className="text-sm font-bold text-emerald-500">Verified Educator</span>
-                 </div>
-              </div>
+            {/* Thumbnail + Details */}
+            <div className="grid md:grid-cols-2 gap-10">
+               {/* Thumbnail Hub */}
+               <div className="space-y-4">
+                  <label className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Visual Identity (Thumbnail)</label>
+                  <div
+                    onClick={() => thumbInputRef.current.click()}
+                    className={`
+                      relative aspect-video rounded-[32px] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden
+                      ${thumbnailFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-border bg-surface-2/50 dark:bg-surface-3/30 hover:border-emerald-500/30'}
+                    `}
+                  >
+                    <input
+                      ref={thumbInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => setThumbnailFile(e.target.files[0])}
+                    />
+                    
+                    {thumbnailFile ? (
+                      <div className="absolute inset-0 w-full h-full">
+                         <img src={URL.createObjectURL(thumbnailFile)} alt="" className="w-full h-full object-cover" />
+                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <ImageIcon className="w-8 h-8 text-white" />
+                         </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-center space-y-4">
+                         <ImageIcon className="w-8 h-8 text-text-4" />
+                         <p className="text-[10px] font-black text-text-3 uppercase tracking-widest">Optional Cover</p>
+                      </div>
+                    )}
+                  </div>
+               </div>
+
+               {/* Metadata Stack */}
+               <div className="space-y-8">
+                  <div className="space-y-3">
+                    <label htmlFor="video-title" className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Broadcast Title</label>
+                    <input
+                      id="video-title"
+                      type="text"
+                      placeholder="E.g. Neural Networks Explained"
+                      required
+                      className="w-full bg-surface-2 dark:bg-surface-3 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-text-1 placeholder:text-text-4 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none"
+                      value={form.title}
+                      onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label htmlFor="video-subject" className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Domain category</label>
+                    <select
+                      id="video-subject"
+                      value={form.subject}
+                      onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                      className="w-full bg-surface-2 dark:bg-surface-3 border border-border rounded-2xl px-5 py-4 text-sm font-bold text-text-1 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none cursor-pointer appearance-none"
+                    >
+                      {SUBJECTS.map((s) => <option key={s} className="bg-surface-1 text-text-1">{s}</option>)}
+                    </select>
+                  </div>
+               </div>
             </div>
 
-            {/* Description Section */}
+            {/* Synopsis Hub */}
             <div className="space-y-3">
-              <label htmlFor="video-description" className="text-sm font-bold text-text-2 ml-1">Description</label>
-              <textarea 
+              <label htmlFor="video-description" className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Broadcast Synopsis</label>
+              <textarea
                 id="video-description"
-                placeholder="Enter video description..." 
+                placeholder="What will your viewers learn in this production?"
                 rows={4}
+                className="w-full bg-surface-2 dark:bg-surface-3 border border-border rounded-2xl px-5 py-4 text-sm font-medium text-text-1 placeholder:text-text-4 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none resize-none leading-relaxed"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-xl px-4 py-3 text-sm font-medium text-text-1 placeholder:opacity-30 focus:border-indigo-500 transition-all outline-none resize-none"
               />
             </div>
 
-            {/* Form Actions */}
-            <div className="pt-4">
-              <button 
-                type="submit" 
-                disabled={uploading}
-                className="w-full rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-6 py-4 flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
+            {/* Tag Engine */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-text-2 uppercase tracking-[0.2em] ml-1">Index tags</label>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <AnimatePresence>
+                  {form.tags.map((tag) => (
+                    <motion.span
+                      key={tag}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      className="flex items-center gap-2 bg-accent/10 text-accent text-[10px] font-black px-4 py-2 rounded-xl border border-accent/20 uppercase tracking-widest"
+                    >
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="Insert index tag..."
+                  className="flex-1 bg-surface-2 dark:bg-surface-3 border border-border rounded-xl px-5 py-3 text-sm font-bold text-text-1 placeholder:text-text-4 focus:border-accent transition-all outline-none"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                />
+                <button
+                  type="button"
+                  onClick={addTag}
+                  className="w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center hover:bg-accent-h transition-all active:scale-95 shadow-lg shadow-accent/10"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Broadcast Control */}
+            <div className="pt-6">
+               <button
+                type="submit"
+                disabled={uploading || !videoFile}
+                className="w-full rounded-2xl bg-accent text-white py-5 flex items-center justify-center gap-3 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-accent-h hover:scale-[1.01] transition-all active:scale-[0.98] disabled:opacity-50 shadow-xl shadow-accent/20"
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="text-sm font-bold">{uploadStep || "Uploading..."}</span>
+                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
+                    <span>Transmitting Signal...</span>
                   </>
                 ) : (
                   <>
-                    <Zap className="w-5 h-5" />
-                    <span className="text-sm font-bold">Upload Video</span>
+                    <Zap className="w-6 h-6 fill-current" aria-hidden="true" />
+                    <span>Initialize Global Broadcast</span>
                   </>
                 )}
               </button>
@@ -273,134 +346,76 @@ export default function UploadVideoPage() {
           </motion.form>
         </div>
 
-        {/* ── Assets Selection (Right) ── */}
-        <div className="lg:col-span-5 space-y-10">
-          
-          {/* Video Drop Zone */}
-          <motion.div 
+        {/* ── Production Intelligence (Right) ── */}
+        <div className="lg:col-span-4 space-y-8">
+           {/* Guidelines */}
+           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            role="button"
-            tabIndex={0}
-            aria-label={file ? `Selected: ${file.name}. Click to replace.` : "Select a video file"}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}
-            onClick={() => fileRef.current?.click()}
-            className={`group relative aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-all cursor-pointer overflow-hidden ${
-              file 
-                ? "border-indigo-500/50 bg-indigo-500/5" 
-                : "border-border bg-slate-50 dark:bg-slate-900 hover:border-indigo-500/30"
-            }`}
+            className="bg-surface-1 dark:bg-surface-2 border border-border rounded-[32px] p-8 shadow-sm space-y-6"
           >
-            <input 
-              ref={fileRef} 
-              id="video-file-input"
-              type="file" 
-              accept="video/*" 
-              className="sr-only"
-              aria-label="Choose video file"
-              onChange={(e) => handleVideoSelect(e.target.files[0])} 
-            />
-            {file ? (
-              <div className="text-center space-y-3 px-8">
-                 <div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-white mx-auto shadow-sm">
-                    <FileVideo className="w-8 h-8" />
-                 </div>
-                 <div className="space-y-1">
-                    <p className="text-sm font-bold text-text-1 truncate">{file.name}</p>
-                    <p className="text-xs font-medium text-text-3">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
-                 </div>
-                 <button className="text-xs font-bold text-indigo-500 bg-indigo-500/10 px-4 py-2 rounded-xl mt-2">Replace Video</button>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
+                <MonitorPlay className="w-6 h-6" />
               </div>
-            ) : (
-              <>
-                 <UploadCloud className="w-12 h-12 text-text-3 group-hover:translate-y-[-4px] transition-transform" />
-                 <div className="text-center">
-                    <p className="text-sm font-bold text-text-1">Select Video File</p>
-                    <p className="text-xs text-text-3 mt-1">MP4 / HEVC / MOV / WebM</p>
-                 </div>
-              </>
-            )}
+              <h3 className="text-base font-black text-text-1 uppercase tracking-widest">Broadcast Standards</h3>
+            </div>
+            
+            <ul className="space-y-4 pt-2">
+              {[
+                "Preferred resolution: 1080p or higher",
+                "Clear audio track with minimal noise",
+                "Educational focused content only",
+                "Custom thumbnails increase engagement"
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 mt-0.5 shrink-0">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs text-text-2 font-medium leading-relaxed">{item}</span>
+                </li>
+              ))}
+            </ul>
           </motion.div>
 
-          {/* Thumbnail Settings */}
-          <motion.div 
+          {/* Visibility Info */}
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-slate-900 border border-border rounded-3xl p-6 md:p-8 space-y-6"
+            className="bg-accent/10 border border-accent/20 rounded-[32px] p-8 flex items-start gap-5 shadow-sm"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ImageIcon className="w-5 h-5 text-text-2" />
-                <h3 className="text-sm font-bold text-text-1">Thumbnail</h3>
+             <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent shrink-0 border border-accent/30 shadow-sm">
+                <Eye className="w-6 h-6" />
+             </div>
+              <div className="space-y-2">
+                <p className="text-sm font-black text-text-1 uppercase tracking-widest">Audience Reach</p>
+                <p className="text-xs text-text-3 font-medium leading-relaxed">
+                  Your production will be discoverable in the global feed and subject-specific domains. 
+                </p>
               </div>
-              <AnimatePresence>
-                {thumbSource && (
-                  <motion.span 
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={`text-xs font-bold px-3 py-1 rounded-xl ${
-                      thumbSource === "auto" ? "bg-emerald-500/10 text-emerald-500" : "bg-indigo-500/10 text-indigo-500"
-                    }`}
-                  >
-                    {thumbSource === "auto" ? "Auto-Generated" : "Manual Upload"}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
-              <div className="relative w-full md:w-40 aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-border flex items-center justify-center shrink-0">
-                 {thumbPreview ? (
-                   <img src={thumbPreview} alt="" className="w-full h-full object-cover" />
-                 ) : uploadStep === "Generating thumbnail..." ? (
-                   <Loader2 className="w-6 h-6 animate-spin text-text-3 opacity-30" />
-                 ) : (
-                   <Sparkles className="w-8 h-8 text-text-3 opacity-20" />
-                 )}
-              </div>
-
-              <div className="flex-1 min-w-0 space-y-4">
-                 <p className="text-sm text-text-2 leading-relaxed break-words">
-                   {file 
-                     ? "Automatic thumbnail generated from your video. You can override it with a custom image."
-                     : "The system will automatically generate a thumbnail preview after you select a video."}
-                 </p>
-                 <div className="flex flex-wrap gap-3">
-                    <input 
-                      ref={thumbRef} 
-                      id="thumb-file-input"
-                      type="file" 
-                      accept="image/*" 
-                      className="sr-only"
-                      aria-label="Choose thumbnail image"
-                      onChange={handleManualThumb} 
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => thumbRef.current?.click()}
-                      className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-border text-sm font-bold text-text-1 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
-                    >
-                      Upload Thumbnail
-                    </button>
-                    {thumbPreview && (
-                      <button 
-                        type="button"
-                        onClick={() => { setThumbnail(null); setThumbPreview(""); setThumbSource(""); }}
-                        className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"
-                      >
-                         <X className="w-4 h-4" />
-                      </button>
-                    )}
-                 </div>
-              </div>
-            </div>
           </motion.div>
 
+          {/* Verification Protocol */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-surface-1 dark:bg-surface-2 border border-border rounded-[32px] p-8 flex items-start gap-5 shadow-sm"
+          >
+             <div className="w-12 h-12 rounded-2xl bg-surface-2 dark:bg-surface-3 flex items-center justify-center text-text-4 shrink-0 border border-border">
+                <ShieldCheck className="w-6 h-6" />
+             </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-text-1 uppercase tracking-widest">Rights Management</p>
+                <p className="text-[10px] text-text-3 font-medium leading-relaxed">
+                  By broadcasting, you grant EduShare peers the right to view this content for educational purposes.
+                </p>
+              </div>
+          </motion.div>
         </div>
       </div>
     </PageContainer>
   );
 }
-

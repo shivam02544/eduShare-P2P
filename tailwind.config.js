@@ -63,10 +63,16 @@ module.exports = {
         "inner-lg": "inset 0 2px 10px rgba(0,0,0,0.06)",
       },
       borderRadius: {
-        "4xl": "32px",
-        "5xl": "40px",
-        "6xl": "48px",
-        "7xl": "64px",
+        sm: "2px",
+        DEFAULT: "4px",
+        md: "6px",
+        lg: "var(--radius-sm)", // 10px
+        xl: "var(--radius)",    // 16px
+        "2xl": "var(--radius-lg)", // 24px
+        "3xl": "var(--radius-xl)", // 32px
+        "4xl": "40px",
+        "5xl": "48px",
+        "6xl": "64px",
       },
     },
   },

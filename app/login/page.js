@@ -14,14 +14,15 @@ import {
   AlertCircle, 
   Loader2, 
   Sparkles,
-  Fingerprint,
-  Globe,
+  ChevronLeft,
   Zap,
+  Globe,
   ShieldAlert,
-  ChevronLeft
+  ArrowLeft
 } from "lucide-react";
+import Logo from "@/components/Logo";
 
-const springConfig = { mass: 1, tension: 120, friction: 20 };
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 const errorMap = {
   "auth/user-not-found": "User not found. Please check your email.",
@@ -103,79 +104,71 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center px-6 relative overflow-hidden py-20 pb-40">
+    <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden py-24">
       
       {/* ── Background Decoration ── */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
          <motion.div 
             animate={{ 
               scale: [1, 1.1, 1],
-              rotate: [0, 5, 0],
               opacity: [0.1, 0.15, 0.1]
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 -left-1/4 w-[800px] h-[800px] bg-slate-200 dark:bg-white/5 rounded-full blur-[120px]" 
+            className="absolute top-1/4 -left-1/4 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[140px]" 
          />
          <motion.div 
             animate={{ 
               scale: [1, 1.2, 1],
-              rotate: [0, -5, 0],
               opacity: [0.05, 0.1, 0.05]
             }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-indigo-200 dark:bg-indigo-500/10 rounded-full blur-[100px]" 
+            className="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]" 
          />
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={springConfig}
-        className="w-full max-w-[440px] space-y-10"
+        className="w-full max-w-[480px] space-y-12"
       >
 
-        {/* ── Header HUD ── */}
-        <div className="text-center space-y-4">
-          <motion.div 
-            initial={{ scale: 0.8, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            className="w-16 h-16 rounded-2xl bg-slate-900 dark:bg-white flex items-center justify-center mx-auto shadow-2xl border border-white/10"
-          >
-            <Fingerprint className="w-8 h-8 text-white dark:text-slate-900" />
-          </motion.div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-text-1 tracking-tight uppercase">Account <span className="text-indigo-500">Login</span></h1>
-            <p className="text-xs font-bold uppercase tracking-wider text-text-3">Secure access to EduShare</p>
+        {/* ── Header ── */}
+        <div className="text-center space-y-6">
+          <Link href="/" className="inline-block hover:scale-105 transition-transform">
+            <Logo showText={false} size="xl" className="mx-auto" />
+          </Link>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-black text-text-1 tracking-tight uppercase">Protocol <span className="text-accent">Access</span></h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-4">Enter credentials for secure synchronization</p>
           </div>
         </div>
 
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-10 rounded-3xl shadow-3xl space-y-8 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="bg-surface-1 dark:bg-surface-2 border border-border p-12 rounded-[40px] shadow-2xl space-y-10 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
           {/* Social login */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <button
               onClick={handleGoogle}
               disabled={gLoading}
-              aria-label="Continue with Google"
-              aria-busy={gLoading}
-              className="group w-full flex items-center justify-center gap-4 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-1 hover:bg-white dark:hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="group/google w-full flex items-center justify-center gap-4 py-5 rounded-[24px] bg-surface-2 dark:bg-surface-3 border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-1 hover:bg-surface-1 dark:hover:bg-surface-2 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
             >
               {gLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 group-hover/google:rotate-12 transition-transform" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
               )}
-              Continue via Google
+              Initialize with Google
             </button>
 
-            <div className="flex items-center gap-4 px-2">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs font-bold uppercase tracking-wider text-text-3">or use email credentials</span>
-              <div className="flex-1 h-px bg-border" />
+            <div className="flex items-center gap-6 px-2">
+              <div className="flex-1 h-px bg-border/50" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">Local Auth</span>
+              <div className="flex-1 h-px bg-border/50" />
             </div>
           </div>
 
@@ -185,27 +178,29 @@ export default function LoginPage() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-amber-500/5 border border-amber-500/20 rounded-3xl p-6 space-y-4 shadow-inner"
+                className="bg-amber-500/5 border border-amber-500/20 rounded-[32px] p-8 space-y-6 shadow-inner"
               >
-                <div className="flex items-start gap-4">
-                  <ShieldAlert className="w-6 h-6 text-amber-500 shrink-0" />
+                <div className="flex items-start gap-5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-6 h-6 text-amber-500" />
+                  </div>
                    <div className="space-y-1">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Verification Required</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Identity Pending</p>
                     <p className="text-xs font-medium text-amber-500/80 leading-relaxed">
-                      Check your email inbox and confirm your account before signing in.
+                      Your digital identity requires verification. Please check your transmission queue (inbox).
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={handleResend} 
                   disabled={resending || resent}
-                  className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                  className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${
                     resent 
                       ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
-                      : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      : "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20"
                   }`}
                 >
-                  {resending ? "Sending…" : resent ? "✓ Verification email sent" : "Resend verification email"}
+                  {resending ? "Transmitting…" : resent ? "✓ Verification Re-sent" : "Resend Link"}
                 </button>
               </motion.div>
             )}
@@ -214,49 +209,37 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                role="alert"
-                aria-live="assertive"
-                className="bg-rose-500/5 border border-rose-500/20 rounded-2xl px-5 py-4 flex items-center gap-3"
+                className="bg-rose-500/5 border border-rose-500/20 rounded-2xl px-6 py-4 flex items-center gap-4 shadow-inner"
               >
-                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" aria-hidden="true" />
-                <p id={`${formId}-error`} className="text-xs font-semibold text-rose-500">{error}</p>
+                <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-rose-500 leading-tight">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Login form */}
-          <form onSubmit={handleEmail} className="space-y-4" aria-label="Sign in with email and password" noValidate>
+          <form onSubmit={handleEmail} className="space-y-6">
             <div className="space-y-4">
-              <div className="relative group">
-                <label htmlFor={`${formId}-email`} className="sr-only">Email address</label>
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" aria-hidden="true" />
+              <div className="relative group/input">
+                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-text-4 group-focus-within/input:text-accent transition-colors" />
                 <input
-                  id={`${formId}-email`}
                   type="email"
-                  placeholder="Email address"
+                  placeholder="IDENTITY EMAIL"
                   required
-                  autoComplete="email"
-                  aria-required="true"
-                  aria-describedby={error ? `${formId}-error` : undefined}
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-medium text-text-1 placeholder:opacity-40 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                  className="w-full bg-surface-2 dark:bg-surface-3 border border-border rounded-[24px] pl-16 pr-8 py-5 text-sm font-bold text-text-1 placeholder:text-text-4 placeholder:opacity-40 focus:border-accent transition-all outline-none shadow-inner"
                 />
               </div>
-              <div className="relative group">
-                <label htmlFor={`${formId}-password`} className="sr-only">Password</label>
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-3 group-focus-within:text-indigo-500 transition-colors" aria-hidden="true" />
+              <div className="relative group/input">
+                <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-text-4 group-focus-within/input:text-accent transition-colors" />
                 <input
-                  id={`${formId}-password`}
                   type="password"
-                  placeholder="Password"
+                  placeholder="SECURITY KEY"
                   required
-                  autoComplete="current-password"
-                  aria-required="true"
-                  aria-describedby={error ? `${formId}-error` : undefined}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-border rounded-2xl pl-12 pr-6 py-4 text-sm font-medium text-text-1 placeholder:opacity-40 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                  className="w-full bg-surface-2 dark:bg-surface-3 border border-border rounded-[24px] pl-16 pr-8 py-5 text-sm font-bold text-text-1 placeholder:text-text-4 placeholder:opacity-40 focus:border-accent transition-all outline-none shadow-inner"
                 />
               </div>
             </div>
@@ -264,18 +247,15 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              aria-disabled={loading}
-              aria-busy={loading}
-              aria-label={loading ? "Signing in, please wait" : "Sign in"}
-              className="group relative w-full overflow-hidden rounded-3xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 p-5 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white focus-visible:ring-offset-2"
+              className="group/btn relative w-full overflow-hidden rounded-[24px] bg-text-1 text-bg p-6 flex flex-col items-center justify-center gap-1 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Zap className="w-5 h-5" aria-hidden="true" />}
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  {loading ? "Signing in…" : "Sign In"}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 group-hover/btn:scale-125 transition-transform" />}
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                  {loading ? "Authenticating…" : "Authorize Session"}
                 </span>
               </div>
-              <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[40px] -z-0" aria-hidden="true" />
+              <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-accent/10 rounded-full blur-[40px] -z-0" />
             </button>
           </form>
         </div>
@@ -286,22 +266,22 @@ export default function LoginPage() {
           transition={{ delay: 0.3 }}
           className="text-center"
         >
-          <p className="text-xs font-bold uppercase tracking-wider text-text-3">
-            New user?{" "}
-            <Link href="/register" className="text-text-1 border-b border-text-1 hover:text-indigo-500 hover:border-indigo-500 transition-all ml-2 pb-0.5">Create Account</Link>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">
+            New Identity Required?{" "}
+            <Link href="/register" className="text-accent border-b-2 border-accent/20 hover:border-accent transition-all ml-3 pb-1">Register Node</Link>
           </p>
         </motion.div>
 
-        {/* ── Infrastructure Node ── */}
-        <div className="pt-10 flex items-center justify-center gap-6 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-           <div className="flex items-center gap-2">
+        {/* ── Status Node ── */}
+        <div className="pt-12 flex items-center justify-center gap-10 opacity-40">
+           <div className="flex items-center gap-3">
               <Globe className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">System Online</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]">Global Network Active</span>
            </div>
-           <span className="w-1 h-1 rounded-full bg-border" />
-           <div className="flex items-center gap-2">
+           <div className="w-1.5 h-1.5 rounded-full bg-border" />
+           <div className="flex items-center gap-3">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Secure Connection</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.2em]">AES-256 Encrypted</span>
            </div>
         </div>
 
@@ -309,4 +289,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

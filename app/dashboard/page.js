@@ -30,7 +30,7 @@ function getMemCache(key) { const e = memCache[key]; return e && e.exp > Date.no
 function setMemCache(key, data, ttlMs = 60_000) { memCache[key] = { data, exp: Date.now() + ttlMs }; }
 
 const STATS = [
-  { key: "totalVideos", label: "Videos", icon: Video, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { key: "totalVideos", label: "Videos", icon: Video, color: "text-accent", bg: "bg-accent/10" },
   { key: "totalNotes", label: "Notes", icon: FileText, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   { key: "totalSessions", label: "Sessions", icon: Play, color: "text-amber-500", bg: "bg-amber-500/10" },
   { key: "totalViews", label: "Views", icon: Eye, color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -39,7 +39,7 @@ const STATS = [
 ];
 
 const QUICK_ACTIONS = [
-  { href: "/upload-video", icon: Video, label: "Upload Video", desc: "Share a video", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { href: "/upload-video", icon: Video, label: "Upload Video", desc: "Share a video", color: "text-accent", bg: "bg-accent/10" },
   { href: "/upload-notes", icon: FileText, label: "Share Notes", desc: "Upload notes", color: "text-emerald-500", bg: "bg-emerald-500/10" },
   { href: "/live/create", icon: Flame, label: "Host Live", desc: "Start a live session", color: "text-rose-500", bg: "bg-rose-500/10" },
   { href: "/explore", icon: Compass, label: "Explore", desc: "Browse resources", color: "text-amber-500", bg: "bg-amber-500/10" },
@@ -52,36 +52,31 @@ import ResponsiveGrid from "@/components/layouts/ResponsiveGrid";
 function DashSkeleton() {
   return (
     <PageContainer aria-label="Loading dashboard" aria-busy="true">
-      {/* Welcome banner skeleton — matches real h ~240px */}
-      <div className="h-[200px] md:h-[220px] rounded-2xl bg-slate-200 dark:bg-white/5 animate-pulse" />
-
-      {/* Stats grid skeleton — 6 cards */}
+      <div className="h-[200px] rounded-3xl bg-surface-2 dark:bg-surface-3 animate-pulse" />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6 animate-pulse">
         {Array(6).fill(0).map((_, i) => (
-          <div key={i} className="rounded-2xl bg-slate-200 dark:bg-white/5 p-5 space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-300 dark:bg-white/10" />
-            <div className="h-6 w-16 rounded bg-slate-300 dark:bg-white/10" />
-            <div className="h-3 w-12 rounded bg-slate-300 dark:bg-white/10" />
+          <div key={i} className="rounded-2xl bg-surface-2 dark:bg-surface-3 p-6 space-y-4 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-surface-3 dark:bg-surface-4" />
+            <div className="h-6 w-16 rounded-lg bg-surface-3 dark:bg-surface-4" />
+            <div className="h-2 w-12 rounded-full bg-surface-3 dark:bg-surface-4" />
           </div>
         ))}
       </div>
 
       {/* Quick actions skeleton */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
         {Array(4).fill(0).map((_, i) => (
-          <div key={i} className="h-24 rounded-2xl bg-slate-200 dark:bg-white/5" />
+          <div key={i} className="h-24 rounded-2xl bg-surface-2 dark:bg-surface-3" />
         ))}
       </div>
-
-      {/* Content rows skeleton */}
-      <div className="grid md:grid-cols-2 gap-6 animate-pulse">
-        <div className="space-y-3">
-          <div className="h-6 w-40 rounded bg-slate-200 dark:bg-white/5" />
-          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-xl bg-slate-200 dark:bg-white/5" />)}
+      <div className="grid md:grid-cols-2 gap-8 animate-pulse">
+        <div className="space-y-4">
+          <div className="h-6 w-40 rounded-xl bg-surface-2 dark:bg-surface-3" />
+          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-2xl bg-surface-2 dark:bg-surface-3" />)}
         </div>
-        <div className="space-y-3">
-          <div className="h-6 w-40 rounded bg-slate-200 dark:bg-white/5" />
-          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-xl bg-slate-200 dark:bg-white/5" />)}
+        <div className="space-y-4">
+          <div className="h-6 w-40 rounded-xl bg-surface-2 dark:bg-surface-3" />
+          {Array(3).fill(0).map((_, i) => <div key={i} className="h-20 rounded-2xl bg-surface-2 dark:bg-surface-3" />)}
         </div>
       </div>
     </PageContainer>
@@ -103,7 +98,6 @@ export default function DashboardPage() {
     if (cached) {
       setData(cached);
       setLoading(false);
-      // Background revalidation
       authFetch("/api/dashboard").then(r => r.json()).then(d => {
         if (d && !d.error) { setData(d); setMemCache("dashboard", d, 30_000); }
       }).catch(() => {});
@@ -118,139 +112,151 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(d => setContinueWatching(Array.isArray(d) ? d.slice(0, 6) : []))
       .catch(() => {});
-  // authFetch is stable (defined outside render), safe to omit
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, router]);
 
   if (authLoading || loading || !user) return <DashSkeleton />;
 
   const { stats = {}, recentVideos = [], recentNotes = [] } = data || {};
-  const firstName = user.displayName?.split(" ")[0] || "there";
+  const displayName = user.displayName || user.email?.split("@")[0] || "Operator";
+  const firstName = displayName.split(" ")[0];
 
   return (
     <PageContainer>
-      
-      {/* ── Welcome Stage ── */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={springConfig}
-        className="relative overflow-hidden rounded-2xl p-6 md:p-10 lg:p-16 bg-slate-900 dark:bg-slate-800 text-white shadow-xl"
+       <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-3xl p-8 md:p-12 bg-surface-1 dark:bg-surface-2 text-text-1 shadow-lg border border-border group"
       >
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
-          <div className="flex items-center gap-4 md:gap-8">
-            <div className="relative">
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-accent/5 rounded-full blur-[100px] pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
+        <div className="absolute -bottom-20 -left-20 w-[30%] h-[30%] bg-emerald-500/5 rounded-full blur-[80px] pointer-events-none" />
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-10">
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+             <div className="relative shrink-0">
               {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-24 h-24 rounded-2xl object-cover ring-2 ring-white/20 shadow-lg" />
+                <div className="p-1 rounded-3xl bg-gradient-to-br from-accent/40 to-transparent shadow-xl">
+                  <img src={user.photoURL} alt="" className="w-28 h-28 rounded-2xl object-cover border-2 border-surface-1 dark:border-surface-2" />
+                </div>
               ) : (
-                <div className="w-24 h-24 rounded-2xl bg-white/10 flex items-center justify-center text-4xl font-bold border border-white/20">
+                <div className="w-28 h-28 rounded-3xl bg-accent/10 text-accent flex items-center justify-center text-4xl font-bold border border-accent/20 shadow-inner">
                   {firstName[0].toUpperCase()}
                 </div>
               )}
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-indigo-500 flex items-center justify-center text-white shadow-md border-2 border-slate-900">
-                 <Zap className="w-4 h-4" />
-              </div>
+              <motion.div 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute -bottom-1 -right-1 w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-white shadow-lg border-2 border-surface-1 dark:border-surface-2"
+              >
+                 <Zap className="w-5 h-5 fill-current" />
+              </motion.div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-indigo-300">
+            <div className="space-y-3 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2.5 text-accent/80">
                 <LayoutDashboard className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-widest">My Dashboard</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">Learning Hub</span>
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
-                Welcome back, <span className="opacity-80">{firstName}</span>
+               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-text-1">
+                Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-indigo-500">{firstName}</span>
               </h1>
-              <p className="text-sm font-medium opacity-70">{user.email}</p>
+              <p className="text-[11px] font-semibold text-text-3 uppercase tracking-widest bg-surface-2/50 dark:bg-surface-3/50 inline-block px-3 py-1 rounded-full border border-border/50">{user.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 px-6 py-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md shadow-inner">
-             <div className="text-center space-y-1">
-               <p className="text-xs font-bold uppercase tracking-widest opacity-70">Total Credits</p>
+          <div className="flex items-center gap-8 px-8 py-6 rounded-2xl bg-surface-2/50 dark:bg-surface-3/50 backdrop-blur-xl border border-border shadow-lg min-w-[300px]">
+             <div className="text-center space-y-1 flex-1">
+               <p className="text-[11px] font-bold uppercase tracking-wider text-text-4">Credits</p>
                <div className="flex items-center justify-center gap-2">
-                 <TrendingUp className="w-5 h-5 text-emerald-400" />
-                 <p className="text-2xl md:text-3xl font-bold tracking-tight">{stats.credits ?? 0}</p>
+                 <TrendingUp className="w-5 h-5 text-emerald-500" />
+                 <p className="text-3xl font-bold tracking-tight text-text-1">{stats.credits ?? 0}</p>
                </div>
              </div>
-             <div className="w-px h-10 bg-white/10" />
-             <div className="text-center group cursor-help">
-               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white mx-auto mb-1 transition-transform group-hover:scale-110">
-                 <Sparkles className="w-5 h-5" />
+             <div className="w-px h-12 bg-border/50" />
+             <div className="text-center group/lvl cursor-help flex-1">
+               <div className="w-12 h-12 rounded-xl bg-accent text-white flex items-center justify-center mx-auto mb-2 transition-all group-hover/lvl:rotate-6 group-hover/lvl:scale-105 shadow-lg shadow-accent/20 border-2 border-white/20">
+                 <Sparkles className="w-6 h-6" />
                </div>
-               <p className="text-xs font-bold uppercase tracking-wider opacity-70">Level 4</p>
+               <p className="text-[11px] font-bold uppercase tracking-wider text-text-2">Lvl 4</p>
              </div>
           </div>
         </div>
       </motion.div>
 
-      {/* ── Dashboard Statistics ── */}
       <ResponsiveGrid columns={6}>
         {STATS.map((s, i) => (
           <motion.div
             key={s.key}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...springConfig, delay: i * 0.05 }}
-            className="group bg-white dark:bg-slate-900 border border-border p-5 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+            transition={{ ...springConfig, delay: i * 0.05 + 0.2 }}
+            className="group bg-surface-1 dark:bg-surface-2 border border-border p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 active:scale-95"
           >
-            <div className={`w-10 h-10 rounded-xl ${s.bg} ${s.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-105`}>
-              <s.icon className="w-5 h-5" />
+            <div className={`w-12 h-12 rounded-xl ${s.bg} ${s.color} flex items-center justify-center mb-4 transition-all group-hover:scale-110 border border-current/10 shadow-inner`}>
+              <s.icon className="w-6 h-6" />
             </div>
-            <p className="text-2xl md:text-3xl font-bold text-text-1 tracking-tight leading-none mb-1">
+            <p className="text-3xl font-bold text-text-1 tracking-tight leading-none mb-1">
               {stats[s.key] ?? 0}
             </p>
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-4 group-hover:text-accent transition-colors">
               {s.label}
             </p>
           </motion.div>
         ))}
       </ResponsiveGrid>
 
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid lg:grid-cols-12 gap-12">
         
-        {/* ── Content Stream (Left) ── */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-12">
           
-          {/* Continue Learning Selection */}
           {continueWatching.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="space-y-4"
+              className="space-y-8"
             >
-              <div className="flex items-center justify-between">
-                <SectionHeader title="Continue Learning" className="!space-y-1" />
-                <Link href="/history" className="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors">
-                  Watch History &rarr;
+              <div className="flex items-center justify-between px-2">
+                <SectionHeader 
+                  title="Active Modules" 
+                  description="Synchronized session history"
+                  badge="CONTINUE"
+                  className="!space-y-0" 
+                />
+                <Link href="/history" className="text-[11px] font-bold uppercase tracking-wider text-accent hover:text-accent-h transition-all flex items-center gap-2 bg-accent/5 px-5 py-2.5 rounded-xl border border-accent/10">
+                  History <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {continueWatching.map((h, i) => {
                   const pct = h.durationSeconds > 0 ? Math.min(100, Math.round((h.progressSeconds / h.durationSeconds) * 100)) : 0;
                   return (
                     <motion.div
                       key={h._id}
-                      whileHover={{ scale: 1.02 }}
-                      className="group bg-white dark:bg-slate-900 border border-border rounded-2xl overflow-hidden shadow-sm"
+                      whileHover={{ y: -4 }}
+                      className="group bg-surface-1 dark:bg-surface-2 border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border-b-2 border-b-accent/20"
                     >
                       <Link href={`/videos/${h.video._id}`}>
-                        <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                         <div className="relative aspect-video bg-surface-2 overflow-hidden">
                           {h.video.thumbnailUrl ? (
-                            <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          ) : <div className="w-full h-full flex items-center justify-center text-xl text-slate-400"><Video className="w-8 h-8" /></div>}
-                          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300" />
+                            <img src={h.video.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                          ) : <div className="w-full h-full flex items-center justify-center text-xl text-text-3"><Video className="w-8 h-8 opacity-20" /></div>}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute bottom-3 left-3 right-3 px-3 py-2 rounded-xl bg-white text-accent text-[11px] font-bold uppercase tracking-wider text-center opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 duration-300 shadow-xl">
+                            Resume Session
+                          </div>
                         </div>
-                        <div className="p-4 space-y-2">
-                          <p className="text-sm font-bold text-text-1 leading-tight line-clamp-1">{h.video.title}</p>
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs font-semibold text-text-3">
-                               <span>{pct}%</span>
-                               <span>{h.video.uploader?.name}</span>
+                        <div className="p-5 space-y-4">
+                          <p className="text-sm font-bold text-text-1 leading-tight line-clamp-2 min-h-[40px] group-hover:text-accent transition-colors">{h.video.title}</p>
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between text-[11px] font-semibold text-text-4 uppercase tracking-wider">
+                               <span className="text-accent">{pct}% Done</span>
+                               <span className="line-clamp-1 max-w-[100px] text-text-3">{h.video.uploader?.name}</span>
                             </div>
-                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                               <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+                             <div className="h-1.5 bg-surface-2 dark:bg-surface-3 rounded-full overflow-hidden border border-border/50">
+                               <motion.div 
+                                 initial={{ width: 0 }}
+                                 animate={{ width: `${pct}%` }}
+                                 transition={{ duration: 1.5, ease: "easeOut" }}
+                                 className="h-full bg-accent rounded-full" 
+                                />
                             </div>
                           </div>
                         </div>
@@ -262,70 +268,71 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
-          {/* Activity Overviews — My Content */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-10">
             {[
-              { title: "My Videos", items: recentVideos, icon: Video, type: 'video', uploadHref: '/upload-video' },
-              { title: "My Notes", items: recentNotes, icon: FileText, type: 'note', uploadHref: '/upload-notes' },
+              { title: "Video Matrix", items: recentVideos, icon: Video, type: 'video', uploadHref: '/upload-video', color: 'text-accent', bg: 'bg-accent/10' },
+              { title: "Note Repository", items: recentNotes, icon: FileText, type: 'note', uploadHref: '/upload-notes', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
             ].map((s) => (
-              <div key={s.title} className="bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm flex flex-col">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2 text-text-1">
-                    <s.icon className="w-5 h-5 text-indigo-500" />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">{s.title}</h3>
+              <div key={s.title} className="bg-surface-1 dark:bg-surface-2 border border-border rounded-3xl p-8 shadow-sm flex flex-col hover:shadow-xl transition-all group/box">
+                <div className="flex items-center justify-between mb-8 px-1">
+                  <div className="flex items-center gap-4 text-text-1">
+                    <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center border border-border shadow-inner group-hover/box:scale-110 transition-transform`}>
+                      <s.icon className={`w-5 h-5 ${s.color}`} />
+                    </div>
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-text-2">{s.title}</h3>
                   </div>
-                  <Link href={`/profile/${user?.uid}`} className="text-xs font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors flex items-center gap-1">
-                    View All
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  <Link href={`/profile/${user?.uid}`} className="text-[11px] font-bold uppercase tracking-wider text-text-4 hover:text-accent transition-all flex items-center gap-2 group/link">
+                    Inventory
+                    <ArrowUpRight className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                   </Link>
                 </div>
 
                 {s.items.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8 space-y-4">
-                    <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
-                      <s.icon className="w-6 h-6" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-12 space-y-6">
+                    <div className="w-16 h-16 bg-surface-2 dark:bg-surface-3 rounded-2xl flex items-center justify-center text-text-4 border border-dashed border-border group-hover/box:rotate-6 transition-transform duration-500">
+                      <s.icon className="w-8 h-8 opacity-20" />
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-base font-bold text-text-1 tracking-tight">No {s.type === 'video' ? 'videos' : 'notes'} yet</p>
-                      <p className="text-xs font-medium text-text-3 max-w-[200px] mx-auto">Share your first {s.type === 'video' ? 'video lesson' : 'study notes'} with the community</p>
+                    <div className="space-y-2">
+                      <p className="text-lg font-bold text-text-1 tracking-tight">System Empty</p>
+                      <p className="text-[11px] font-semibold text-text-4 uppercase tracking-wider max-w-[200px] mx-auto leading-relaxed">Initiate your first deployment.</p>
                     </div>
-                    <Link href={s.uploadHref} className="inline-flex items-center gap-2 px-4 py-2 mt-2 rounded-lg bg-indigo-500 text-white text-xs font-bold shadow-md hover:bg-indigo-600 transition-colors">
+                    <Link href={s.uploadHref} className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-accent text-white text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all">
                       <Plus className="w-4 h-4" />
-                      Upload {s.type === 'video' ? 'Video' : 'Notes'}
+                      Deploy {s.type === 'video' ? 'Matrix' : 'Notes'}
                     </Link>
                   </div>
                 ) : (
-                  <ul className="space-y-2 flex-1">
+                  <ul className="space-y-4 flex-1">
                     {s.items.map((item) => (
                       <li key={item._id}>
-                        <Link 
+                         <Link 
                           href={s.type === 'video' ? `/videos/${item._id}` : `/notes/${item._id}`}
-                          className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                          className="group flex items-center justify-between p-5 rounded-2xl bg-surface-2/30 dark:bg-surface-3/30 hover:bg-surface-2 dark:hover:bg-surface-3 transition-all border border-transparent hover:border-border shadow-sm hover:shadow-md"
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            {s.type === 'video' && item.thumbnailUrl ? (
-                              <div className="w-12 h-8 rounded shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          <div className="flex items-center gap-5 flex-1 min-w-0">
+                             {s.type === 'video' && item.thumbnailUrl ? (
+                              <div className="w-16 h-10 rounded-xl shrink-0 overflow-hidden border border-border shadow-inner">
+                                <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                               </div>
                             ) : (
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                s.type === 'video' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500'
-                              }`}>
-                                {s.type === 'video' ? <Play className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-inner ${
+                                 s.type === 'video' ? 'bg-accent/10 text-accent border-accent/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                               }`}>
+                                {s.type === 'video' ? <Play className="w-5 h-5 fill-current" /> : <FileText className="w-5 h-5" />}
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-text-1 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.title}</p>
+                              <p className="text-sm font-bold text-text-1 truncate group-hover:text-accent transition-colors">{item.title}</p>
                               {item.subject && (
-                                <p className="text-xs text-text-3 mt-0.5">{item.subject}</p>
+                                <p className="text-[11px] font-semibold text-text-4 uppercase tracking-wider mt-1 opacity-60">{item.subject}</p>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0 ml-2">
-                            <span className="text-xs font-medium text-text-3">
-                              {s.type === 'video' ? `${item.views || 0} views` : `${item.downloads || 0} dl`}
+                          <div className="flex items-center gap-4 shrink-0 ml-4">
+                            <span className="text-[11px] font-bold text-text-4 uppercase tracking-wider bg-surface-1 dark:bg-surface-2 px-3 py-1.5 rounded-xl border border-border shadow-sm group-hover:text-text-1 group-hover:border-accent/30 transition-all">
+                              {s.type === 'video' ? `${item.views || 0} v` : `${item.downloads || 0} d`}
                             </span>
-                            <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <ArrowUpRight className="w-5 h-5 text-accent opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" />
                           </div>
                         </Link>
                       </li>
@@ -337,52 +344,54 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Quick Actions (Right) ── */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-10">
           
-          <div className="bg-white dark:bg-slate-900 border border-border rounded-2xl p-6 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-text-1 mb-4 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
-              Quick Actions
+          <div className="bg-surface-1 dark:bg-surface-2 border border-border rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all">
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-text-1 mb-8 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-inner">
+                <Zap className="w-5 h-5 text-amber-500 fill-current" />
+              </div>
+              Command Palette
             </h3>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-4">
               {QUICK_ACTIONS.map((a) => (
-                <Link key={a.href} href={a.href}
-                  className="group flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                 <Link key={a.href} href={a.href}
+                  className="group flex items-center gap-5 p-5 rounded-2xl bg-surface-2/40 dark:bg-surface-3/40 hover:bg-surface-2 dark:hover:bg-surface-3 transition-all border border-transparent hover:border-border shadow-sm hover:shadow-xl"
                 >
-                  <div className={`w-10 h-10 rounded-lg ${a.bg} ${a.color} flex items-center justify-center shrink-0`}>
-                    <a.icon className="w-5 h-5" />
+                  <div className={`w-14 h-14 rounded-2xl ${a.bg} ${a.color} flex items-center justify-center shrink-0 border border-current/10 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-transform`}>
+                    <a.icon className="w-7 h-7" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-text-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{a.label}</p>
-                    <p className="text-xs text-text-3">{a.desc}</p>
+                    <p className="text-sm font-bold text-text-1 group-hover:text-accent transition-colors">{a.label}</p>
+                    <p className="text-[11px] font-semibold text-text-4 uppercase tracking-wider mt-1 opacity-60">{a.desc}</p>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-text-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowUpRight className="w-5 h-5 text-accent opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0" />
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="bg-indigo-600 dark:bg-indigo-500 p-8 rounded-2xl text-white shadow-lg relative overflow-hidden">
-             <div className="relative z-10 space-y-4">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                   <Users className="w-5 h-5" />
+           <div className="bg-accent p-10 rounded-3xl text-white shadow-xl relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-[100%] h-[100%] bg-white/10 rounded-full blur-[100px] pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
+             <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-[30px]" />
+             
+             <div className="relative z-10 space-y-6">
+                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-xl border border-white/30 shadow-xl group-hover:rotate-6 transition-transform duration-500">
+                   <Users className="w-7 h-7" />
                 </div>
-                <div>
-                   <h4 className="text-xl font-bold tracking-tight mb-1">Community Standings</h4>
-                   <p className="text-sm text-indigo-100 leading-relaxed">
-                     Check the global leaderboard to see how your learning progress compares with other educators.
+                <div className="space-y-2">
+                   <h4 className="text-2xl font-bold tracking-tight leading-none">Global Ranks</h4>
+                   <p className="text-[11px] font-semibold text-white/80 uppercase tracking-wider leading-relaxed">
+                     Connect with world-class peers and lead the community.
                    </p>
                 </div>
-                <Link href="/leaderboard" className="inline-block mt-2 px-5 py-2.5 rounded-lg bg-white text-indigo-600 text-sm font-bold hover:bg-indigo-50 transition-colors">
-                   View Leaderboard
+                <Link href="/leaderboard" className="flex items-center justify-center gap-2.5 w-full py-4 rounded-xl bg-white text-accent text-[11px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-all hover:scale-[1.02] active:scale-95 shadow-xl border-b-2 border-slate-200">
+                   Enter Standings <ArrowUpRight className="w-4 h-4" />
                 </Link>
              </div>
           </div>
-
         </div>
       </div>
     </PageContainer>
   );
 }
-

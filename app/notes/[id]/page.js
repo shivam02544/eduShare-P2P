@@ -21,16 +21,19 @@ import {
   Target,
   Zap,
   Cpu,
-  RefreshCw
+  RefreshCw,
+  Play,
+  Clock,
+  Sparkles
 } from "lucide-react";
 
-const springConfig = { mass: 1, tension: 120, friction: 20 };
+const springConfig = { type: "spring", stiffness: 300, damping: 30 };
 
 function NoteSkeleton() {
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-40 px-8 animate-pulse">
-      <div className="h-40 rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
-      <div className="h-[70vh] rounded-3xl bg-slate-200 dark:bg-white/5 border border-border/50" />
+    <div className="max-w-[1440px] mx-auto space-y-16 pb-40 px-8 animate-pulse">
+      <div className="h-64 rounded-[40px] bg-surface-2 dark:bg-surface-3 border border-border/50" />
+      <div className="h-[60vh] rounded-[40px] bg-surface-2 dark:bg-surface-3 border border-border/50" />
     </div>
   );
 }
@@ -99,41 +102,41 @@ export default function NoteDetailPage() {
   if (authLoading || loading) return <NoteSkeleton />;
 
   if (fetchError) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center space-y-6">
-      <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
-        <RefreshCw className="w-9 h-9" aria-hidden="true" />
+    <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh] px-8 text-center space-y-8">
+      <div className="w-24 h-24 rounded-[32px] bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-500/5">
+        <RefreshCw className="w-10 h-10" aria-hidden="true" />
       </div>
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold text-text-1">Could Not Load Note</h2>
-        <p className="text-sm text-text-3">{fetchError}</p>
+      <div className="space-y-3">
+        <h2 className="text-2xl font-black text-text-1 tracking-tight">Access Protocol Failure</h2>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-4">{fetchError}</p>
       </div>
       <button
         onClick={() => { setLoading(true); setFetchError(null); }}
-        className="px-6 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="px-10 py-5 rounded-2xl bg-surface-1 dark:bg-surface-2 border border-border text-text-1 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface-2 transition-all shadow-xl"
       >
-        Retry
+        Retry Connection
       </button>
     </div>
   );
 
   if (!note || note.error) return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center space-y-10">
-      <div className="relative">
-         <div className="w-40 h-40 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-text-3 opacity-20 shadow-inner">
-           <FileText className="w-20 h-20" aria-hidden="true" />
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 text-center space-y-12">
+      <div className="relative group">
+         <div className="w-48 h-48 rounded-[40px] bg-surface-1 dark:bg-surface-2 flex items-center justify-center text-text-4 border border-border shadow-inner group-hover:scale-105 transition-transform duration-700">
+           <FileText className="w-20 h-20 opacity-10" aria-hidden="true" />
          </div>
          <motion.div 
            animate={{ rotate: -360 }}
            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-           className="absolute -inset-4 border border-indigo-500/10 rounded-full border-dashed"
+           className="absolute -inset-8 border border-accent/10 rounded-full border-dashed"
          />
       </div>
       <div className="space-y-4">
-        <h2 className="text-4xl font-bold text-text-1 tracking-tight">Note Not Found</h2>
-        <p className="text-text-3 font-bold uppercase tracking-wider text-xs">This note could not be retrieved.</p>
+        <h2 className="text-5xl font-black text-text-1 tracking-tight">Artifact Not Found</h2>
+        <p className="text-text-4 font-black uppercase tracking-[0.3em] text-[10px]">The requested knowledge node is inaccessible.</p>
       </div>
-      <Link href="/explore" className="group flex items-center gap-4 px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold text-sm uppercase tracking-wider hover:scale-105 active:scale-95 transition-all">
-        Back to Explore
+      <Link href="/explore" className="group flex items-center gap-4 px-12 py-6 bg-text-1 text-bg rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl">
+        Back to Network
       </Link>
     </div>
   );
@@ -146,67 +149,70 @@ export default function NoteDetailPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springConfig}
-        className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-border p-12 md:p-16 rounded-3xl shadow-2xl overflow-hidden group"
+        className="relative bg-surface-1 dark:bg-surface-2 border border-border p-12 md:p-16 rounded-[40px] shadow-2xl overflow-hidden group"
       >
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 group-hover:scale-110 transition-transform duration-1000" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10 group-hover:scale-110 transition-transform duration-1000" />
         
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-          <div className="space-y-8 flex-1">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-16">
+          <div className="space-y-10 flex-1">
              <div className="flex flex-wrap items-center gap-4">
-                <div className="px-5 py-2 rounded-xl bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-indigo-500/20">
-                   {note.subject || "General Note"}
+                <div className="px-6 py-2.5 rounded-2xl bg-accent text-bg text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-accent/20 border border-accent/20">
+                   {note.subject || "GENERAL"}
                 </div>
                 {note.isPremium && (
-                  <div className="px-5 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-amber-500/20">
-                     <Lock className="w-3.5 h-3.5" />
-                     Premium Content
+                  <div className="px-6 py-2.5 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 shadow-xl shadow-amber-500/20 border border-amber-400/20">
+                     <Lock className="w-4 h-4 fill-current" />
+                     Premium Node
                   </div>
                 )}
-                <div className="px-5 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-3">
-                   ID: {id.slice(0, 8)}
+                <div className="px-6 py-2.5 rounded-2xl bg-surface-2 dark:bg-surface-3 border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-4">
+                   UID: {id.slice(0, 8)}
                 </div>
              </div>
 
-             <div className="space-y-2">
-                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider opacity-50">Educational Document</p>
-                <h1 className="text-4xl md:text-6xl font-bold text-text-1 tracking-tight leading-tight">
+             <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                   <Sparkles className="w-4 h-4 text-accent" />
+                   <p className="text-[10px] font-black text-accent uppercase tracking-[0.3em]">Knowledge Artifact</p>
+                </div>
+                <h1 className="text-5xl md:text-7xl font-black text-text-1 tracking-tight leading-[0.95]">
                   {note.title}
                 </h1>
              </div>
 
-             <div className="flex flex-wrap items-center gap-10 pt-4">
-                <Link href={`/profile/${note.uploader?.firebaseUid}`} className="group/u flex items-center gap-4">
+             <div className="flex flex-wrap items-center gap-12 pt-6">
+                <Link href={`/profile/${note.uploader?.firebaseUid}`} className="group/u flex items-center gap-5">
                    <div className="relative">
                       {note.uploader?.image ? (
-                        <img src={note.uploader.image} alt="" className="w-14 h-14 rounded-xl object-cover border border-border group-hover/u:rotate-6 transition-transform" />
+                        <img src={note.uploader.image} alt="" className="w-16 h-16 rounded-[20px] object-cover border border-border group-hover/u:rotate-6 transition-transform duration-500 shadow-xl" />
                       ) : (
-                        <div className="w-14 h-14 rounded-xl bg-indigo-500 text-white flex items-center justify-center text-xl font-bold">
+                        <div className="w-16 h-16 rounded-[20px] bg-accent text-bg flex items-center justify-center text-2xl font-black border border-accent shadow-xl">
                            {note.uploader?.name?.[0]}
                         </div>
                       )}
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-surface-1" />
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Instructor</span>
-                      <span className="text-lg font-bold text-text-1 group-hover/u:text-indigo-500 transition-colors uppercase tracking-tight">{note.uploader?.name}</span>
+                      <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Contributor</span>
+                      <span className="text-xl font-black text-text-1 group-hover/u:text-accent transition-colors uppercase tracking-tight">{note.uploader?.name}</span>
                    </div>
                 </Link>
 
-                <div className="w-px h-10 bg-border/50 hidden md:block" />
+                <div className="w-px h-12 bg-border/50 hidden md:block" />
 
-                <div className="flex items-center gap-10">
+                 <div className="flex items-center gap-12">
                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Downloads</span>
-                      <div className="flex items-center gap-2">
-                         <Activity className="w-4 h-4 text-indigo-500" />
-                         <span className="text-xl font-bold text-text-1 uppercase tracking-tight">{note.downloads}</span>
+                      <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Archived</span>
+                      <div className="flex items-center gap-3">
+                         <Activity className="w-4 h-4 text-accent" />
+                         <span className="text-2xl font-black text-text-1 uppercase tracking-tight">{note.downloads}</span>
                       </div>
                    </div>
                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-text-3 uppercase tracking-wider opacity-50">Released</span>
-                      <div className="flex items-center gap-2">
-                         <Calendar className="w-4 h-4 text-indigo-500" />
-                         <span className="text-xl font-bold text-text-1 uppercase tracking-tight">
+                      <span className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Timestamp</span>
+                      <div className="flex items-center gap-3">
+                         <Calendar className="w-4 h-4 text-accent" />
+                         <span className="text-2xl font-black text-text-1 uppercase tracking-tight">
                             {new Date(note.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                          </span>
                       </div>
@@ -216,34 +222,36 @@ export default function NoteDetailPage() {
           </div>
 
           {/* Action Section */}
-          <div className="flex flex-col gap-6 shrink-0 lg:w-80">
-             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border space-y-4">
-                <div className="flex items-center justify-between px-4">
+          <div className="flex flex-col gap-6 shrink-0 lg:w-96">
+             <div className="p-8 rounded-[32px] bg-surface-2 dark:bg-surface-3 border border-border space-y-6 shadow-inner">
+                <div className="flex items-center justify-between px-2">
                    <LikeBookmarkBar item={note} type="note" />
                    <ReportButton contentType="note" contentId={id} compact />
                 </div>
                 
+                <div className="h-px bg-border/50" />
+
                 {note.isPremium && !isOwnNote ? (
                   <button onClick={handleUnlock} disabled={unlocking}
-                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-xl bg-amber-500 text-white text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl shadow-amber-500/20 disabled:opacity-50"
+                    className="w-full group/btn relative flex items-center justify-center gap-3 py-6 rounded-2xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-amber-500/20 disabled:opacity-50 border border-amber-400/20"
                   >
                     {unlocking ? (
                       <RefreshCw className="w-5 h-5 animate-spin" />
                     ) : (
                       <Zap className="w-5 h-5 fill-current" />
                     )}
-                    {unlocking ? "Processing..." : `Unlock Note: ${note.premiumCost} CR`}
+                    {unlocking ? "PROCESSING..." : `UNLOCK ARTIFACT: ${note.premiumCost} CR`}
                   </button>
                 ) : (
                   <button onClick={handleDownload} disabled={downloading}
-                    className="w-full group/btn relative flex items-center justify-center gap-3 py-5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-50"
+                    className="w-full group/btn relative flex items-center justify-center gap-3 py-6 rounded-2xl bg-accent text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-accent-h hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-accent/20 disabled:opacity-50 border border-accent/20"
                   >
                     {downloading ? (
                       <RefreshCw className="w-5 h-5 animate-spin" />
                     ) : (
                       <Download className="w-5 h-5" />
                     )}
-                    {downloading ? "Downloading..." : "Download Note"}
+                    {downloading ? "DOWNLOADING..." : "DOWNLOAD ARTIFACT"}
                   </button>
                 )}
              </div>
@@ -251,31 +259,64 @@ export default function NoteDetailPage() {
         </div>
       </motion.div>
 
-      {/* ── Note Preview ── */}
-      <FilePreview 
-        url={note.fileUrl} 
-        title={note.title} 
-        onDownload={isPremium ? undefined : handleDownload}
-      />
+      {/* ── Note Content ── */}
+      <div className="bg-surface-1 dark:bg-surface-2 border border-border rounded-[40px] overflow-hidden shadow-sm">
+        <div className="p-10 md:p-20">
+          <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:text-text-2 prose-a:text-accent hover:prose-a:underline font-medium leading-relaxed text-lg">
+             {note.content}
+          </div>
+        </div>
+        
+        {/* Author Footer */}
+        <div className="flex flex-col md:flex-row items-center justify-between p-10 bg-surface-2 dark:bg-surface-3 border-t border-border gap-8">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 rounded-[20px] overflow-hidden border border-border shadow-lg">
+                {note.uploader?.image ? (
+                  <img src={note.uploader.image} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-accent text-bg flex items-center justify-center font-black text-xl">
+                    {note.uploader?.name?.[0]}
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-xl font-black text-text-1 uppercase tracking-tight">{note.uploader?.name}</p>
+                <p className="text-[10px] font-black text-text-4 uppercase tracking-[0.2em]">Verified Knowledge Curator</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {note.video?._id && (
+                <Link href={`/videos/${note.video?._id}`} className="flex items-center gap-3 px-10 py-5 bg-accent text-bg rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all shadow-xl shadow-accent/20">
+                  <Play className="w-4 h-4 fill-current" />
+                  RELATED SESSION
+                </Link>
+              )}
+              <button className="p-5 rounded-2xl bg-surface-1 dark:bg-surface-2 border border-border text-text-3 hover:text-accent hover:border-accent/20 transition-all shadow-sm">
+                <ShieldCheck className="w-6 h-6" />
+              </button>
+            </div>
+        </div>
+      </div>
 
       {/* ── Control Navigation ── */}
-      <div className="flex items-center justify-between pt-12 border-t border-border/50">
+      <div className="flex items-center justify-between pt-16 border-t border-border/50">
         <button onClick={() => router.back()}
-          className="group flex items-center gap-3 px-8 py-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-border text-xs font-bold uppercase tracking-wider text-text-3 hover:text-text-1 transition-all"
+          className="group flex items-center gap-4 px-10 py-5 rounded-2xl bg-surface-1 dark:bg-surface-2 border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-4 hover:text-text-1 transition-all shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Go Back
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-500" />
+          TERMINATE SESSION
         </button>
         
-        <div className="flex items-center gap-8 opacity-30">
-           <div className="flex items-center gap-3 text-xs font-bold text-text-3 uppercase tracking-wider leading-none">
-              <Cpu className="w-4 h-4" />
-              Safe Delivery Active
+        <div className="flex flex-wrap items-center gap-10 opacity-30">
+           <div className="flex items-center gap-3 text-[10px] font-black text-text-4 uppercase tracking-[0.2em] leading-none">
+              <Cpu className="w-5 h-5" />
+              SAFE ENCRYPTED DELIVERY
            </div>
-           <div className="w-1.5 h-1.5 rounded-full bg-border" />
-           <div className="flex items-center gap-3 text-xs font-bold text-text-3 uppercase tracking-wider leading-none">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              Verified Content
+           <div className="w-2 h-2 rounded-full bg-border" />
+           <div className="flex items-center gap-3 text-[10px] font-black text-text-4 uppercase tracking-[0.2em] leading-none">
+              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+              VERIFIED KNOWLEDGE NODE
            </div>
         </div>
       </div>

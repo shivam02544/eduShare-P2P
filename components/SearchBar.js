@@ -184,10 +184,10 @@ export default function SearchBar() {
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none" aria-hidden="true">
           {loading ? (
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-              <Activity className="w-4 h-4 text-indigo-600" />
+              <Activity className="w-4 h-4 text-accent" />
             </motion.div>
           ) : (
-            <Search className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+            <Search className="w-4 h-4 text-text-3 group-hover:text-accent transition-colors" />
           )}
         </div>
 
@@ -209,7 +209,7 @@ export default function SearchBar() {
           onKeyDown={handleKeyDown}
           onFocus={() => { if (results) setOpen(true); }}
           placeholder="Search videos, notes, users…"
-          className="w-full pl-11 pr-12 py-2 text-sm font-medium bg-white dark:bg-slate-900 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder:text-gray-400"
+          className="w-full pl-11 pr-12 py-2 text-sm font-medium bg-bg dark:bg-surface-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-text-1 placeholder:text-text-3"
         />
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:flex pointer-events-none" aria-hidden="true">
