@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, Github, Twitter, Mail } from "lucide-react";
+import { GraduationCap, SquareCode, Send, Mail } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,10 +21,10 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-4">
               <a href="#" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-text-3 hover:text-indigo-500">
-                <Github className="w-5 h-5" />
+                <SquareCode className="w-5 h-5" />
               </a>
               <a href="#" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-text-3 hover:text-indigo-500">
-                <Twitter className="w-5 h-5" />
+                <Send className="w-5 h-5" />
               </a>
               <a href="#" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-text-3 hover:text-indigo-500">
                 <Mail className="w-5 h-5" />
